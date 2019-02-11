@@ -40,13 +40,13 @@ var io = socketio.listen(web, { log: false })
 io.on('connection', function(socket) {
     //a new connection has been created i.e. a web browser has connected to the server
     logins.push({"id":socket.id,"username":null});
-    consoleLogWithTime("new connection "+socket.id);
+    consoleLogWithTime("New Client "+socket.id);
     socket.emit("target",targ);
 
     socket.on("target",function(data){
         if (data.pass == "koops"){
             targ = data;
-            consoleLogWithTime("data:"+data.value);
+            consoleLogWithTime("New Video ID: "+data.value);
             io.emit("target",data);
         }
         
@@ -54,7 +54,7 @@ io.on('connection', function(socket) {
 
     socket.on("playerControl", function(data){
         io.emit("playerControlRecv",data);
-        consoleLogWithTime("VIDEO "+data)
+        consoleLogWithTime("Video Control: "+data)
     })
  
 })
