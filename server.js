@@ -18,9 +18,11 @@ function findClientByID(clientID) {
     return logins.indexOf(result);
 }
 var targ = "-z6XVI-nCZs";
-//include socket.io, express, and hashing libraries
+
+//include socket.io, express, and testing libraries
 var socketio = require('socket.io');
 var express = require('express');
+
 
 consoleLogWithTime("[INFO] Starting express...");
 //create express object

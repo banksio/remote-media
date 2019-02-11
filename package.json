@@ -4,12 +4,14 @@
   "description": "A small app to control other client's media remotely.",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "chai": "^4.2.0",
     "express": "^4.16.4",
+    "mocha": "^5.2.0",
     "socket.io": "^2.2.0"
   }
 }
