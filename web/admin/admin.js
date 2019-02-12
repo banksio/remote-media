@@ -1,5 +1,7 @@
 var socket = io.connect("https://remotemedia-badmanbanks.c9users.io");
 
+var volSlider = document.getElementById("volume");
+
 var pause = document.getElementById('pause');
 pause.addEventListener("click", function() {
   socket.emit("playerControl", "pause");
@@ -26,8 +28,6 @@ function send(){
     //alert(val);
 }
 
-
-
 function getTitle(data) {
  var feed = data.feed;
  var entries = feed.entry || [];
@@ -40,6 +40,31 @@ function getTitle(data) {
  } 
  
  function vol(){
-     
-     socket.emit("volume",document.getElementById("volume").value)
+    socket.emit("volume",volSlider.value)
  }
+ 
+ socket.on("volumeRecv",function(data){
+    volSlider.value = data;
+    output.innerHTML = volSlider.value;
+})
+ 
+ function muteVid(){
+    player.setVolume(0);
+ }
+ 
+ function loadTable(tableId, fields, data) {
+        var rows = '';
+        $.each(data, function(index, item) {
+            var row = '<tr>';
+            $.each(fields, function(index, field) {
+                row += '<td>' + item[field+''] + '</td>';
+            });
+            rows += row + '<tr>';
+        });
+        $('#' + tableId + ' tbody').html(rows);
+    }
+    
+socket.on("playerinfo",function(data){
+    volSlider.value = data;
+    output.innerHTML = volSlider.value;
+})

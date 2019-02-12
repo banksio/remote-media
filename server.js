@@ -61,5 +61,9 @@ io.on('connection', function(socket) {
         io.emit("volumeRecv",data);
         consoleLogWithTime("Volume: "+data)
     })
+    
+    socket.on("playerinfo", function(data) {
+        io.emit("playerinfo",data);
+    }
  
 })
