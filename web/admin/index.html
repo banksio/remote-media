@@ -16,6 +16,7 @@
     <title>Remote Media</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.1/socket.io.js"></script>
+    <script src="https://www.youtube.com/iframe_api"></script>
   </head>
   <body>
     <div class="container">
@@ -26,30 +27,31 @@
       </div>
       <div class="row">
         <div class="col-lg-6">
-          <h2>Now Playing</h2>
-          <img id="thumbnail" src="https://i.ytimg.com/vi/Z0X2FyRl-9s/maxresdefault.jpg" class="img-fluid img-thumbnail"/>
-        </div>
-        <div class="col-lg-6">
           <h3>Control</h3>
           <label for="target">Youtube ID:</label>
           <input class="form-control" id="target"/>
           <label for="password">Password:</label>
           <input class="form-control" type="password" id="password"/>
           <br>
-          <center><button class="btn btn-primary" onclick="send();">NewTarget</button></center><br>
+          <center><button class="btn btn-primary" onclick="send();">NewTarget</button></center>
+          <br>
           <div class="controlscontainer">
             <button class="btn btn-primary" id="play"><i class="fas fa-play"></i> Play</button>
             <button class="btn btn-primary" id="pause"><i class="fas fa-pause"></i> Pause</button>
             <button class="btn btn-primary" id="1mute"><i class="fas fa-volume-mute"></i> Mute</button>
             <button class="btn btn-primary" id="unmute"><i class="fas fa-volume-up"></i> Unmute</button>
-            <input type="range" min="0" max="100" value="100" class="slider" id="volume">
-            <a id="volOutput"></a>
+            <br>
+            <input type="range" min="0" max="100" value="100" class="slider" onclick="vol();" id="volume">
+            <label for="volume" id="volOutput"></label>
           </div>
 
-  </div>
-
-          
-          <button onclick="getTitle('Z0X2FyRl-9s');">Test</button>
+        </div>
+        <div class="col-lg-6">
+          <h2>Now Playing</h2>
+          <div class="embed-responsive embed-responsive-16by9">
+            <iframe id="player" class="embed-responsive-item" allowfullscreen></iframe>
+          </div>            
+        </div>
           
           
         </div>
@@ -57,6 +59,7 @@
       </div>
  </div>
     
+    <script src="admin.js"></script>
     <script src="admin.js"></script>
     <script 
     type="text/javascript" 
@@ -73,7 +76,7 @@
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.2.1/js/bootstrap.min.js"></script>
     <!-- MDB core JavaScript -->
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mdbootstrap/4.7.1/js/mdb.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
+    
     
     <!-- SCRIPT FOR SLIDER -->
     <script>
@@ -83,6 +86,7 @@
     
     slider.oninput = function() {
       output.innerHTML = this.value;
+      vol();
     }
 </script>
   </body>

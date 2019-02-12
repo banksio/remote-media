@@ -29,7 +29,7 @@ consoleLogWithTime("[INFO] Starting express...");
 var exp = express();
 //use it to serve pages from the web folder
 exp.use(express.static('web'))
-var web = exp.listen(8023, "192.168.1.240", function() {
+var web = exp.listen(process.env.PORT, process.env.IP, function() {
     consoleLogWithTime("[SUCCESS] Express started.")
 })
  
@@ -41,7 +41,7 @@ io.on('connection', function(socket) {
     //a new connection has been created i.e. a web browser has connected to the server
     logins.push({"id":socket.id,"username":null});
     consoleLogWithTime("New Client "+socket.id);
-    socket.emit("target",targ);
+    //socket.emit("target",targ);
 
     socket.on("target",function(data){
         if (data.pass == "koops"){
@@ -55,6 +55,11 @@ io.on('connection', function(socket) {
     socket.on("playerControl", function(data){
         io.emit("playerControlRecv",data);
         consoleLogWithTime("Video Control: "+data)
+    })
+    
+    socket.on("volume", function(data){
+        io.emit("volumeRecv",data);
+        consoleLogWithTime("Volume: "+data)
     })
  
 })

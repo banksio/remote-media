@@ -1,9 +1,4 @@
-var socket = io.connect("192.168.1.240:8023");
-
-socket.on("target",function(data){
-  //alert("change");
-    
-})
+var socket = io.connect("https://remotemedia-badmanbanks.c9users.io");
 
 var pause = document.getElementById('pause');
 pause.addEventListener("click", function() {
@@ -25,7 +20,7 @@ unmute.addEventListener("click", function() {
 function send(){
     var val = document.getElementById("target").value;
     //alert(val);
-    document.getElementById("thumbnail").src="https://img.youtube.com/vi/"+ val +"/hqdefault.jpg";
+    //document.getElementById("thumbnail").src="https://img.youtube.com/vi/"+ val +"/hqdefault.jpg";
     socket.emit("target",{value: val, pass: document.getElementById("password").value});
     //alert(val);
     //alert(val);
@@ -43,3 +38,8 @@ function getTitle(data) {
   }
   
  } 
+ 
+ function vol(){
+     
+     socket.emit("volume",document.getElementById("volume").value)
+ }
