@@ -65,6 +65,6 @@ function getTitle(data) {
     }
     
 socket.on("playerinfo",function(data){
-    volSlider.value = data;
-    output.innerHTML = volSlider.value;
+    loadTable('data-table', data.currentTime data.socketID datastate
+
 })

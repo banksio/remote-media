@@ -36,7 +36,8 @@ function onPlayerStateChange(event) {
 
 socket.on("target",function(data){
     vid = data.value;
-    player.loadVideoById(vid)
+    player.loadVideoById(vid);
+    muteVid();
 })
 
 socket.on("playerControlRecv",function(data){
