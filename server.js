@@ -23,7 +23,6 @@ var targ = "-z6XVI-nCZs";
 var socketio = require('socket.io');
 var express = require('express');
 
-
 consoleLogWithTime("[INFO] Starting express...");
 //create express object
 var exp = express();
@@ -64,6 +63,13 @@ io.on('connection', function(socket) {
     
     socket.on("playerinfo", function(data) {
         io.emit("playerinfo",data);
+        consoleLogWithTime("PLAYER"+data)
+    })
+    
+    socket.on("site", function(control){
+        if (control == "reload"){
+            io.emit("reload");
+        }
     })
  
 })

@@ -43,6 +43,10 @@ function getTitle(data) {
     socket.emit("volume",volSlider.value)
  }
  
+ function reloadClients(){
+     socket.emit("site","reload");
+ }
+ 
  socket.on("volumeRecv",function(data){
     volSlider.value = data;
     output.innerHTML = volSlider.value;
@@ -52,19 +56,7 @@ function getTitle(data) {
     player.setVolume(0);
  }
  
- function loadTable(tableId, fields, data) {
-        var rows = '';
-        $.each(data, function(index, item) {
-            var row = '<tr>';
-            $.each(fields, function(index, field) {
-                row += '<td>' + item[field+''] + '</td>';
-            });
-            rows += row + '<tr>';
-        });
-        $('#' + tableId + ' tbody').html(rows);
-    }
     
 socket.on("playerinfo",function(data){
-    loadTable('data-table', [currentTime, socketID, state], data);
-
+    $('#data-table tr:last').after('<tr><td>'+ data.socketID  +'</td><td>'+ data.currentTime +'</td><td>'+ data.state +'</td></tr>');
 })

@@ -55,7 +55,6 @@
           </div>
           <br>
           <center><button class="btn btn-primary" onclick="sendMessage();">Send Message</button></center>
-          <br>
         </div>
         <div class="col-lg-6">
           <h2>Now Playing</h2>
@@ -64,20 +63,30 @@
           </div>            
         </div>
         
-        <table class="table" id="data-table">
-          <thead>
-            <tr>
-              <td>Client ID</td>
-              <td>Time</td>
-              <td>State</td>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td colspan="3" style="text-align:center">There are no items to list...</td>
-            </tr>
-          </tbody>
-        </table>
+        
+      </div>
+      <div class="row">
+        <div class="col-lg-6">
+          <h2>Client Control</h2>
+          <button class="btn btn-danger" id="play" onclick="reloadClients();"><i class="fas fa-sync-alt"></i> Reload all Clients</button>
+        </div>
+        <div class="col-lg-6">
+          <h2>Current Clients</h2>
+          <table class="table" id="data-table">
+            <thead>
+              <tr>
+                <td>Client ID</td>
+                <td>Time</td>
+                <td>State</td>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td colspan="3" style="text-align:center">There are no items to list...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
     </div>

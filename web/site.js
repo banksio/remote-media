@@ -7,3 +7,7 @@ socket.on("volumeRecv",function(data){
  function muteVid(){
     console.log("Not an admin panel.");
  }
+ 
+ socket.on("reload", function(){
+    location.reload(); 
+ })
