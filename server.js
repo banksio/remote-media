@@ -64,6 +64,6 @@ io.on('connection', function(socket) {
     
     socket.on("playerinfo", function(data) {
         io.emit("playerinfo",data);
-    }
+    })
  
 })

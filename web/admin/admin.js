@@ -65,6 +65,6 @@ function getTitle(data) {
     }
     
 socket.on("playerinfo",function(data){
-    loadTable('data-table', data.currentTime data.socketID datastate
+    loadTable('data-table', [currentTime, socketID, state], data);
 
 })
