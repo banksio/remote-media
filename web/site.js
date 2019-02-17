@@ -11,3 +11,11 @@ socket.on("volumeRecv",function(data){
  socket.on("reload", function(){
     location.reload(); 
  })
+
+socket.on("exit",function(){
+    socket.disconnect();
+})
+socket.on("speechRecv", function (data) {
+    var msg = new SpeechSynthesisUtterance(data);
+    window.speechSynthesis.speak(msg);
+})

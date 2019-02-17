@@ -1,7 +1,7 @@
-.controlscontainer {
-  width: 100%;
-  position: relative;
-}
+/*.controlscontainer {*/
+/*  width: 100%;*/
+/*  position: relative;*/
+/*}*/
 
 .slider {
   -webkit-appearance: none;
@@ -40,12 +40,13 @@
   cursor: pointer;
 }
 
-.vol{
-  margin-left: 5px;
-}
+/*.vol{*/
+/*  margin-left: 5px;*/
+/*}*/
 
-@media only screen and (max-width: 768px) {
-  controlscontainer {
-    width: 25px;
-  }
-}
+/*@media only screen and (max-width: 768px) {*/
+/*  controlscontainer {*/
+/*    width: 25px;*/
+/*  }*/
+/*}*/
+

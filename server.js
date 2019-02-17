@@ -50,6 +50,13 @@ io.on('connection', function(socket) {
         }
         
     });
+    
+    socket.on("speak", function(data) {
+        if (data.pass == "koops"){
+            io.emit("speechRecv",data.value);
+            consoleLogWithTime("SPEECH: "+data.value)
+        }
+    })
 
     socket.on("playerControl", function(data){
         io.emit("playerControlRecv",data);
@@ -69,6 +76,9 @@ io.on('connection', function(socket) {
     socket.on("site", function(control){
         if (control == "reload"){
             io.emit("reload");
+        } else {
+            io.emit("exit");
+            console.log("quitting clients");
         }
     })
  
