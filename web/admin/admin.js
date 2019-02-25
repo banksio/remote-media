@@ -1,4 +1,4 @@
-var socket = io.connect("https://remotemedia-badmanbanks.c9users.io");
+var socket = io.connect("https://remotemedia.azurewebsites.net");
 
 var volSlider = document.getElementById("volume");
 
