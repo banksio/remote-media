@@ -63,7 +63,7 @@ io.on('connection', function(socket) {
         consoleLogWithTime("Video Control: "+data)
     })
     
-    socket.on("volume", function(data){
+    socket.on("volumeSend", function(data){
         io.emit("volumeRecv",data);
         consoleLogWithTime("Volume: "+data)
     })
@@ -73,14 +73,14 @@ io.on('connection', function(socket) {
         consoleLogWithTime("debug:PLAYER"+data)
     })
     
-    socket.on("site", function(control){
-        if (control == "reload"){
-            io.emit("reload");
-            console.log("Reloading all clients...");
-        } else {
-            io.emit("exit");
-            console.log("Disconnecting all clients...");
-        }
-    })
+    // socket.on("site", function(control){
+    //     if (control == "reload"){
+    //         io.emit("reload");
+    //         console.log("Reloading all clients...");
+    //     } else {
+    //         io.emit("exit");
+    //         console.log("Disconnecting all clients...");
+    //     }
+    // })
  
 })

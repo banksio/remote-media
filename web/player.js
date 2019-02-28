@@ -40,7 +40,7 @@ socket.on("target",function(data){
     muteVid();
 })
 
-socket.on("playerControlRecv",function(data){
+socket.on('playerControl',function(data){
     switch (data){
         case "pause":
             player.pauseVideo();
@@ -57,3 +57,6 @@ socket.on("playerControlRecv",function(data){
     }
 })
 
+socket.on('volumeRecv',function(data){
+    player.setVolume(data);
+})
