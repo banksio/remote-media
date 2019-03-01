@@ -21,3 +21,7 @@ socket.on("speechRecv", function (data) {
     var msg = new SpeechSynthesisUtterance(data);
     window.speechSynthesis.speak(msg);
 })
+
+socket.on('volumeRecv',function(data){
+    player.setVolume(data);
+})
