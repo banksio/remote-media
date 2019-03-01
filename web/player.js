@@ -56,7 +56,3 @@ socket.on('playerControlRecv',function(data){
             break
     }
 })
-
-socket.on('volumeRecv',function(data){
-    player.setVolume(data);
-})
