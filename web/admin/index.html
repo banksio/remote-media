@@ -64,6 +64,19 @@
             <div class="input-group-append">
               <button class="btn btn-primary" onclick="send();">Send Video</button>
             </div>
+            
+          </div>
+          
+          <div class="input-group">
+            <div class="input-group-prepend d-none d-sm-block">
+              <span class="input-group-text">youtube.com/watch?v=</span>
+            </div>
+            <input class="form-control" id="targetAppend"/>
+            
+            <div class="input-group-append">
+              <button class="btn btn-primary" onclick="sendAppend();">Append Video</button>
+            </div>
+            
           </div>
           <br>
           
@@ -98,11 +111,26 @@
           </div>
         </div>
         <div class="col-lg-6">
-          <h2>Now Playing</h2>
-          <div class="embed-responsive embed-responsive-16by9">
-            <div id="player" style="position:absolute;top:0;left:0;width:100%;height:100%;"></div>    
-          </div>            
+          <h2>Current Clients</h2>
+          <table class="table" id="data-table">
+            <thead>
+              <tr>
+                <td>Client ID</td>
+                <td>State</td>
+                <td>Preloading</td>
+              </tr>
+            </thead>
+            <tbody id="data-table-body">
+              <tr>
+                <!-- <td colspan="3" style="text-align:center">There are no items to list...</td> -->
+                <td>There are no items to list...</td>
+                <td>There are no items to list...</td>
+                <td>There are no items to list...</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
+
         
         
       </div>
@@ -124,23 +152,12 @@
               </div>
             </div>
        </div>
-        <div class="col-lg-6">
-          <h2>Current Clients</h2>
-          <table class="table" id="data-table">
-            <thead>
-              <tr>
-                <td>Client ID</td>
-                <td>Time</td>
-                <td>State</td>
-              </tr>
-            </thead>
-            <tbody id="data-table-body">
-              <tr>
-                <td colspan="3" style="text-align:center">There are no items to list...</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+       <div class="col-lg-6">
+        <h2>Now Playing</h2>
+        <div class="embed-responsive embed-responsive-16by9">
+          <div id="player" style="position:absolute;top:0;left:0;width:100%;height:100%;"></div>    
+        </div>            
+      </div>
       </div>
     </div>
     </div>

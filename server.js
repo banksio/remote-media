@@ -8,6 +8,9 @@ const allEqual = arr => arr.every( v => v === arr[0] )
 //create blank logins array
 var logins = {};
 var targ = "pE49WK-oNjU";
+var anyPreloading = false;
+var buffering = [];
+var playlist = [];
 
 //function to provide well formatted date for console messages
 function consoleLogWithTime(msg){
@@ -40,6 +43,15 @@ io.on('connection', function(socket) {
         }
         
     });
+
+    socket.on("targetAppend",function(data){
+        if (data.pass == "koops"){
+            consoleLogWithTime("Queued Video ID: "+data.value);
+            playlist.push(data);
+            consoleLogWithTime(playlist);
+        }
+        
+    });
     
     socket.on("speak", function(data) {
         if (true){
@@ -64,10 +76,21 @@ io.on('connection', function(socket) {
             return;
         }
         consoleLogWithTime("debug:PLAYER"+socket.id + " status: " + data.state)
-        // if (logins[socket.id].preloading == false && (data.state == 3 || data.state == -1)){  // Pause all if someone buffers
-        //     io.emit("playerControlRecv","pause");
-        //     consoleLogWithTime("pausing cause buffer")
-        // }
+        if (anyPreloading == false && data.state == 3){  // Pause all if someone buffers
+            buffering.push(socket.id);
+            io.emit("playerControlRecv","pause");
+            consoleLogWithTime("pausing cause buffer")
+            consoleLogWithTime(data.state)
+        } else if (data.state == 1) {
+            if (buffering.length > 0){
+                consoleLogWithTime("resuming")
+                consoleLogWithTime(data.state)
+                buffering.splice(buffering.indexOf(socket.id), 1);
+                if (buffering.length == 0){
+                    io.emit("playerControlRecv","play");
+                }
+            }
+        }
         if (logins[socket.id].preloading == false){
             // if (data.state == 2) {
             //     io.emit("playerControlRecv","pause");
@@ -75,6 +98,11 @@ io.on('connection', function(socket) {
             // if (data.state == 1) {
             //     io.emit("playerControlRecv","play");
             // }
+        }
+        if (data.state == 0){
+            newID = playlist.pop()
+            consoleLogWithTime("New Video ID: "+newID);
+            io.emit("target",newID);
         }
 
         logins[socket.id].state = data.state;
@@ -84,12 +112,20 @@ io.on('connection', function(socket) {
             states.push(logins[id].state);
         }
         consoleLogWithTime(states);
+        io.emit("playerInfoObj",logins);
     })
 
     socket.on("playerPreloading", function(data) {
+        if (data){
+            anyPreloading = true;
+        }
         logins[socket.id].preloading = data;
+        console.log(data)
         console.log(logins);
         if (allPreloaded(logins)){
+            setTimeout(() => {
+                anyPreloading = false;
+            }, 1000);
             io.emit("playerControlRecv","play");
         }
     });

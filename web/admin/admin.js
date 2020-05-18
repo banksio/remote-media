@@ -1,4 +1,7 @@
-var socket = io.connect("http://localhost:3694");
+var url = window.location.href;
+var arr = url.split("/");
+var result = arr[0] + "//" + arr[2]
+var socket = io.connect(result + "/");
 
 //page elements
 var volSlider = document.getElementById("volume");
@@ -15,18 +18,23 @@ play.addEventListener("click", function() {
 })
 
 // Not currently used
-var mute = document.getElementById('1mute');
-mute.addEventListener("click", function() {
-  socket.emit("playerControl", "mute");
-})
-var unmute = document.getElementById('unmute');
-unmute.addEventListener("click", function() {
-  socket.emit("playerControl", "unmute");
-})
+// var mute = document.getElementById('1mute');
+// mute.addEventListener("click", function() {
+//   socket.emit("playerControl", "mute");
+// })
+// var unmute = document.getElementById('unmute');
+// unmute.addEventListener("click", function() {
+//   socket.emit("playerControl", "unmute");
+// })
 
 function send(){
     var val = document.getElementById("target").value;
     socket.emit("target",{value: val, pass: document.getElementById("password").value});
+}
+
+function sendAppend(){
+    var val = document.getElementById("targetAppend").value;
+    socket.emit("targetAppend",{value: val, pass: document.getElementById("password").value});
 }
 
 function getTitle(data) {
@@ -67,4 +75,11 @@ function speak(){
     
 socket.on("playerinfo",function(data){
     $('#data-table tr:last').after('<tr><td>'+ data.socketID  +'</td><td>'+ data.currentTime +'</td><td>'+ data.state +'</td></tr>');
+})
+
+socket.on("playerInfoObj",function(data){
+    $('#data-table-body tr').empty();
+    for (var obj in data){
+        $('#data-table-body tr:last').after('<tr><td>'+ obj +'</td><td>'+ data[obj].state +'</td><td>'+ data[obj].preloading +'</td></tr>');
+    }
 })

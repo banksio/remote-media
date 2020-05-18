@@ -1,4 +1,7 @@
-var socket = io.connect("http://localhost:3694");
+var url = window.location.href;
+var arr = url.split("/");
+var result = arr[0] + "//" + arr[2]
+var socket = io.connect(result + "/");
 
  function muteVid(){
     console.log("Not an admin panel.");

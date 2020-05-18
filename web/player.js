@@ -12,7 +12,7 @@ var $ = document.querySelector.bind(document);
 // This function creates an <iframe> (and YouTube player) after the API code downloads.
 function onYouTubeIframeAPIReady() {
     player = new YT.Player('player', {
-        playerVars: { 'autoplay': 1, 'controls': 1, 'rel' : 0, 'fs' : 0},
+        // playerVars: {'autoplay': 1, 'controls': 1, 'rel' : 0, 'fs' : 0},
         events: {
             'onReady': onPlayerReady,
             'onStateChange': onPlayerStateChange
@@ -67,6 +67,7 @@ var preloading = false;
 socket.on("target",function(data){
     console.log("Preloading...");
     preloading = true;  // We are loading a new video
+    console.log(preloading)
     socket.emit("playerPreloading", preloading);
     vid = data.value;
     player.mute();
@@ -82,7 +83,7 @@ function onPlayerStateChange(event) {
                 preloadingNearlyDone();
                 break;
             case 2:
-                preloadingDone();
+                // preloadingDone();
                 break;
             default:
                 break;
@@ -93,13 +94,14 @@ function onPlayerStateChange(event) {
 
 function preloadingNearlyDone(){
     console.log("Nearly preloaded.");
-    player.seekTo(0, false); // Go back to the start
     player.pauseVideo();  // Pause the video
+    player.seekTo(0); // Go back to the start
     player.unMute();  // Unmute the video ready for playing
-}
-
-function preloadingDone(){
     preloading = false;
     console.log("Preloading done.");
     socket.emit("playerPreloading", preloading);
+}
+
+function preloadingDone(){
+
 }
