@@ -1,4 +1,4 @@
-var socket = io.connect("https://remotemedia.azurewebsites.net");
+var socket = io.connect("http://localhost:3694");
 
 //page elements
 var volSlider = document.getElementById("volume");
