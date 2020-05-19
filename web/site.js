@@ -1,10 +1,14 @@
-var socket = io.connect("https://remotemedia.azurewebsites.net");
+var url = window.location.href;
+var arr = url.split("/");
+var result = arr[0] + "//" + arr[2]
+var socket = io.connect(result + "/");
 
  function muteVid(){
     console.log("Not an admin panel.");
  }
  
-socket.on('site', function(data){
+socket.on("site", function(data){
+    console.log("Site" + data);
     switch (data){
         case "reload":
             location.reload();

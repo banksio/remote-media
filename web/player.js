@@ -6,13 +6,13 @@ var firstScriptTag = document.getElementsByTagName('script')[0];
 firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
 var player, iframe, vid;
-var vid = 'LH4Y1ZUUx2g';
+var vid = 'pE49WK-oNjU';
 var $ = document.querySelector.bind(document);
 
 // This function creates an <iframe> (and YouTube player) after the API code downloads.
 function onYouTubeIframeAPIReady() {
     player = new YT.Player('player', {
-        playerVars: { 'autoplay': 1, 'controls': 0, 'rel' : 0, 'fs' : 0},
+        // playerVars: {'autoplay': 1, 'controls': 1, 'rel' : 0, 'fs' : 0},
         events: {
             'onReady': onPlayerReady,
             'onStateChange': onPlayerStateChange
@@ -26,24 +26,27 @@ function onPlayerReady(event) {
     //iframe = $('#player');
     // player.loadVideoById(vid);
     //$("player").keydown(false);
-    player.loadVideoById(vid);
+    player.cueVideoById(vid);
     muteVid();
 }
 
-function onPlayerStateChange(event) {
-    socket.emit("playerinfo", { currentTime: player.getCurrentTime(), socketID: socket.id, state: player.getPlayerState() });
-}
 
-socket.on("target",function(data){
-    vid = data.value;
-    player.loadVideoById(vid);
-    muteVid();
-})
+// setTimeout(() => {
+//     const interval = setInterval(function() {
+//         socket.emit("playerBuffered", { buffered: player.getVideoLoadedFraction(), socketID: socket.id, state: player.getPlayerState() });
+//     }, 5000);
+// }, 1000);
+
+
+
 
 socket.on('playerControlRecv',function(data){
+    state = player.getPlayerState()
     switch (data){
         case "pause":
-            player.pauseVideo();
+            if (state != 3 && state != -1){
+                player.pauseVideo();
+            }
             break
         case "play":
             player.playVideo();
@@ -56,3 +59,49 @@ socket.on('playerControlRecv',function(data){
             break
     }
 })
+
+// Preloading new videos
+var preloading = false;
+
+// When a new video comes in, mute the player and play the video
+socket.on("target",function(data){
+    console.log("Preloading...");
+    preloading = true;  // We are loading a new video
+    console.log(preloading)
+    socket.emit("playerPreloading", preloading);
+    vid = data.value;
+    player.mute();
+    player.loadVideoById(vid);
+})
+
+function onPlayerStateChange(event) {
+    newState = event.data;
+    console.log(newState);
+    if (preloading){  // If we're preloading
+        switch (newState){
+            case 1:  // And the video is now playing
+                preloadingNearlyDone();
+                break;
+            case 2:
+                // preloadingDone();
+                break;
+            default:
+                break;
+        }
+    }
+    socket.emit("playerinfo", { currentTime: player.getCurrentTime(), socketID: socket.id, state: newState });
+}
+
+function preloadingNearlyDone(){
+    console.log("Nearly preloaded.");
+    player.pauseVideo();  // Pause the video
+    player.seekTo(0); // Go back to the start
+    player.unMute();  // Unmute the video ready for playing
+    preloading = false;
+    console.log("Preloading done.");
+    socket.emit("playerPreloading", preloading);
+}
+
+function preloadingDone(){
+
+}
