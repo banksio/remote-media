@@ -100,7 +100,7 @@ io.on('connection', function(socket) {
             //     io.emit("playerControlRecv","play");
             // }
         }
-        if (data.state == 0){
+        if (data.state == 0 && playlist.length > 0){
             newID = {"value": playlist.shift()["id"]}
             consoleLogWithTime("New Video ID: "+newID.value);
             io.emit("target",newID);
