@@ -1,6 +1,7 @@
 //include socket.io, express, and testing libraries
-var socketio = require('socket.io');
-var express = require('express');
+const socketio = require('socket.io');
+const express = require('express');
+const ytlist = require('youtube-playlist');
 
 const port = 3694;
 const allEqual = arr => arr.every( v => v === arr[0] )
@@ -46,12 +47,14 @@ io.on('connection', function(socket) {
     });
 
     socket.on("targetAppend",function(data){
-        if (data.pass == "koops"){
-            consoleLogWithTime("Queued Video ID: "+data.value);
-            playlist.push({"id": data.value, "name": undefined});
-            consoleLogWithTime(playlist);
-        }
-        io.emit("playlistInfoObj",playlist);
+        consoleLogWithTime("recieved");
+        // if (data.pass == "koops"){
+        //     consoleLogWithTime("Queued Video ID: "+data.value);
+        //     playlist.push({"id": data.value, "name": undefined});
+        //     consoleLogWithTime(playlist);
+        // }
+        // io.emit("playlistInfoObj",playlist);
+        addIDsFromPlaylist(data.value);
     });
     
     socket.on("speak", function(data) {
@@ -178,4 +181,15 @@ function allPreloaded(clients){
         if(clients[client]["preloading"]) return false;
     }
     return true;
+}
+
+function addIDsFromPlaylist(playlistURL){
+    consoleLogWithTime("Getting YouTube playlist video IDs");
+    ytlist(playlistURL, 'id').then(res => {
+        // => { data: { playlist: [ 'bgU7FeiWKzc', '3PUVr8jFMGg', '3pXVHRT-amw', 'KOVc5o5kURE' ] } }
+        for (var id of res["data"]["playlist"]){
+            playlist.push({"id": id, "name": undefined});
+        }
+        io.emit("playlistInfoObj",playlist);
+    });
 }

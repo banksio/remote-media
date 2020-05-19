@@ -54,29 +54,30 @@ function send(){
 
 function sendAppend(){
     var val = document.getElementById("targetAppend").value;
-    var id = undefined;
+    // var id = undefined;
 
-    const regex = /(?:\.be\/(.*?)(?:\?|$)|watch\?v=(.*?)(?:\&|$|\n))/ig;
-    let m;
+    // const regex = /(?:\.be\/(.*?)(?:\?|$)|watch\?v=(.*?)(?:\&|$|\n))/ig;
+    // let m;
 
-    while ((m = regex.exec(val)) !== null) {
-        // This is necessary to avoid infinite loops with zero-width matches
-        if (m.index === regex.lastIndex) {
-            regex.lastIndex++;
-        }
+    // while ((m = regex.exec(val)) !== null) {
+    //     // This is necessary to avoid infinite loops with zero-width matches
+    //     if (m.index === regex.lastIndex) {
+    //         regex.lastIndex++;
+    //     }
     
-        // The result can be accessed through the `m`-variable.
-        m.forEach((match, groupIndex) => {
-            if (groupIndex == 0){
-                return;
-            }
-            if (match == undefined){
-                return;
-            }
-            // console.log(`Found match, group ${groupIndex}: ${match}`);
-            socket.emit("targetAppend",{value: match, pass: document.getElementById("password").value});
-        });
-    }
+    //     // The result can be accessed through the `m`-variable.
+    //     m.forEach((match, groupIndex) => {
+    //         if (groupIndex == 0){
+    //             return;
+    //         }
+    //         if (match == undefined){
+    //             return;
+    //         }
+    //         // console.log(`Found match, group ${groupIndex}: ${match}`);
+    //         socket.emit("targetAppend",{value: match, pass: document.getElementById("password").value});
+    //     });
+    // }
+    socket.emit("targetAppend",{value: val, pass: document.getElementById("password").value});
 }
 
 function getTitle(data) {
