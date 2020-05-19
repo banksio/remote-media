@@ -14,7 +14,7 @@ Coming soon:
 ## Usage
 ### Prerequisites
 * Node.js and npm
-## Run
+### Run
 1. Clone or download the repo onto your local machine or server.
 2. Run `npm install`.
 3. Run `npm start`.
