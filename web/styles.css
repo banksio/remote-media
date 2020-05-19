@@ -59,3 +59,8 @@
 .footer {
   background-color: #f5f5f5;
 }
+
+.footer img{
+  height: 1em;
+  width: auto;
+}
