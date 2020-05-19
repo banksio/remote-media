@@ -9,12 +9,10 @@ var volSlider = document.getElementById("volume");
 var pause = document.getElementById('pause');
 pause.addEventListener("click", function() {
     socket.emit("playerControl", "pause");
-    $('#data-table-body').html('');
 })
 var play = document.getElementById('play');
 play.addEventListener("click", function() {
     socket.emit("playerControl", "play");
-    $('#data-table-body').html('');
 })
 
 // Not currently used
