@@ -54,38 +54,12 @@
         <div class="col-lg-6">
           <h1>Control</h1>
           
-          <label for="target">Youtube <b>ID</b></label>
+          <label for="target">Youtube <b>URL</b></label>
           <div class="input-group">
-            <div class="input-group-prepend d-none d-sm-block">
-              <span class="input-group-text">youtube.com/watch?v=</span>
-            </div>
             <input class="form-control" id="target"/>
             
             <div class="input-group-append">
               <button class="btn btn-primary" onclick="send();">Send Video</button>
-            </div>
-            
-          </div>
-          
-          <div class="input-group">
-            <div class="input-group-prepend d-none d-sm-block">
-              <span class="input-group-text">youtube.com/watch?v=</span>
-            </div>
-            <input class="form-control" id="targetAppend"/>
-            
-            <div class="input-group-append">
-              <button class="btn btn-primary" onclick="sendAppend();">Append Video</button>
-            </div>
-            
-          </div>
-          <br>
-          
-          
-          <label for="speechBox">Text to Speech:</label>
-          <div class="input-group">
-            <input class="form-control" id="speechBox"/>
-            <div class="input-group-append">
-              <button class="btn btn-primary" onclick="speak();">Speak</button>
             </div>
           </div>
           <br>
@@ -95,6 +69,15 @@
             </div>
             <input class="form-control" type="password" id="password"/>
           </div>
+          <br>
+          <label for="speechBox">Text to Speech:</label>
+          <div class="input-group">
+            <input class="form-control" id="speechBox"/>
+            <div class="input-group-append">
+              <button class="btn btn-primary" onclick="speak();">Speak</button>
+            </div>
+          </div>
+
           <br>
           <div class="controlscontainer">
             <button class="btn btn-primary" id="play"><i class="fas fa-play"></i> Play</button>
@@ -106,8 +89,6 @@
               <input type="range" class="custom-range" min="0" max="100" value="100" onclick="vol();" id="volume">
             </div>
             <br>
-            <br>
-            
           </div>
         </div>
         <div class="col-lg-6">
@@ -122,10 +103,7 @@
             </thead>
             <tbody id="data-table-body">
               <tr>
-                <!-- <td colspan="3" style="text-align:center">There are no items to list...</td> -->
-                <td>There are no items to list...</td>
-                <td>There are no items to list...</td>
-                <td>There are no items to list...</td>
+                <td colspan="3" style="text-align:center">There are no items to list...</td>
               </tr>
             </tbody>
           </table>
@@ -136,10 +114,34 @@
       </div>
       <div class="row">
         <div class="col-lg-6">
+          <h2>Playlist</h2>
+          <div class="input-group">
+            <input class="form-control" id="targetAppend"/>
+            <div class="input-group-append">
+              <button class="btn btn-primary" onclick="sendAppend();">Append Video</button>
+            </div>
+          </div>
+          <br>
+          <table class="table" id="playlist-table">
+            <thead>
+              <tr>
+                <td>Number</td>
+                <td>Video ID</td>
+              </tr>
+            </thead>
+            <tbody id="playlist-table-body">
+              <tr>
+                <td colspan="3" style="text-align:center">There are no items to list...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="col-lg-6">
+          
           <h2>Client Control</h2>
           <button class="btn btn-info disabled" id="fscreen"><i class="fas fa-arrows-alt"></i> Fullscreen</button>
-          <button class="btn btn-warning" id="play" onclick="reloadClients();"><i class="fas fa-sync-alt"></i> Reload All</button>
-          <button class="btn btn-danger" id="play" onclick="disconnectClients();"><i class="fas fa-sign-out-alt"></i> Disconnect All</button>
+          <button class="btn btn-warning disabled" onclick="reloadClients();"><i class="fas fa-sync-alt"></i> Reload All</button>
+          <button class="btn btn-danger" onclick="disconnectClients();"><i class="fas fa-sign-out-alt"></i> Disconnect All</button>
           <br>
           <br>
           <div class="input-group">

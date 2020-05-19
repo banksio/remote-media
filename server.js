@@ -31,9 +31,10 @@ var io = socketio.listen(web, { log: false })
 //The callback contains code to setup what happens whenever a named message is received
 io.on('connection', function(socket) {
     //a new connection has been created i.e. a web browser has connected to the server
-    logins[socket.id] = {"username":null,"state":-2,"preloading":false};
+    logins[socket.id] = {"username":null,"state":"Admin","preloading":false};
     consoleLogWithTime("New Client "+socket.id);
     //socket.emit("target",targ);
+    io.emit("playerInfoObj",logins);
 
     socket.on("target",function(data){
         if (data.pass == "koops"){
@@ -47,10 +48,10 @@ io.on('connection', function(socket) {
     socket.on("targetAppend",function(data){
         if (data.pass == "koops"){
             consoleLogWithTime("Queued Video ID: "+data.value);
-            playlist.push(data);
+            playlist.push({"id": data.value, "name": undefined});
             consoleLogWithTime(playlist);
         }
-        
+        io.emit("playlistInfoObj",playlist);
     });
     
     socket.on("speak", function(data) {
@@ -100,7 +101,7 @@ io.on('connection', function(socket) {
             // }
         }
         if (data.state == 0){
-            newID = playlist.pop()
+            newID = playlist.shift()["id"]
             consoleLogWithTime("New Video ID: "+newID);
             io.emit("target",newID);
         }
@@ -156,17 +157,19 @@ io.on('connection', function(socket) {
     socket.on('disconnect', () => {
         io.emit('user disconnected');
         delete logins[socket.id];
+        io.emit("playerInfoObj",logins);
     });
     
-    // socket.on("site", function(control){
-    //     if (control == "reload"){
-    //         io.emit("reload");
-    //         console.log("Reloading all clients...");
-    //     } else {
-    //         io.emit("exit");
-    //         console.log("Disconnecting all clients...");
-    //     }
-    // })
+    socket.on("siteCon", function(control){
+        console.log("oof");
+        if (control == "reload"){
+            io.emit("site", "reload");
+            console.log("Reloading all clients...");
+        } else {
+            io.emit("site", "discon");
+            console.log("Disconnecting all clients...");
+        }
+    })
  
 })
 

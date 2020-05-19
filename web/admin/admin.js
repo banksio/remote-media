@@ -27,12 +27,56 @@ play.addEventListener("click", function() {
 
 function send(){
     var val = document.getElementById("target").value;
-    socket.emit("target",{value: val, pass: document.getElementById("password").value});
+    var id = undefined;
+
+    const regex = /(?:\.be\/(.*?)(?:\?|$)|watch\?v=(.*?)(?:\&|$|\n))/ig;
+    let m;
+
+    while ((m = regex.exec(val)) !== null) {
+        // This is necessary to avoid infinite loops with zero-width matches
+        if (m.index === regex.lastIndex) {
+            regex.lastIndex++;
+        }
+    
+        // The result can be accessed through the `m`-variable.
+        m.forEach((match, groupIndex) => {
+            if (groupIndex == 0){
+                return;
+            }
+            if (match == undefined){
+                return;
+            }
+            // console.log(`Found match, group ${groupIndex}: ${match}`);
+            socket.emit("target",{value: match, pass: document.getElementById("password").value});
+        });
+    }
 }
 
 function sendAppend(){
     var val = document.getElementById("targetAppend").value;
-    socket.emit("targetAppend",{value: val, pass: document.getElementById("password").value});
+    var id = undefined;
+
+    const regex = /(?:\.be\/(.*?)(?:\?|$)|watch\?v=(.*?)(?:\&|$|\n))/ig;
+    let m;
+
+    while ((m = regex.exec(val)) !== null) {
+        // This is necessary to avoid infinite loops with zero-width matches
+        if (m.index === regex.lastIndex) {
+            regex.lastIndex++;
+        }
+    
+        // The result can be accessed through the `m`-variable.
+        m.forEach((match, groupIndex) => {
+            if (groupIndex == 0){
+                return;
+            }
+            if (match == undefined){
+                return;
+            }
+            // console.log(`Found match, group ${groupIndex}: ${match}`);
+            socket.emit("targetAppend",{value: match, pass: document.getElementById("password").value});
+        });
+    }
 }
 
 function getTitle(data) {
@@ -50,11 +94,11 @@ function getTitle(data) {
  }
  
  function reloadClients(){
-     socket.broadcast.emit('site',"reload");
+    socket.emit("siteCon","reload");
  }
  
 function disconnectClients(){
-    socket.broadcast.emit('site',"discon");
+    socket.emit("siteCon","discon");
 }
  
 socket.on("volumeRecv",function(data){
@@ -76,8 +120,21 @@ socket.on("playerinfo",function(data){
 })
 
 socket.on("playerInfoObj",function(data){
-    $('#data-table-body tr').empty();
+    // Get a reference to the table
+    let tableRef = document.getElementById("data-table-body");
+    tableRef.innerHTML = "";
+
     for (var obj in data){
-        $('#data-table-body tr:last').after('<tr><td>'+ obj +'</td><td>'+ data[obj].state +'</td><td>'+ data[obj].preloading +'</td></tr>');
+        tableRef.innerHTML = tableRef.innerHTML + '<tr><td>'+ obj +'</td><td>'+ data[obj].state +'</td><td>'+ data[obj].preloading +'</td></tr>';
+    }
+})
+
+socket.on("playlistInfoObj",function(playlist){
+    $('#playlist-table-body tr').empty();
+    var i = 1;
+    for (var video of playlist){
+        console.log(video);
+        $('#playlist-table-body tr:last').after('<tr><td>'+ i +'</td><td>'+ video["id"] +'</td></tr>');
+        i++;
     }
 })

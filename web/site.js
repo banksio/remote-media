@@ -7,7 +7,8 @@ var socket = io.connect(result + "/");
     console.log("Not an admin panel.");
  }
  
-socket.on('site', function(data){
+socket.on("site", function(data){
+    console.log("Site" + data);
     switch (data){
         case "reload":
             location.reload();
