@@ -101,8 +101,8 @@ io.on('connection', function(socket) {
             // }
         }
         if (data.state == 0){
-            newID = playlist.shift()["id"]
-            consoleLogWithTime("New Video ID: "+newID);
+            newID = {"value": playlist.shift()["id"]}
+            consoleLogWithTime("New Video ID: "+newID.value);
             io.emit("target",newID);
         }
 

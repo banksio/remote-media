@@ -65,7 +65,7 @@ var preloading = false;
 
 // When a new video comes in, mute the player and play the video
 socket.on("target",function(data){
-    console.log("Preloading...");
+    console.log("Preloading..." + data.value);
     preloading = true;  // We are loading a new video
     console.log(preloading)
     socket.emit("playerPreloading", preloading);
