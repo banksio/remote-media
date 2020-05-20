@@ -11,7 +11,7 @@ var logins = {};
 var targ = "pE49WK-oNjU";
 var anyPreloading = false;
 var buffering = [];
-var playlist = [];
+var queue = [];
 
 //function to provide well formatted date for console messages
 function consoleLogWithTime(msg){
@@ -39,11 +39,8 @@ io.on('connection', function(socket) {
 
     socket.on("target",function(data){
         if (data.pass == "koops"){
-            targ = data;
-            consoleLogWithTime("New Video ID: "+data.value);
-            io.emit("target",data);
-        }
-        
+            playVideo(data.value);
+        }        
     });
 
     socket.on("targetAppend",function(data){
@@ -65,6 +62,21 @@ io.on('connection', function(socket) {
     })
 
     socket.on("playerControl", function(data){
+        io.emit("playerControlRecv",data);
+        consoleLogWithTime("Video Control: "+data)
+    })
+
+    socket.on("serverQueueControl", function(data){
+        switch (data) {
+            case "prev":
+                
+                break;
+            case "skip":
+                playNextInQueue();
+                break;
+            default:
+                break;
+        }
         io.emit("playerControlRecv",data);
         consoleLogWithTime("Video Control: "+data)
     })
@@ -103,10 +115,8 @@ io.on('connection', function(socket) {
             //     io.emit("playerControlRecv","play");
             // }
         }
-        if (data.state == 0 && playlist.length > 0){
-            newID = {"value": playlist.shift()["id"]}
-            consoleLogWithTime("New Video ID: "+newID.value);
-            io.emit("target",newID);
+        if (data.state == 0 && queue.length > 0){
+            playNextInQueue();
         }
 
         logins[socket.id].state = data.state;
@@ -124,8 +134,8 @@ io.on('connection', function(socket) {
             anyPreloading = true;
         }
         logins[socket.id].preloading = data;
-        console.log(data)
-        console.log(logins);
+        consoleLogWithTime(data)
+        consoleLogWithTime(logins);
         if (allPreloaded(logins)){
             setTimeout(() => {
                 anyPreloading = false;
@@ -164,13 +174,13 @@ io.on('connection', function(socket) {
     });
     
     socket.on("siteCon", function(control){
-        console.log("oof");
+        consoleLogWithTime("Connection management request recieved");
         if (control == "reload"){
             io.emit("site", "reload");
-            console.log("Reloading all clients...");
+            consoleLogWithTime("Reloading all clients...");
         } else {
             io.emit("site", "discon");
-            console.log("Disconnecting all clients...");
+            consoleLogWithTime("Disconnecting all clients...");
         }
     })
  
@@ -188,8 +198,26 @@ function addIDsFromPlaylist(playlistURL){
     ytlist(playlistURL, 'id').then(res => {
         // => { data: { playlist: [ 'bgU7FeiWKzc', '3PUVr8jFMGg', '3pXVHRT-amw', 'KOVc5o5kURE' ] } }
         for (var id of res["data"]["playlist"]){
-            playlist.push({"id": id, "name": undefined});
+            queue.push({"id": id, "name": undefined});
         }
-        io.emit("playlistInfoObj",playlist);
+        io.emit("playlistInfoObj",queue);
     });
+}
+
+function playNextInQueue(){
+    if (queue.length > 0){
+        nextID = queue.shift()["id"];
+        consoleLogWithTime("Playing the next video in the queue.")
+        playVideo(nextID);
+    } else {
+        consoleLogWithTime("There are no videos left in the queue to play.")
+    }
+    return;
+}
+
+function playVideo(ID){
+    var newID = {"value": ID};
+    consoleLogWithTime("New Video ID sent: "+newID.value);
+    io.emit("target",newID);
+    return;
 }

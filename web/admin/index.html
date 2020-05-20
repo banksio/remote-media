@@ -67,7 +67,7 @@
             <div class="input-group-prepend">
               <span class="input-group-text">Password</span>
             </div>
-            <input class="form-control" type="password" id="password"/>
+            <input class="form-control" type="password" id="password" value="koops"/>
           </div>
           <br>
           <label for="speechBox">Text to Speech:</label>
@@ -82,12 +82,14 @@
           <div class="controlscontainer">
             <button class="btn btn-primary" id="play"><i class="fas fa-play"></i> Play</button>
             <button class="btn btn-primary" id="pause"><i class="fas fa-pause"></i> Pause</button>
+            <button class="btn btn-primary disabled" id="prev"><i class="fas fa-step-backward"></i> Previous</button>
+            <button class="btn btn-primary" id="skip"><i class="fas fa-step-forward"></i> Next</button>
             <!--<button class="btn btn-primary" id="1mute"><i class="fas fa-volume-mute"></i> Mute</button>-->
             <!--<button class="btn btn-primary" id="unmute"><i class="fas fa-volume-up"></i> Unmute</button>-->
-            <div class="form-group custom-control-inline">
+            <!-- <div class="form-group custom-control-inline">
               <label for="volume">Volume:<span id="volumeLabel"></span></label>
               <input type="range" class="custom-range" min="0" max="100" value="100" onclick="vol();" id="volume">
-            </div>
+            </div> -->
             <br>
           </div>
         </div>
@@ -118,7 +120,7 @@
           <div class="input-group">
             <input class="form-control" id="targetAppend"/>
             <div class="input-group-append">
-              <button class="btn btn-primary" onclick="sendAppend();">Append Video</button>
+              <button class="btn btn-primary" onclick="sendAppend();">Add Playlist</button>
             </div>
           </div>
           <br>
@@ -166,7 +168,7 @@
     <footer class="footer mt-auto py-3">
       <div class="container">
         <span class="text-muted"><a href="https://www.github.com/banksio/remote-media">Remote Media</a>, &lt;/&gt; with ❤ by <a href="https://www.github.com/banksio"><img src="https://avatars3.githubusercontent.com/u/30214760?v=4"> banksio</a></span>
-        <span class="text-muted float-right">Version 0.8.0</span>
+        <span class="text-muted float-right">Version 0.8.1</span>
       </div>
     </footer>
     <!-- <footer class="footer">

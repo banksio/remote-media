@@ -15,6 +15,15 @@ play.addEventListener("click", function() {
     socket.emit("playerControl", "play");
 })
 
+var pause = document.getElementById('prev');
+pause.addEventListener("click", function() {
+    socket.emit("serverQueueControl", "prev");
+})
+var pause = document.getElementById('skip');
+pause.addEventListener("click", function() {
+    socket.emit("serverQueueControl", "skip");
+})
+
 // Not currently used
 // var mute = document.getElementById('1mute');
 // mute.addEventListener("click", function() {
