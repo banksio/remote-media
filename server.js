@@ -74,6 +74,11 @@ io.on('connection', function(socket) {
             case "skip":
                 playNextInQueue();
                 break;
+            case "empty":
+                consoleLogWithTime("Emptying playlist");
+                queue = [];
+                io.emit("playlistInfoObj",queue);
+                break;
             default:
                 break;
         }

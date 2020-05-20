@@ -15,13 +15,18 @@ play.addEventListener("click", function() {
     socket.emit("playerControl", "play");
 })
 
-var pause = document.getElementById('prev');
-pause.addEventListener("click", function() {
+var prev = document.getElementById('prev');
+prev.addEventListener("click", function() {
     socket.emit("serverQueueControl", "prev");
 })
-var pause = document.getElementById('skip');
-pause.addEventListener("click", function() {
+var skip = document.getElementById('skip');
+skip.addEventListener("click", function() {
     socket.emit("serverQueueControl", "skip");
+})
+
+var emptyPlaylist = document.getElementById('emptyPlaylist');
+emptyPlaylist.addEventListener("click", function() {
+    socket.emit("serverQueueControl", "empty");
 })
 
 // Not currently used
