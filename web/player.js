@@ -13,7 +13,7 @@ var $ = document.querySelector.bind(document);
 function onYouTubeIframeAPIReady() {
     player = new YT.Player('player', {
         // playerVars: {'autoplay': 1, 'controls': 1, 'rel' : 0, 'fs' : 0},
-        playerVars: {'autoplay': 1, 'controls': 0, 'disablekb': 1},
+        playerVars: {'autoplay': 1, 'controls': 1, 'disablekb': 1},
         events: {
             'onReady': onPlayerReady,
             'onStateChange': onPlayerStateChange

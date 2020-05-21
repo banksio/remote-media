@@ -202,8 +202,11 @@ function addIDsFromPlaylist(playlistURL){
     consoleLogWithTime("Getting YouTube playlist video IDs");
     ytlist(playlistURL, 'id').then(res => {
         // => { data: { playlist: [ 'bgU7FeiWKzc', '3PUVr8jFMGg', '3pXVHRT-amw', 'KOVc5o5kURE' ] } }
+        var i = 1;
         for (var id of res["data"]["playlist"]){
             queue.push({"id": id, "name": undefined});
+            i = i + 1;
+            consoleLogWithTime(i);
         }
         io.emit("playlistInfoObj",queue);
     });
