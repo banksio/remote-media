@@ -76,17 +76,31 @@ socket.on("target",function(data){
 })
 
 function onPlayerStateChange(event) {
+    
     newState = event.data;
     console.log(newState);
     if (preloading){  // If we're preloading
+        document.title = "Remote Media";
         switch (newState){
             case 1:  // And the video is now playing
+                // Update the tab title with the current Video ID
+                document.title = player.getVideoData().title + " - Remote Media";
                 preloadingNearlyDone();
                 break;
             case 2:
                 // preloadingDone();
                 break;
             default:
+                break;
+        }
+    } else {
+        switch (newState){
+            case 0:
+                document.title = "Remote Media";
+                break;
+            case 1:
+                // Update the tab title with the current Video ID
+                document.title = player.getVideoData().title + " - Remote Media";
                 break;
         }
     }
