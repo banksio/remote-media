@@ -38,9 +38,30 @@ io.on('connection', function(socket) {
     io.emit("playerInfoObj",logins);
 
     socket.on("target",function(data){
+        var inputData = data.value;
         if (data.pass == "koops"){
-            playVideo(data.value);
-        }        
+            var urlArray = inputData.split(',');
+            console.log("LENGTH" + urlArray.length);
+            if (urlArray.length == 1){
+                var url = urlArray[0];
+                // console.log(url)
+                var videoID = getIDFromURL(url);
+                console.log(videoID)
+                if (videoID != undefined){
+                    playVideo(videoID);
+                }
+                return;
+            }
+            for (var url of urlArray){
+                var id = getIDFromURL(url);
+                if (id != undefined){
+                    queue.push({"id": id, "name": undefined});
+                    consoleLogWithTime(id);
+                }
+            }
+            io.emit("playlistInfoObj",queue);
+            return;
+        }
     });
 
     socket.on("targetAppend",function(data){
@@ -228,4 +249,33 @@ function playVideo(ID){
     consoleLogWithTime("New Video ID sent: "+newID.value);
     io.emit("target",newID);
     return;
+}
+
+function getIDFromURL(url){
+    var id = undefined;
+
+    const regex = /(?:\.be\/(.*?)(?:\?|$)|watch\?v=(.*?)(?:\&|$|\n))/ig;
+    let m;
+
+    while ((m = regex.exec(url)) !== null) {
+        // This is necessary to avoid infinite loops with zero-width matches
+        if (m.index === regex.lastIndex) {
+            regex.lastIndex++;
+        }
+    
+        // The result can be accessed through the `m`-variable.
+        m.forEach((match, groupIndex) => {
+            if (groupIndex == 0){
+                return "oof";
+            }
+            if (match == undefined){
+                return "oof";
+            }
+            console.log(`Found match, group ${groupIndex}: ${match}`);
+            id = match;
+            
+        });
+    }
+    // console.log(id);
+    return id;
 }

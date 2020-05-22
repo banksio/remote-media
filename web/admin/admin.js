@@ -41,29 +41,7 @@ emptyPlaylist.addEventListener("click", function() {
 
 function send(){
     var val = document.getElementById("target").value;
-    var id = undefined;
-
-    const regex = /(?:\.be\/(.*?)(?:\?|$)|watch\?v=(.*?)(?:\&|$|\n))/ig;
-    let m;
-
-    while ((m = regex.exec(val)) !== null) {
-        // This is necessary to avoid infinite loops with zero-width matches
-        if (m.index === regex.lastIndex) {
-            regex.lastIndex++;
-        }
-    
-        // The result can be accessed through the `m`-variable.
-        m.forEach((match, groupIndex) => {
-            if (groupIndex == 0){
-                return;
-            }
-            if (match == undefined){
-                return;
-            }
-            // console.log(`Found match, group ${groupIndex}: ${match}`);
-            socket.emit("target",{value: match, pass: document.getElementById("password").value});
-        });
-    }
+    socket.emit("target",{value: val, pass: document.getElementById("password").value});
 }
 
 function sendAppend(){
