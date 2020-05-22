@@ -12,6 +12,7 @@ var targ = "pE49WK-oNjU";
 var anyPreloading = false;
 var buffering = [];
 var queue = [];
+var playlistShuffle = true;
 
 //function to provide well formatted date for console messages
 function consoleLogWithTime(msg){
@@ -36,6 +37,8 @@ io.on('connection', function(socket) {
     consoleLogWithTime("New Client "+socket.id);
     //socket.emit("target",targ);
     io.emit("playerInfoObj",logins);
+    io.emit("playlistInfoObj",queue);
+    io.emit("playlistStatus", { "shuffle": playlistShuffle });
 
     socket.on("target",function(data){
         var inputData = data.value;
@@ -99,6 +102,11 @@ io.on('connection', function(socket) {
                 consoleLogWithTime("Emptying playlist");
                 queue = [];
                 io.emit("playlistInfoObj",queue);
+                break;
+            case "toggleShuffle":
+                playlistShuffle = !playlistShuffle;
+                consoleLogWithTime("Shuffle: " + playlistShuffle);
+                io.emit("playlistStatus", { "shuffle": playlistShuffle });
                 break;
             default:
                 break;
@@ -208,7 +216,7 @@ io.on('connection', function(socket) {
             io.emit("site", "discon");
             consoleLogWithTime("Disconnecting all clients...");
         }
-    })
+    });
  
 })
 
@@ -235,8 +243,14 @@ function addIDsFromPlaylist(playlistURL){
 
 function playNextInQueue(){
     if (queue.length > 0){
-        nextID = queue.shift()["id"];
-        consoleLogWithTime("Playing the next video in the queue.")
+        if (playlistShuffle){
+            var nextIndex = Math.floor(Math.random() * queue.length);  // Random from the queue
+            nextID = queue[nextIndex].id;  // Get next video ID
+            queue.splice(nextIndex, 1);  // Remove from queue
+        } else {
+            nextID = queue.shift().id;
+        }
+        consoleLogWithTime("Playing another video from the queue.")
         playVideo(nextID);
     } else {
         consoleLogWithTime("There are no videos left in the queue to play.")

@@ -5,6 +5,7 @@ var socket = io.connect(result + "/");
 
 //page elements
 var volSlider = document.getElementById("volume");
+var btnPlaylistShuffleToggle = document.getElementById('btnPlaylistShuffle');
 
 var pause = document.getElementById('pause');
 pause.addEventListener("click", function() {
@@ -130,4 +131,18 @@ socket.on("playlistInfoObj",function(playlist){
         $('#playlist-table-body tr:last').after('<tr><td>'+ i +'</td><td>'+ video["id"] +'</td></tr>');
         i++;
     }
+})
+
+function toggleShuffle(toggled){
+    var newState = (toggled == 'false');  // Invert boolean from DOM
+    socket.emit("serverQueueControl", "toggleShuffle")
+}
+
+socket.on("playlistStatus", function(status) {
+    if (status.shuffle){
+        btnPlaylistShuffleToggle.classList.add("active");
+    } else {
+        btnPlaylistShuffleToggle.classList.remove("active");
+    }
+    btnPlaylistShuffleToggle.ariaPressed = status.shuffle;
 })
