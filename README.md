@@ -2,7 +2,7 @@
 ![Azure DevOps builds](https://img.shields.io/azure-devops/build/banksio/ca05dcdb-cddf-47ad-b524-a5943bb56d8d/6)
 ![David Dependencies](https://img.shields.io/david/banksio/remote-media)
 
-A node.js web app to synchronise YouTube videos (and the audio) between different users.
+A node.js web app to synchronise YouTube videos (and the audio) between different users. Currently designed for audio, this solution does not yet keep users in sync if they manually seek after the video has begun. Everyone should be in sync at the beginning of the video and otherwise if they do not seek their video manually.
 
 Currently in beta: There may still be some rough edges, but please feel free to test it and report any bugs found, or new features that may be beneficial!
 ## Features

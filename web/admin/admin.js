@@ -9,11 +9,11 @@ var btnPlaylistShuffleToggle = document.getElementById('btnPlaylistShuffle');
 
 var pause = document.getElementById('pause');
 pause.addEventListener("click", function() {
-    socket.emit("playerControl", "pause");
+    socket.emit("serverPlayerControl", "pause");
 })
 var play = document.getElementById('play');
 play.addEventListener("click", function() {
-    socket.emit("playerControl", "play");
+    socket.emit("serverPlayerControl", "play");
 })
 
 var prev = document.getElementById('prev');
@@ -42,7 +42,7 @@ emptyPlaylist.addEventListener("click", function() {
 
 function send(){
     var val = document.getElementById("target").value;
-    socket.emit("target",{value: val, pass: document.getElementById("password").value});
+    socket.emit("serverNewVideo",{value: val, pass: document.getElementById("password").value});
 }
 
 function sendAppend(){
@@ -106,31 +106,57 @@ function muteVid(){
  
 function speak(){
     var val = document.getElementById("speechBox").value;
-    socket.emit("speak",{value: val, pass: document.getElementById("password").value});
+    socket.emit("serverTTSRequest",{value: val, pass: document.getElementById("password").value});
 }
     
-socket.on("playerinfo",function(data){
-    $('#data-table tr:last').after('<tr><td>'+ data.socketID  +'</td><td>'+ data.currentTime +'</td><td>'+ data.state +'</td></tr>');
-})
+// socket.on("playerinfo",function(data){
+//     $('#data-table tr:last').after('<tr><td>'+ data.socketID  +'</td><td>'+ data.currentTime +'</td><td>'+ data.state +'</td></tr>');
+// })
 
-socket.on("playerInfoObj",function(data){
-    // Get a reference to the table
+socket.on("adminClients",function(clients){
+    // Get a reference to the table, and empty it
     let tableRef = document.getElementById("data-table-body");
     tableRef.innerHTML = "";
 
-    for (var obj in data){
-        tableRef.innerHTML = tableRef.innerHTML + '<tr><td>'+ obj +'</td><td>'+ data[obj].state +'</td><td>'+ data[obj].preloading +'</td></tr>';
+    console.log(clients);
+
+    for (var client of clients){
+        tableRef.innerHTML = tableRef.innerHTML + '<tr><td>'+ client.id +'</td><td>'+ client.status.state +'</td><td>'+ client.status.preloading +'</td></tr>';
     }
 })
 
 socket.on("playlistInfoObj",function(playlist){
-    $('#playlist-table-body tr').empty();
+    // Get a reference to the table, and empty it
+    let tableRef = document.getElementById("playlist-table-body");
+    tableRef.innerHTML = "";
+
     var i = 1;
     for (var video of playlist){
         console.log(video);
-        $('#playlist-table-body tr:last').after('<tr><td>'+ i +'</td><td>'+ video["id"] +'</td></tr>');
+        // $('#playlist-table-body tr:last').after('<tr><td>'+ i +'</td><td>'+ video["id"] +'</td></tr>');
+        tableRef.innerHTML = tableRef.innerHTML + '<tr><td>'+ i +'</td><td>'+ video["id"] +'</td></tr>';
         i++;
     }
+})
+
+socket.on("serverQueueVideos", function(queueData) {
+    // Get a reference to the table, and empty it
+    let tableRef = document.getElementById("playlist-table-body");
+    tableRef.innerHTML = "";
+    console.log(queueData)
+    var videos = queueData.videos;
+    if (videos.length > 0){
+        var i = 1;
+        for (var video of videos){
+            console.log(video);
+            var videoID = video.id;
+            // $('#playlist-table-body tr:last').after('<tr><td>'+ i +'</td><td>'+ video["id"] +'</td></tr>');
+            tableRef.innerHTML = tableRef.innerHTML + '<tr><td>'+ i +'</td><td>'+ videoID +'</td></tr>';
+            i++;
+        }
+    }
+
+    queueUpdateStatus(queueData);
 })
 
 function toggleShuffle(toggled){
@@ -138,11 +164,16 @@ function toggleShuffle(toggled){
     socket.emit("serverQueueControl", "toggleShuffle")
 }
 
-socket.on("playlistStatus", function(status) {
+socket.on("serverQueueStatus", function(status) {
+    queueUpdateStatus(status);
+})
+
+function queueUpdateStatus(status){
+
     if (status.shuffle){
         btnPlaylistShuffleToggle.classList.add("active");
     } else {
         btnPlaylistShuffleToggle.classList.remove("active");
     }
     btnPlaylistShuffleToggle.ariaPressed = status.shuffle;
-})
+}

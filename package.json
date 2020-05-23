@@ -14,7 +14,9 @@
     "socket.io": "^2.3.0",
     "youtube-playlist": "^1.0.3"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "electron": "^9.0.0"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/banksio/remote-media.git"

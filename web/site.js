@@ -21,7 +21,7 @@ socket.on("site", function(data){
     }
 })
  
-socket.on("speechRecv", function (data) {
+socket.on("recieverTTSSpeak", function (data) {
     var msg = new SpeechSynthesisUtterance(data);
     window.speechSynthesis.speak(msg);
 })
