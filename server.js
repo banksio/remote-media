@@ -152,22 +152,21 @@ io.on('connection', function(socket) {
     })
 
     socket.on('disconnect', () => {
-        // io.emit('user disconnected');
         console.log("disconnected");
         defaultRoom.removeClient(currentClient);
         sendClients(defaultRoom);
     });
     
-    // socket.on("siteCon", function(control){
-    //     consoleLogWithTime("Connection management request recieved");
-    //     if (control == "reload"){
-    //         io.emit("site", "reload");
-    //         consoleLogWithTime("Reloading all clients...");
-    //     } else {
-    //         io.emit("site", "discon");
-    //         consoleLogWithTime("Disconnecting all clients...");
-    //     }
-    // });
+    socket.on("serverConnectionManagement", function(control){
+        consoleLogWithTime("Connection management request recieved");
+        if (control == "reload"){
+            io.emit("recieverConnectionManagement", "reload");
+            consoleLogWithTime("Reloading all clients...");
+        } else {
+            io.emit("recieverConnectionManagement", "discon");
+            consoleLogWithTime("Disconnecting all clients...");
+        }
+    });
  
 })
 

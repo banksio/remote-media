@@ -88,11 +88,11 @@ function getTitle(data) {
  }
  
  function reloadClients(){
-    socket.emit("siteCon","reload");
+    socket.emit("serverConnectionManagement","reload");
  }
  
 function disconnectClients(){
-    socket.emit("siteCon","discon");
+    socket.emit("serverConnectionManagement","discon");
 }
  
 socket.on("volumeRecv",function(data){
