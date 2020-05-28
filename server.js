@@ -48,12 +48,12 @@ io.on('connection', function(socket) {
         var inputData = data.value;
         if (data.pass == "koops"){
             var urlArray = inputData.split(',');
-            console.log("LENGTH" + urlArray.length);
+            consoleLogWithTime("LENGTH" + urlArray.length);
             if (urlArray.length == 1){
                 var url = urlArray[0];
-                // console.log(url)
+                // consoleLogWithTime(url)
                 var videoID = getIDFromURL(url);
-                console.log(videoID)
+                consoleLogWithTime(videoID)
                 if (videoID != undefined){
                     playVideo(videoID);
                 }
@@ -289,11 +289,11 @@ function getIDFromURL(url){
             if (match == undefined){
                 return "oof";
             }
-            console.log(`Found match, group ${groupIndex}: ${match}`);
+            consoleLogWithTime(`Found match, group ${groupIndex}: ${match}`);
             id = match;
             
         });
     }
-    // console.log(id);
+    // consoleLogWithTime(id);
     return id;
 }
