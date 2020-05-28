@@ -16,7 +16,11 @@ var playlistShuffle = true;
 
 //function to provide well formatted date for console messages
 function consoleLogWithTime(msg){
-    console.log("["+new Date().getHours()+":"+new Date().getMinutes()+":"+new Date().getSeconds()+"]"+msg);
+    let now = new Date();
+    let year = new Intl.DateTimeFormat('en', { year: '2-digit' }).format(now)
+    let month = new Intl.DateTimeFormat('en', { month: '2-digit' }).format(now)
+    let day = new Intl.DateTimeFormat('en', { day: '2-digit' }).format(now)
+    console.log("["+day+"/"+month+"/"+year+"]"+"["+('0' + now.getHours()).slice(-2)+":"+('0' + now.getMinutes()).slice(-2)+":"+('0' + now.getSeconds()).slice(-2)+"] "+msg);
 }
 consoleLogWithTime("[INFO] Starting server...");
 
@@ -44,12 +48,12 @@ io.on('connection', function(socket) {
         var inputData = data.value;
         if (data.pass == "koops"){
             var urlArray = inputData.split(',');
-            console.log("LENGTH" + urlArray.length);
+            consoleLogWithTime("LENGTH" + urlArray.length);
             if (urlArray.length == 1){
                 var url = urlArray[0];
-                // console.log(url)
+                // consoleLogWithTime(url)
                 var videoID = getIDFromURL(url);
-                console.log(videoID)
+                consoleLogWithTime(videoID)
                 if (videoID != undefined){
                     playVideo(videoID);
                 }
@@ -285,11 +289,11 @@ function getIDFromURL(url){
             if (match == undefined){
                 return "oof";
             }
-            console.log(`Found match, group ${groupIndex}: ${match}`);
+            consoleLogWithTime(`Found match, group ${groupIndex}: ${match}`);
             id = match;
             
         });
     }
-    // console.log(id);
+    // consoleLogWithTime(id);
     return id;
 }
