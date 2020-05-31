@@ -1,0 +1,8 @@
+version: '3'
+services:
+  remotemedia:
+    image: banksio/remote-media
+    container_name: remotemedia
+    ports:
+     - "3694:3694"
+    restart: always
