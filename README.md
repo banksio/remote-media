@@ -55,7 +55,9 @@ And kill with: `docker rm --force remotemedia`
 4. Connect to the web interface on port 3694.
 
 ## Usage
-The default page is the "reciever", and the admin panel is used to control the media playing on the recievers. The admin page is located at `/admin`.
+remote-media runs on port 3694 by default.
+
+The root page is the "reciever", and the admin panel is used to control the media playing on the recievers. The admin page is located at `/admin`.
 
 **If it doesn't work, please [submit a bug](https://github.com/banksio/KeyboardDisplay/issues).**
 
