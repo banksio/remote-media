@@ -59,7 +59,7 @@ remote-media runs on port 3694 by default.
 
 The root page is the "reciever", and the admin panel is used to control the media playing on the recievers. The admin page is located at `/admin`.
 
-**If it doesn't work, please [submit a bug](https://github.com/banksio/KeyboardDisplay/issues).**
+**If it doesn't work, please [submit a bug](https://github.com/banksio/remote-media/issues).**
 
 ## Development
 To develop for remote-media, just follow the instructions listed to run the app manually above.
