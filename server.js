@@ -43,11 +43,15 @@ io.on('connection', function(socket) {
     var currentClient = new server.Login(socket.id, "new");
     defaultRoom.addClient(currentClient);
 
+    // Send all data to new clients and admin panels
     sendQueue(defaultRoom);
     sendClients(defaultRoom);
 
+    socket.emit('initFinished');
+
     consoleLogWithTime("New Client "+currentClient.id);
 
+    // Get new video and send to recievers
     socket.on("serverNewVideo",function(data){
         var inputData = data.value;
         if (data.pass == "koops"){
@@ -67,17 +71,20 @@ io.on('connection', function(socket) {
         }
     });
     
+    // Text to speech
     socket.on("serverTTSRequest", function(data) {
         if (true){
             io.emit("recieverTTSSpeak",data.value);
         }
     })
 
+    // Control the recievers video players
     socket.on("serverPlayerControl", function(data){
         sendPlayerControl(data);
         consoleLogWithTime("Video Control: "+data)
     })
 
+    // Queue control
     socket.on("serverQueueControl", function(data){
         switch (data) {
             case "prev":
@@ -101,6 +108,7 @@ io.on('connection', function(socket) {
         sendQueue(defaultRoom);
     })
     
+    // Status of the reciever
     socket.on("serverPlayerStatus", function(status) {
         // io.emit("playerinfo",data);
         if (socket.id == undefined){
@@ -151,12 +159,14 @@ io.on('connection', function(socket) {
         sendClients(defaultRoom);
     })
 
+    // Remove client when they disconnect
     socket.on('disconnect', () => {
         console.log("disconnected");
         defaultRoom.removeClient(currentClient);
         sendClients(defaultRoom);
     });
     
+    // Manage the client's connections
     socket.on("serverConnectionManagement", function(control){
         consoleLogWithTime("Connection management request recieved");
         if (control == "reload"){

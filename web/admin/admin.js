@@ -177,3 +177,7 @@ function queueUpdateStatus(status){
     }
     btnPlaylistShuffleToggle.ariaPressed = status.shuffle;
 }
+
+socket.on('initFinished', function() {
+    document.getElementById("statusSpinner").style.visibility = 'hidden';
+})
