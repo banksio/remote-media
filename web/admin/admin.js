@@ -1,34 +1,56 @@
 var url = window.location.href;
 var arr = url.split("/");
-var result = arr[0] + "//" + arr[2]
-var socket = io.connect(result + "/");
+var result = arr[0] + "//" + arr[2];
+var socket = io(result + "/");
+
+socket.on('connect', () => {
+    console.log(socket.id);
+    // alert(socket.id);
+    frontendChangeConnectionIdentifier(true);
+    frontendChangeMainSpinner(1);
+});
+
+socket.on('disconnect', () => {
+    console.log(socket.id);
+    // alert("disconnected");
+    frontendChangeConnectionIdentifier(false);
+});
+
+const stateIcons = [
+    '<i class="fas fa-hourglass-half"></i>',
+    '<i class="fas fa-stop"></i>',
+    '<i class="fas fa-play"></i>',
+    '<i class="fas fa-pause"></i>',
+    '<div class="spinner-border spinner-border-sm"></div>',
+    '<i class="fas fa-check"></i>'
+];
 
 //page elements
 var volSlider = document.getElementById("volume");
 var btnPlaylistShuffleToggle = document.getElementById('btnPlaylistShuffle');
 
 var pause = document.getElementById('pause');
-pause.addEventListener("click", function() {
+pause.addEventListener("click", function () {
     socket.emit("serverPlayerControl", "pause");
-})
+});
 var play = document.getElementById('play');
-play.addEventListener("click", function() {
+play.addEventListener("click", function () {
     socket.emit("serverPlayerControl", "play");
-})
+});
 
 var prev = document.getElementById('prev');
-prev.addEventListener("click", function() {
+prev.addEventListener("click", function () {
     socket.emit("serverQueueControl", "prev");
-})
+});
 var skip = document.getElementById('skip');
-skip.addEventListener("click", function() {
+skip.addEventListener("click", function () {
     socket.emit("serverQueueControl", "skip");
-})
+});
 
 var emptyPlaylist = document.getElementById('emptyPlaylist');
-emptyPlaylist.addEventListener("click", function() {
+emptyPlaylist.addEventListener("click", function () {
     socket.emit("serverQueueControl", "empty");
-})
+});
 
 // Not currently used
 // var mute = document.getElementById('1mute');
@@ -40,12 +62,12 @@ emptyPlaylist.addEventListener("click", function() {
 //   socket.emit("playerControl", "unmute");
 // })
 
-function send(){
+function send() {
     var val = document.getElementById("target").value;
-    socket.emit("serverNewVideo",{value: val, pass: document.getElementById("password").value});
+    socket.emit("serverNewVideo", { value: val, pass: true });
 }
 
-function sendAppend(){
+function sendAppend() {
     var val = document.getElementById("targetAppend").value;
     // var id = undefined;
 
@@ -57,7 +79,7 @@ function sendAppend(){
     //     if (m.index === regex.lastIndex) {
     //         regex.lastIndex++;
     //     }
-    
+
     //     // The result can be accessed through the `m`-variable.
     //     m.forEach((match, groupIndex) => {
     //         if (groupIndex == 0){
@@ -70,7 +92,7 @@ function sendAppend(){
     //         socket.emit("targetAppend",{value: match, pass: document.getElementById("password").value});
     //     });
     // }
-    socket.emit("targetAppend",{value: val, pass: document.getElementById("password").value});
+    socket.emit("targetAppend", { value: val, pass: document.getElementById("password").value });
 }
 
 function getTitle(data) {
@@ -81,96 +103,99 @@ function getTitle(data) {
         var title = entry.title.$t;
         console.log(title);
     }
-} 
- 
- function vol(){
-    socket.emit('volumeSend',volSlider.value);
- }
- 
- function reloadClients(){
-    socket.emit("serverConnectionManagement","reload");
- }
- 
-function disconnectClients(){
-    socket.emit("serverConnectionManagement","discon");
 }
- 
-socket.on("volumeRecv",function(data){
+
+function vol() {
+    socket.emit('volumeSend', volSlider.value);
+}
+
+function reloadClients() {
+    socket.emit("serverConnectionManagement", "reload");
+}
+
+function disconnectClients() {
+    socket.emit("serverConnectionManagement", "discon");
+}
+
+socket.on("volumeRecv", function (data) {
     volSlider.value = data;
     output.innerHTML = data;
-})
- 
-function muteVid(){
+});
+
+function muteVid() {
     player.setVolume(0);
 }
- 
-function speak(){
+
+function speak() {
     var val = document.getElementById("speechBox").value;
-    socket.emit("serverTTSRequest",{value: val, pass: document.getElementById("password").value});
+    socket.emit("serverTTSRequest", { value: val, pass: document.getElementById("password").value });
 }
-    
+
 // socket.on("playerinfo",function(data){
 //     $('#data-table tr:last').after('<tr><td>'+ data.socketID  +'</td><td>'+ data.currentTime +'</td><td>'+ data.state +'</td></tr>');
 // })
 
-socket.on("adminClients",function(clients){
+socket.on("adminClients", function (clients) {
     // Get a reference to the table, and empty it
     let tableRef = document.getElementById("data-table-body");
     tableRef.innerHTML = "";
 
     console.log(clients);
 
-    for (var client of clients){
-        tableRef.innerHTML = tableRef.innerHTML + '<tr><td>'+ client.id +'</td><td>'+ client.status.state +'</td><td>'+ client.status.preloading +'</td></tr>';
+    for (var client of clients) {
+        if (client.status.state == "Admin") {
+            continue;
+        }
+        tableRef.innerHTML = tableRef.innerHTML + '<tr><td>' + client.id + '</td><td>' + stateIcons[client.status.state + 1] + '</td><td>' + client.status.preloading + '</td></tr>';
     }
-})
+});
 
-socket.on("playlistInfoObj",function(playlist){
+socket.on("playlistInfoObj", function (playlist) {
     // Get a reference to the table, and empty it
     let tableRef = document.getElementById("playlist-table-body");
     tableRef.innerHTML = "";
 
     var i = 1;
-    for (var video of playlist){
+    for (var video of playlist) {
         console.log(video);
         // $('#playlist-table-body tr:last').after('<tr><td>'+ i +'</td><td>'+ video["id"] +'</td></tr>');
-        tableRef.innerHTML = tableRef.innerHTML + '<tr><td>'+ i +'</td><td>'+ video["id"] +'</td></tr>';
+        tableRef.innerHTML = tableRef.innerHTML + '<tr><td>' + i + '</td><td>' + video.id + '</td></tr>';
         i++;
     }
-})
+});
 
-socket.on("serverQueueVideos", function(queueData) {
+socket.on("serverQueueVideos", function (queueData) {
     // Get a reference to the table, and empty it
     let tableRef = document.getElementById("playlist-table-body");
     tableRef.innerHTML = "";
-    console.log(queueData)
+    console.log(queueData);
     var videos = queueData.videos;
-    if (videos.length > 0){
+    if (videos.length > 0) {
         var i = 1;
-        for (var video of videos){
+        for (var video of videos) {
             console.log(video);
             var videoID = video.id;
             // $('#playlist-table-body tr:last').after('<tr><td>'+ i +'</td><td>'+ video["id"] +'</td></tr>');
-            tableRef.innerHTML = tableRef.innerHTML + '<tr><td>'+ i +'</td><td>'+ videoID +'</td></tr>';
+            tableRef.innerHTML = tableRef.innerHTML + '<tr><td>' + i + '</td><td>' + videoID + '</td></tr>';
             i++;
         }
     }
 
     queueUpdateStatus(queueData);
-})
+});
 
-function toggleShuffle(toggled){
+function toggleShuffle(toggled) {
     var newState = (toggled == 'false');  // Invert boolean from DOM
-    socket.emit("serverQueueControl", "toggleShuffle")
+    socket.emit("serverQueueControl", "toggleShuffle");
 }
 
-socket.on("serverQueueStatus", function(status) {
+socket.on("serverQueueStatus", function (status) {
     queueUpdateStatus(status);
-})
+});
 
-function queueUpdateStatus(status){
+function queueUpdateStatus(status) {
 
-    if (status.shuffle){
+    if (status.shuffle) {
         btnPlaylistShuffleToggle.classList.add("active");
     } else {
         btnPlaylistShuffleToggle.classList.remove("active");
@@ -178,6 +203,45 @@ function queueUpdateStatus(status){
     btnPlaylistShuffleToggle.ariaPressed = status.shuffle;
 }
 
-socket.on('initFinished', function() {
-    document.getElementById("statusSpinner").style.visibility = 'hidden';
-})
+socket.on('initFinished', function () {
+    frontendChangeMainSpinner(0);
+});
+
+function frontendChangeConnectionIdentifier(connected) {
+    let frontendElementConnectedStatus = document.getElementById("statusConnection");
+    let frontendElementConnectedSpinner = document.getElementById("spinnerConnection");
+    //connected boolean
+    if (connected) {
+        frontendElementConnectedStatus.innerText = "Connected";
+        frontendElementConnectedStatus.classList.remove("text-warning");
+        frontendElementConnectedStatus.classList.add("text-success");
+        frontendElementConnectedSpinner.style.visibility = "hidden";
+    } else {
+        frontendElementConnectedSpinner.style.visibility = "visible";
+        frontendElementConnectedStatus.innerText = "Reconnecting...";
+        frontendElementConnectedStatus.classList.remove("text-success");
+        frontendElementConnectedStatus.classList.add("text-warning");
+    }
+    return;
+}
+
+function frontendChangeMainSpinner(state) {
+    let frontendElementMainSpinner = document.getElementById("statusSpinner");
+    let frontendElementMainSpinnerText = document.getElementById("statusLoading");
+    switch (state) {
+        case 0:  // No loading, hide spinner
+            frontendElementMainSpinner.style.visibility = 'hidden';
+            break;
+        case 1:  // Connected, loading data
+            frontendElementMainSpinner.style.visibility = 'visible';
+            frontendElementMainSpinnerText.innerText = "Loading data...";
+            break;
+        case 2:  // Connecting to server
+            frontendElementMainSpinner.style.visibility = 'visible';
+            frontendElementMainSpinnerText.innerText = "Connecting...";
+            break;
+        default:
+            break;
+    }
+    return;
+}

@@ -24,5 +24,8 @@
   "bugs": {
     "url": "https://github.com/banksio/remote-media/issues"
   },
-  "homepage": "https://github.com/banksio/remote-media#readme"
+  "homepage": "https://github.com/banksio/remote-media#readme",
+  "jshintConfig": {
+    "esversion": 6
+  }
 }

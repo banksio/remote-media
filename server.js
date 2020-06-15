@@ -8,7 +8,7 @@ var server = require('./web/classes');
 
 // Constants 
 const port = 3694;
-const allEqual = arr => arr.every( v => v === arr[0] )
+const allEqual = arr => arr.every(v => v === arr[0]);
 
 //create blank logins array
 var logins = {};
@@ -29,14 +29,14 @@ consoleLogWithTime("[INFO] Starting express...");
 //create express object
 var exp = express();
 //use it to serve pages from the web folder
-exp.use(express.static('web'))
-var web = exp.listen(port)
+exp.use(express.static('web'));
+var web = exp.listen(port);
  
 //get socketio to listen to the webserver's connection
-var io = socketio.listen(web, { log: false })
+var io = socketio.listen(web, { log: false });
 //Create a callback function to deal with each connection.
 //The callback contains code to setup what happens whenever a named message is received
-io.on('connection', function(socket) {
+io.on('connection', function (socket) {
     //a new connection has been created i.e. a web browser has connected to the server
 
     // Create a new Login object with the new socket's ID and add to the room
@@ -49,16 +49,16 @@ io.on('connection', function(socket) {
 
     socket.emit('initFinished');
 
-    consoleLogWithTime("New Client "+currentClient.id);
+    consoleLogWithTime("New Client " + currentClient.id);
 
     // Get new video and send to recievers
-    socket.on("serverNewVideo",function(data){
+    socket.on("serverNewVideo", function (data) {
         var inputData = data.value;
-        if (data.pass == "koops"){
+        if (true) {
             // Split the CSV
             var urlArray = inputData.split(',');
             // If there's only one URL
-            if (urlArray.length == 1){
+            if (urlArray.length == 1) {
                 var newVideo = new server.Video();
                 newVideo.setIDFromURL(urlArray[0]);
                 playVideo(newVideo);
@@ -72,20 +72,20 @@ io.on('connection', function(socket) {
     });
     
     // Text to speech
-    socket.on("serverTTSRequest", function(data) {
-        if (true){
-            io.emit("recieverTTSSpeak",data.value);
+    socket.on("serverTTSRequest", function (data) {
+        if (true) {
+            io.emit("recieverTTSSpeak", data.value);
         }
-    })
+    });
 
     // Control the recievers video players
-    socket.on("serverPlayerControl", function(data){
+    socket.on("serverPlayerControl", function (data) {
         sendPlayerControl(data);
-        consoleLogWithTime("Video Control: "+data)
-    })
+        consoleLogWithTime("Video Control: " + data);
+    });
 
     // Queue control
-    socket.on("serverQueueControl", function(data){
+    socket.on("serverQueueControl", function (data) {
         switch (data) {
             case "prev":
                 
@@ -106,26 +106,26 @@ io.on('connection', function(socket) {
                 break;
         }
         sendQueue(defaultRoom);
-    })
+    });
     
     // Status of the reciever
-    socket.on("serverPlayerStatus", function(status) {
+    socket.on("serverPlayerStatus", function (status) {
         // io.emit("playerinfo",data);
-        if (socket.id == undefined){
+        if (socket.id == undefined) {
             return;
         }
 
         var state = status.state;
         var preloading = status.preloading;
         console.log(defaultRoom.allPreloaded());
-        if (state == undefined){
+        if (state == undefined) {
             currentClient.status.updatePreloading(preloading);
-            if (preloading){
+            if (preloading) {
                 anyPreloading = true;
             }
             // consoleLogWithTime(data)
             consoleLogWithTime(defaultRoom.clients);
-            if (defaultRoom.allPreloaded()){
+            if (defaultRoom.allPreloaded()) {
                 setTimeout(() => {
                     anyPreloading = false;
                 }, 1000);
@@ -136,28 +136,28 @@ io.on('connection', function(socket) {
 
         currentClient.status.updateStatus(status);
 
-        consoleLogWithTime("debug:PLAYER"+socket.id + " status: " + status.state)
-        if (anyPreloading == false && status.state == 3){  // Pause all if someone buffers
+        consoleLogWithTime("debug:PLAYER" + socket.id + " status: " + status.state);
+        if (anyPreloading == false && status.state == 3) {  // Pause all if someone buffers
             buffering.push(socket.id);
             sendPlayerControl("pause");
-            consoleLogWithTime("pausing cause buffer")
-            consoleLogWithTime(status.state)
+            consoleLogWithTime("pausing cause buffer");
+            consoleLogWithTime(status.state);
         } else if (status.state == 1) {
-            if (buffering.length > 0){
-                consoleLogWithTime("resuming")
-                consoleLogWithTime(status.state)
+            if (buffering.length > 0) {
+                consoleLogWithTime("resuming");
+                consoleLogWithTime(status.state);
                 buffering.splice(buffering.indexOf(socket.id), 1);
-                if (buffering.length == 0){
+                if (buffering.length == 0) {
                     sendPlayerControl("play");
                 }
             }
         }
-        if (status.state == 0 && defaultRoom.queue.length > 0){
+        if (status.state == 0 && defaultRoom.queue.length > 0) {
             playVideo(defaultRoom.queue.popVideo());
         }
 
         sendClients(defaultRoom);
-    })
+    });
 
     // Remove client when they disconnect
     socket.on('disconnect', () => {
@@ -167,9 +167,9 @@ io.on('connection', function(socket) {
     });
     
     // Manage the client's connections
-    socket.on("serverConnectionManagement", function(control){
+    socket.on("serverConnectionManagement", function (control) {
         consoleLogWithTime("Connection management request recieved");
-        if (control == "reload"){
+        if (control == "reload") {
             io.emit("recieverConnectionManagement", "reload");
             consoleLogWithTime("Reloading all clients...");
         } else {
@@ -178,7 +178,7 @@ io.on('connection', function(socket) {
         }
     });
  
-})
+});
 
 // Refactored
 function playVideo(video){
