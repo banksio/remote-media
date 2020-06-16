@@ -136,15 +136,19 @@ function speak() {
 //     $('#data-table tr:last').after('<tr><td>'+ data.socketID  +'</td><td>'+ data.currentTime +'</td><td>'+ data.state +'</td></tr>');
 // })
 
-// socket.on("serverNewVideo", function(data){
-//     console.log("Preloading..." + data.value);
-//     preloading = true;  // We are loading a new video
-//     console.log(preloading)
-//     socket.emit("recieverPlayerStatus", { "state": undefined, "preloading": true });
-//     vid = data.value;
-//     player.mute();
-//     player.loadVideoById(vid);
-// });
+socket.on("serverNewVideo", function(data){
+    let imgNowPlaying = document.getElementById("imgNowPlaying");
+    imgNowPlaying.src = "http://i3.ytimg.com/vi/" + data.value + "/maxresdefault.jpg";
+});
+
+// Recieved video details from the server
+socket.on("serverVideoDetails", function(videoDetails){
+    let nowplayingTitleElement = document.getElementById("nowPlayingTitle");
+    let nowplayingChannelElement = document.getElementById("nowPlayingChannel");
+    nowplayingTitleElement.innerText = videoDetails.title;
+    nowplayingChannelElement.innerText = videoDetails.channel;
+    console.log(videoDetails);
+});
 
 socket.on("serverClients", function (clients) {
     // Get a reference to the table, and empty it

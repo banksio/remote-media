@@ -16,7 +16,7 @@ class Room{
 
     allPreloaded(){
         // If any clients are preloading then return false
-        for (var client of this.clients){
+        for (let [id, client] of Object.entries(this.clients)){
             if(client.status.preloading) return false;
         }
         return true;

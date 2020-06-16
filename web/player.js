@@ -85,6 +85,7 @@ function onPlayerStateChange(event) {
             case 1:  // And the video is now playing
                 // Update the tab title with the current Video ID
                 document.title = player.getVideoData().title + " - Remote Media";
+                sendVideoDetails();
                 preloadingNearlyDone();
                 break;
             case 2:
@@ -122,3 +123,11 @@ function preloadingDone(){
 
 }
 
+function sendVideoDetails(){
+    var videoDetails = player.getVideoData();
+    console.log(videoDetails);
+    socket.emit("recieverVideoDetails", {
+        title: videoDetails.title,
+        channel: videoDetails.author
+    });
+}

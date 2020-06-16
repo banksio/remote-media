@@ -114,7 +114,7 @@ io.on('connection', function (socket) {
     });
     
     // Status of the reciever
-    socket.on("recieverPlayerStatus", function (status) {
+    socket.on("recieverPlayerStatus", function(status){
         // If the socket's not initialised, skip it
         if (socket.id == undefined) {
             return;
@@ -160,7 +160,7 @@ io.on('connection', function (socket) {
             // If anyone is buffering
             if (buffering.length > 0) {
                 // Remove this client from the buffering array, they're ready
-                consoleLogWithTime(status.state);
+                // consoleLogWithTime(status.state);
                 buffering.splice(buffering.indexOf(socket.id), 1);
                 if (buffering.length == 0) {
                     consoleLogWithTime("resuming");
@@ -175,6 +175,12 @@ io.on('connection', function (socket) {
         }
 
         sendClients(defaultRoom);
+    });
+
+    // Recieved video details from a reciever
+    socket.on("recieverVideoDetails", function(videoDetails){
+        consoleLogWithTime("Recieved video details from " + currentClient.name);
+        io.emit("serverVideoDetails", videoDetails);
     });
 
     // Remove client when they disconnect
