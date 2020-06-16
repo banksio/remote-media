@@ -73,7 +73,7 @@ socket.on("serverNewVideo", function(data){
     vid = data.value;
     player.mute();
     player.loadVideoById(vid);
-})
+});
 
 function onPlayerStateChange(event) {
     
@@ -121,3 +121,4 @@ function preloadingNearlyDone(){
 function preloadingDone(){
 
 }
+

@@ -2,6 +2,7 @@ class Room{
     constructor(){
         this.queue = new Queue();
         this.clients = [];
+        this.currentVideo = new Video();
     }
 
     addClient(client){

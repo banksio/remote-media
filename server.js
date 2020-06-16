@@ -51,6 +51,10 @@ io.on('connection', function (socket) {
 
     consoleLogWithTime("New Client " + currentClient.id);
 
+    socket.on("serverRecieverConnected", function(name) {
+        currentClient.name = name;
+    });
+
     // Get new video and send to recievers
     socket.on("serverNewVideo", function (data) {
         var inputData = data.value;
@@ -62,6 +66,7 @@ io.on('connection', function (socket) {
                 var newVideo = new server.Video();
                 newVideo.setIDFromURL(urlArray[0]);
                 playVideo(newVideo);
+                defaultRoom.currentVideo = newVideo;
                 return;
             }
             // If there's multiple URLs
@@ -153,7 +158,9 @@ io.on('connection', function (socket) {
             }
         }
         if (status.state == 0 && defaultRoom.queue.length > 0) {
-            playVideo(defaultRoom.queue.popVideo());
+            let nextVideo = defaultRoom.queue.popVideo();
+            playVideo(nextVideo);
+            defaultRoom.currentVideo = nextVideo;
         }
 
         sendClients(defaultRoom);
@@ -201,6 +208,10 @@ function sendQueueStatus(room){
     io.emit("serverQueueStatus", queueStatus);
 }
 
+function sendNowPlaying(video){
+    io.emit("serverCurrentVideo", video);
+}
+
 function queueShuffleToggle(room){
     var queue = room.queue;
     queue.shuffle = !queue.shuffle;
@@ -222,6 +233,5 @@ function playNextInQueue(room){
         playVideo(nextVideo);
         sendQueue(room);
     }
-    
     return;
 }

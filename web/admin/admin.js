@@ -22,6 +22,7 @@ const stateIcons = [
     '<i class="fas fa-play"></i>',
     '<i class="fas fa-pause"></i>',
     '<div class="spinner-border spinner-border-sm"></div>',
+    'Unknown',
     '<i class="fas fa-check"></i>'
 ];
 
@@ -135,6 +136,16 @@ function speak() {
 //     $('#data-table tr:last').after('<tr><td>'+ data.socketID  +'</td><td>'+ data.currentTime +'</td><td>'+ data.state +'</td></tr>');
 // })
 
+// socket.on("serverNewVideo", function(data){
+//     console.log("Preloading..." + data.value);
+//     preloading = true;  // We are loading a new video
+//     console.log(preloading)
+//     socket.emit("serverPlayerStatus", { "state": undefined, "preloading": true });
+//     vid = data.value;
+//     player.mute();
+//     player.loadVideoById(vid);
+// });
+
 socket.on("adminClients", function (clients) {
     // Get a reference to the table, and empty it
     let tableRef = document.getElementById("data-table-body");
@@ -146,7 +157,11 @@ socket.on("adminClients", function (clients) {
         if (client.status.state == "Admin") {
             continue;
         }
-        tableRef.innerHTML = tableRef.innerHTML + '<tr><td>' + client.id + '</td><td>' + stateIcons[client.status.state + 1] + '</td><td>' + client.status.preloading + '</td></tr>';
+        if (client.status.preloading){
+            tableRef.innerHTML = tableRef.innerHTML + '<tr><td>' + client.name + '</td><td><span class=\'text-warning\'>' + stateIcons[client.status.state + 1] + '</span></td></tr>';
+            continue;
+        }
+        tableRef.innerHTML = tableRef.innerHTML + '<tr><td>' + client.name + '</td><td>' + stateIcons[client.status.state + 1] + '</td></tr>';
     }
 });
 

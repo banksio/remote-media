@@ -7,7 +7,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
   <!-- Title -->
-  <title>Remote Media | Admin Panel</title>
+  <title>Admin Panel | Remote Media</title>
 
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.1/css/all.css"
@@ -64,24 +64,17 @@
             <strong id="statusLoading">Connecting...</strong>
             <div class="spinner-border text-primary ml-auto" role="status" aria-hidden="true"></div>
           </div>
-          <img class="img-fluid" src="http://i3.ytimg.com/vi/LH4Y1ZUUx2g/maxresdefault.jpg" />
+          
         </div>
       </div>
       <div class="col-10">
         <div class="tab-content" id="v-pills-tabContent">
           <div class="tab-pane fade show active" id="v-pills-home" role="tabpanel" aria-labelledby="v-pills-home-tab">
             <div class="row">
-              <div class="col">
-                <p>Control</p>
-                <label for="target">Youtube <b>URL</b></label>
-                <div class="input-group">
-                  <input class="form-control" id="target" />
-
-                  <div class="input-group-append">
-                    <button class="btn btn-primary" onclick="send();">Play</button>
-                  </div>
-                </div>
-                <br>
+              <div class="col-lg-4">
+                <img class="img-fluid mb-2" src="http://i3.ytimg.com/vi/LH4Y1ZUUx2g/maxresdefault.jpg" />
+                <p class="videoTitle">Ariana Grande - break up with your girlfriend, i'm bored (Official Video)</p>
+                <p class="videoChannel">Ariana Grande</p>
                 <!-- <label for="speechBox">Text to Speech:</label>
                   <div class="input-group">
                     <input class="form-control" id="speechBox"/>
@@ -89,19 +82,28 @@
                       <button class="btn btn-primary" onclick="speak();">Speak</button>
                     </div>
                   </div> -->
-                <br>
                 <button class="btn btn-primary btn-sm" id="play"><i class="fas fa-play"></i> Play</button>
                 <button class="btn btn-primary btn-sm" id="pause"><i class="fas fa-pause"></i> Pause</button>
+                
+                <button class="btn btn-primary btn-sm disabled" id="prev"><i class="fas fa-step-backward"></i> Previous</button>
+                <button class="btn btn-primary btn-sm" id="skip"><i class="fas fa-step-forward"></i> Next</button>
 
                 <br>
+                <br>
+                <p>Next up:</p>
+                <div class="row">
+                  <div class="col-8">
+                    <p class="videoTitleNext">Ariana Grande - break up with your girlfriend, i'm bored (Official Video)</p>
+                  </div>
+                  <div class="col-4">
+                    <img class="img-fluid mb-2" src="http://i3.ytimg.com/vi/LH4Y1ZUUx2g/maxresdefault.jpg" />
+                  </div>
+                </div>
 
               </div>
-              <div class="col">
+              <div class="col-lg-7">
                 <div class="controlscontainer">
 
-                  <button class="btn btn-primary btn-sm disabled" id="prev"><i class="fas fa-step-backward"></i>
-                    Previous</button>
-                  <button class="btn btn-primary btn-sm" id="skip"><i class="fas fa-step-forward"></i> Next</button>
                   <br>
                   <br>
                 </div>
@@ -112,6 +114,7 @@
                         class="fas fa-plus"></i></button>
                   </div>
                 </div>
+
                 <br>
                 <button class="btn btn-danger" id="emptyPlaylist"><i class="fas fa-times"></i> Empty Playlist</button>
                 <button id="btnPlaylistShuffle" onclick="toggleShuffle(this.ariaPressed);" type="button"
@@ -131,6 +134,13 @@
                     </tr>
                   </tbody>
                 </table>
+                <div class="input-group">
+                  <input class="form-control" id="target" />
+
+                  <div class="input-group-append">
+                    <button class="btn btn-primary" onclick="send();">Play</button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -148,9 +158,8 @@
               <table class="table" id="data-table">
                 <thead>
                   <tr>
-                    <td>Client ID</td>
+                    <td>Name</td>
                     <td>State</td>
-                    <td>Preloading</td>
                   </tr>
                 </thead>
                 <tbody id="data-table-body">
