@@ -14,13 +14,13 @@ socket.on('disconnect', () => {
 });
 
 // let name = prompt("Enter a name: ");
-// socket.emit("serverRecieverConnected", name);
+// socket.emit("recieverConnected", name);
 
 function muteVid(){
     console.log("Not an admin panel.");
 }
  
-socket.on("recieverConnectionManagement", function(data){
+socket.on("serverConnectionManagement", function(data){
     console.log("Site" + data);
     switch (data){
         case "reload":
@@ -34,7 +34,7 @@ socket.on("recieverConnectionManagement", function(data){
     }
 });
  
-socket.on("recieverTTSSpeak", function (data) {
+socket.on("serverTTSSpeak", function (data) {
     var msg = new SpeechSynthesisUtterance(data);
     window.speechSynthesis.speak(msg);
 });

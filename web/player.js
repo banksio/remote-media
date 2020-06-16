@@ -41,7 +41,7 @@ function onPlayerReady(event) {
 
 
 
-socket.on('recieverPlayerControl',function(data){
+socket.on('serverPlayerControl',function(data){
     state = player.getPlayerState()
     switch (data){
         case "pause":
@@ -69,7 +69,7 @@ socket.on("serverNewVideo", function(data){
     console.log("Preloading..." + data.value);
     preloading = true;  // We are loading a new video
     console.log(preloading)
-    socket.emit("serverPlayerStatus", { "state": undefined, "preloading": true });
+    socket.emit("recieverPlayerStatus", { "state": undefined, "preloading": true });
     vid = data.value;
     player.mute();
     player.loadVideoById(vid);
@@ -105,7 +105,7 @@ function onPlayerStateChange(event) {
         }
     }
     socket.emit("playerinfo", { currentTime: player.getCurrentTime(), socketID: socket.id, state: newState });
-    socket.emit("serverPlayerStatus", { "state": newState, "preloading": preloading });
+    socket.emit("recieverPlayerStatus", { "state": newState, "preloading": preloading });
 }
 
 function preloadingNearlyDone(){
@@ -115,7 +115,7 @@ function preloadingNearlyDone(){
     player.unMute();  // Unmute the video ready for playing
     preloading = false;
     console.log("Preloading done.");
-    socket.emit("serverPlayerStatus", { "state": undefined, "preloading": false });
+    socket.emit("recieverPlayerStatus", { "state": undefined, "preloading": false });
 }
 
 function preloadingDone(){

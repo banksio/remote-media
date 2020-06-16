@@ -40,8 +40,8 @@ io.on('connection', function (socket) {
     //a new connection has been created i.e. a web browser has connected to the server
 
     // Create a new Login object with the new socket's ID and add to the room
-    var currentClient = new server.Login(socket.id, "new");
-    defaultRoom.addClient(currentClient);
+    defaultRoom.addClient(new server.Login(socket.id, "new"));
+    var currentClient = defaultRoom.clients[socket.id];
 
     // Send all data to new clients and admin panels
     sendQueue(defaultRoom);
@@ -51,12 +51,12 @@ io.on('connection', function (socket) {
 
     consoleLogWithTime("New Client " + currentClient.id);
 
-    socket.on("serverRecieverConnected", function(name) {
+    socket.on("recieverConnected", function(name) {
         currentClient.name = name;
     });
 
     // Get new video and send to recievers
-    socket.on("serverNewVideo", function (data) {
+    socket.on("adminNewVideo", function (data) {
         var inputData = data.value;
         if (true) {
             // Split the CSV
@@ -77,20 +77,20 @@ io.on('connection', function (socket) {
     });
     
     // Text to speech
-    socket.on("serverTTSRequest", function (data) {
+    socket.on("adminTTSRequest", function (data) {
         if (true) {
-            io.emit("recieverTTSSpeak", data.value);
+            io.emit("serverTTSSpeak", data.value);
         }
     });
 
     // Control the recievers video players
-    socket.on("serverPlayerControl", function (data) {
+    socket.on("adminPlayerControl", function (data) {
         sendPlayerControl(data);
         consoleLogWithTime("Video Control: " + data);
     });
 
     // Queue control
-    socket.on("serverQueueControl", function (data) {
+    socket.on("adminQueueControl", function (data) {
         switch (data) {
             case "prev":
                 
@@ -114,45 +114,56 @@ io.on('connection', function (socket) {
     });
     
     // Status of the reciever
-    socket.on("serverPlayerStatus", function (status) {
-        // io.emit("playerinfo",data);
+    socket.on("recieverPlayerStatus", function (status) {
+        // If the socket's not initialised, skip it
         if (socket.id == undefined) {
             return;
         }
 
+        // Save the state and the preloading stage
         var state = status.state;
         var preloading = status.preloading;
-        console.log(defaultRoom.allPreloaded());
+        // console.log(defaultRoom.allPreloaded());
+        // If there's no state,
         if (state == undefined) {
+            // Update the preloading status of the currentClient variable
             currentClient.status.updatePreloading(preloading);
             if (preloading) {
                 anyPreloading = true;
             }
             // consoleLogWithTime(data)
             consoleLogWithTime(defaultRoom.clients);
+            // If everyone's preloaded, wait a millisecond then set the variable (not sure why the wait is here)
             if (defaultRoom.allPreloaded()) {
                 setTimeout(() => {
                     anyPreloading = false;
-                }, 1000);
+                }, 1);
                 sendPlayerControl("play");
             }
             return;
         }
+        // If there is a defined state,
 
+        // Update the status of the current client
         currentClient.status.updateStatus(status);
 
         consoleLogWithTime("debug:PLAYER" + socket.id + " status: " + status.state);
-        if (anyPreloading == false && status.state == 3) {  // Pause all if someone buffers
+        // If anyone buffers (no one's preloading),
+        if (anyPreloading == false && status.state == 3) {
+            // Add the socket to the array and pause
             buffering.push(socket.id);
             sendPlayerControl("pause");
             consoleLogWithTime("pausing cause buffer");
             consoleLogWithTime(status.state);
+        // If they're playing
         } else if (status.state == 1) {
+            // If anyone is buffering
             if (buffering.length > 0) {
-                consoleLogWithTime("resuming");
+                // Remove this client from the buffering array, they're ready
                 consoleLogWithTime(status.state);
                 buffering.splice(buffering.indexOf(socket.id), 1);
                 if (buffering.length == 0) {
+                    consoleLogWithTime("resuming");
                     sendPlayerControl("play");
                 }
             }
@@ -174,13 +185,13 @@ io.on('connection', function (socket) {
     });
     
     // Manage the client's connections
-    socket.on("serverConnectionManagement", function (control) {
+    socket.on("adminConnectionManagement", function (control) {
         consoleLogWithTime("Connection management request recieved");
         if (control == "reload") {
-            io.emit("recieverConnectionManagement", "reload");
+            io.emit("serverConnectionManagement", "reload");
             consoleLogWithTime("Reloading all clients...");
         } else {
-            io.emit("recieverConnectionManagement", "discon");
+            io.emit("serverConnectionManagement", "discon");
             consoleLogWithTime("Disconnecting all clients...");
         }
     });
@@ -219,12 +230,12 @@ function queueShuffleToggle(room){
 }
 
 function sendPlayerControl(control){
-    io.emit("recieverPlayerControl",control);
+    io.emit("serverPlayerControl",control);
 }
 
 function sendClients(room){
     var clients = room.clients;
-    io.emit("adminClients", clients);
+    io.emit("serverClients", clients);
 }
 
 function playNextInQueue(room){

@@ -32,25 +32,25 @@ var btnPlaylistShuffleToggle = document.getElementById('btnPlaylistShuffle');
 
 var pause = document.getElementById('pause');
 pause.addEventListener("click", function () {
-    socket.emit("serverPlayerControl", "pause");
+    socket.emit("adminPlayerControl", "pause");
 });
 var play = document.getElementById('play');
 play.addEventListener("click", function () {
-    socket.emit("serverPlayerControl", "play");
+    socket.emit("adminPlayerControl", "play");
 });
 
 var prev = document.getElementById('prev');
 prev.addEventListener("click", function () {
-    socket.emit("serverQueueControl", "prev");
+    socket.emit("adminQueueControl", "prev");
 });
 var skip = document.getElementById('skip');
 skip.addEventListener("click", function () {
-    socket.emit("serverQueueControl", "skip");
+    socket.emit("adminQueueControl", "skip");
 });
 
 var emptyPlaylist = document.getElementById('emptyPlaylist');
 emptyPlaylist.addEventListener("click", function () {
-    socket.emit("serverQueueControl", "empty");
+    socket.emit("adminQueueControl", "empty");
 });
 
 // Not currently used
@@ -65,7 +65,7 @@ emptyPlaylist.addEventListener("click", function () {
 
 function send() {
     var val = document.getElementById("target").value;
-    socket.emit("serverNewVideo", { value: val, pass: true });
+    socket.emit("adminNewVideo", { value: val, pass: true });
 }
 
 function sendAppend() {
@@ -111,11 +111,11 @@ function vol() {
 }
 
 function reloadClients() {
-    socket.emit("serverConnectionManagement", "reload");
+    socket.emit("adminConnectionManagement", "reload");
 }
 
 function disconnectClients() {
-    socket.emit("serverConnectionManagement", "discon");
+    socket.emit("adminConnectionManagement", "discon");
 }
 
 socket.on("volumeRecv", function (data) {
@@ -129,7 +129,7 @@ function muteVid() {
 
 function speak() {
     var val = document.getElementById("speechBox").value;
-    socket.emit("serverTTSRequest", { value: val, pass: document.getElementById("password").value });
+    socket.emit("adminTTSRequest", { value: val, pass: document.getElementById("password").value });
 }
 
 // socket.on("playerinfo",function(data){
@@ -140,20 +140,20 @@ function speak() {
 //     console.log("Preloading..." + data.value);
 //     preloading = true;  // We are loading a new video
 //     console.log(preloading)
-//     socket.emit("serverPlayerStatus", { "state": undefined, "preloading": true });
+//     socket.emit("recieverPlayerStatus", { "state": undefined, "preloading": true });
 //     vid = data.value;
 //     player.mute();
 //     player.loadVideoById(vid);
 // });
 
-socket.on("adminClients", function (clients) {
+socket.on("serverClients", function (clients) {
     // Get a reference to the table, and empty it
     let tableRef = document.getElementById("data-table-body");
     tableRef.innerHTML = "";
 
     console.log(clients);
 
-    for (var client of clients) {
+    for (let [id, client] of Object.entries(clients)) {
         if (client.status.state == "Admin") {
             continue;
         }
@@ -201,7 +201,7 @@ socket.on("serverQueueVideos", function (queueData) {
 
 function toggleShuffle(toggled) {
     var newState = (toggled == 'false');  // Invert boolean from DOM
-    socket.emit("serverQueueControl", "toggleShuffle");
+    socket.emit("adminQueueControl", "toggleShuffle");
 }
 
 socket.on("serverQueueStatus", function (status) {

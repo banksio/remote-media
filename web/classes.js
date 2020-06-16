@@ -1,14 +1,14 @@
 class Room{
     constructor(){
         this.queue = new Queue();
-        this.clients = [];
+        this.clients = {};
         this.currentVideo = new Video();
     }
 
     addClient(client){
         // Only add a new client if it has a valid id
         if (client.id != undefined){
-            this.clients.push(client);
+            this.clients[client.id] = client;
         } else {
             throw "invalidClient";
         }
@@ -23,8 +23,9 @@ class Room{
     }
 
     removeClient(client){
-        var clientIndex = this.clients.indexOf(client);
-        this.clients.splice(clientIndex, 1);
+        // var clientIndex = this.clients.indexOf(client);
+        // this.clients.splice(clientIndex, 1);
+        delete this.clients[client.id];
     }
 }
 
