@@ -145,4 +145,7 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
+# DS_Store hidden file (Mac)
+.DS_Store
+
 # End of https://www.gitignore.io/api/node,windows,visualstudiocode
