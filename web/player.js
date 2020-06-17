@@ -17,7 +17,7 @@ var preloading = false;
 function onYouTubeIframeAPIReady() {
     player = new YT.Player('player', {
         // playerVars: {'autoplay': 1, 'controls': 1, 'rel' : 0, 'fs' : 0},
-        playerVars: {'autoplay': 1, 'controls': 1, 'disablekb': 1},
+        playerVars: { 'autoplay': 1, 'controls': 1, 'disablekb': 1 },
         events: {
             'onReady': onPlayerReady,
             'onStateChange': onPlayerStateChange
@@ -37,12 +37,12 @@ function onPlayerReady(event) {
     socket.emit("recieverPlayerReady");
 }
 
-socket.on("serverCurrentVideo", function(video){
+socket.on("serverCurrentVideo", function (video) {
     vid = video.id;
-    if (player == undefined){
+    if (player == undefined) {
         return;
     }
-    if (firstVideo == false){
+    if (firstVideo == false) {
         firstVideo = true;
         console.log("recieveDDDDD " + video.id);
         player.cueVideoById(video.id);
@@ -60,11 +60,11 @@ socket.on("serverCurrentVideo", function(video){
 
 
 // Control the player when instructed by the server
-socket.on('serverPlayerControl',function(data){
+socket.on('serverPlayerControl', function (data) {
     state = player.getPlayerState();
-    switch (data){
+    switch (data) {
         case "pause":
-            if (state != 3 && state != -1){
+            if (state != 3 && state != -1) {
                 player.pauseVideo();
             }
             break;
@@ -83,8 +83,8 @@ socket.on('serverPlayerControl',function(data){
 
 
 // When a new video comes in, mute the player and play the video
-socket.on("serverNewVideo", function(data){
-    if (firstVideo == false){
+socket.on("serverNewVideo", function (data) {
+    if (firstVideo == false) {
         firstVideo = true;
     }
     preloadVideo(data.value);
@@ -92,7 +92,7 @@ socket.on("serverNewVideo", function(data){
 
 
 // Preloading new video once already played one video; mute the player and play the video
-function preloadVideo(id){
+function preloadVideo(id) {
     console.log("Preloading..." + id);
     preloading = true;  // We are loading a new video
     console.log(preloading);
@@ -106,9 +106,9 @@ function preloadVideo(id){
 function onPlayerStateChange(event) {
     newState = event.data;
     console.log(newState);
-    if (preloading){  // If we're preloading
+    if (preloading) {  // If we're preloading
         document.title = "Remote Media";
-        switch (newState){
+        switch (newState) {
             case 1:  // And the video is now playing
                 // Update the tab title with the current Video ID
                 document.title = player.getVideoData().title + " - Remote Media";
@@ -122,7 +122,7 @@ function onPlayerStateChange(event) {
                 break;
         }
     } else {
-        switch (newState){
+        switch (newState) {
             case 0:
                 document.title = "Remote Media";
                 break;
@@ -136,7 +136,7 @@ function onPlayerStateChange(event) {
     socket.emit("recieverPlayerStatus", { "state": newState, "preloading": preloading });
 }
 
-function preloadFinisher(){
+function preloadFinisher() {
     console.log("Nearly preloaded.");
     player.pauseVideo();  // Pause the video
     player.seekTo(0); // Go back to the start
@@ -146,11 +146,11 @@ function preloadFinisher(){
     socket.emit("recieverPlayerStatus", { "state": undefined, "preloading": false });
 }
 
-function preloadingDone(){
+function preloadingDone() {
 
 }
 
-function sendVideoDetails(){
+function sendVideoDetails() {
     var videoDetails = player.getVideoData();
     console.log(videoDetails);
     socket.emit("recieverVideoDetails", {
