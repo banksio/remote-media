@@ -34,10 +34,11 @@ function onPlayerReady(event) {
     // player.cueVideoById(vid);
     muteVid();
     // When a new video comes in,
-    socket.emit("recieverRequestNowPlaying");
+    socket.emit("recieverPlayerReady");
 }
 
 socket.on("serverCurrentVideo", function(video){
+    vid = video.id;
     if (player == undefined){
         return;
     }

@@ -195,7 +195,7 @@ io.on('connection', function (socket) {
         sendNowPlaying(defaultRoom.currentVideo);
     });
 
-    socket.on("recieverRequestNowPlaying", function(){
+    socket.on("recieverPlayerReady", function(){
         sendNowPlaying(defaultRoom.currentVideo);
     });
 
