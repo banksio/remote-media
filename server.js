@@ -46,6 +46,7 @@ io.on('connection', function (socket) {
     // Send all data to new clients and admin panels
     sendQueue(defaultRoom);
     sendClients(defaultRoom);
+    sendNowPlaying(defaultRoom.currentVideo);
 
     socket.emit('initFinished');
 
@@ -67,6 +68,7 @@ io.on('connection', function (socket) {
                 newVideo.setIDFromURL(urlArray[0]);
                 playVideo(newVideo);
                 defaultRoom.currentVideo = newVideo;
+                defaultRoom.currentVideo.state = 3;
                 return;
             }
             // If there's multiple URLs
@@ -124,7 +126,7 @@ io.on('connection', function (socket) {
         var state = status.state;
         var preloading = status.preloading;
         // console.log(defaultRoom.allPreloaded());
-        // If there's no state,
+        // There'll be no state yet if the client hasn't yet recieved a video
         if (state == undefined) {
             // Update the preloading status of the currentClient variable
             currentClient.status.updatePreloading(preloading);
@@ -139,6 +141,9 @@ io.on('connection', function (socket) {
                     anyPreloading = false;
                 }, 1);
                 sendPlayerControl("play");
+                // Set the server's video instance playing
+                defaultRoom.currentVideo.state = 1;
+                defaultRoom.currentVideo.startingTime = new Date().getTime();
             }
             return;
         }
@@ -179,8 +184,18 @@ io.on('connection', function (socket) {
 
     // Recieved video details from a reciever
     socket.on("recieverVideoDetails", function(videoDetails){
+        if (videoDetails.id != defaultRoom.currentVideo.id){
+            consoleLogWithTime("Recieved invalid video details from " + currentClient.name);
+            return;
+        }
         consoleLogWithTime("Recieved video details from " + currentClient.name);
-        io.emit("serverVideoDetails", videoDetails);
+        defaultRoom.currentVideo.title = videoDetails.title;
+        defaultRoom.currentVideo.channel = videoDetails.channel;
+        sendNowPlaying(defaultRoom.currentVideo);
+    });
+
+    socket.on("recieverRequestNowPlaying", function(){
+        sendNowPlaying(defaultRoom.currentVideo);
     });
 
     // Remove client when they disconnect
@@ -226,6 +241,9 @@ function sendQueueStatus(room){
 }
 
 function sendNowPlaying(video){
+    // Update elapsed time
+    video.getElapsedTime(new Date().getTime());
+    // Send the current video object to all clients (and admin panels)
     io.emit("serverCurrentVideo", video);
 }
 

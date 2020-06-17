@@ -6,6 +6,7 @@ var socket = io(result + "/");
 socket.on('connect', () => {
     console.log(socket.id);
     frontendChangeConnectionIdentifier(true);
+    
 });
 
 socket.on('disconnect', () => {

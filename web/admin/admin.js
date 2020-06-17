@@ -136,18 +136,22 @@ function speak() {
 //     $('#data-table tr:last').after('<tr><td>'+ data.socketID  +'</td><td>'+ data.currentTime +'</td><td>'+ data.state +'</td></tr>');
 // })
 
+// New video send to clients
 socket.on("serverNewVideo", function(data){
-    let imgNowPlaying = document.getElementById("imgNowPlaying");
-    imgNowPlaying.src = "http://i3.ytimg.com/vi/" + data.value + "/maxresdefault.jpg";
+    // Show loading of thumbnail
+    frontendChangeThumbnailSpinner(true);
 });
 
 // Recieved video details from the server
-socket.on("serverVideoDetails", function(videoDetails){
+socket.on("serverCurrentVideo", function(video){
     let nowplayingTitleElement = document.getElementById("nowPlayingTitle");
     let nowplayingChannelElement = document.getElementById("nowPlayingChannel");
-    nowplayingTitleElement.innerText = videoDetails.title;
-    nowplayingChannelElement.innerText = videoDetails.channel;
-    console.log(videoDetails);
+    let nowplayingThumbnail = document.getElementById("imgNowPlaying");
+    nowplayingThumbnail.src = "http://i3.ytimg.com/vi/" + video.id + "/maxresdefault.jpg";
+    nowplayingTitleElement.innerText = video.title;
+    nowplayingChannelElement.innerText = video.channel;
+    frontendChangeThumbnailSpinner(false);
+    // console.log(videoDetails);
 });
 
 socket.on("serverClients", function (clients) {
@@ -263,4 +267,13 @@ function frontendChangeMainSpinner(state) {
             break;
     }
     return;
+}
+
+function frontendChangeThumbnailSpinner(visible){
+    let frontendElementThumbnailSpinner = document.querySelector("div.nowPlayingContainer > div");
+    if (visible){
+        frontendElementThumbnailSpinner.classList.remove("fadeOutDiv");
+    } else {
+        frontendElementThumbnailSpinner.classList.add("fadeOutDiv");
+    }
 }

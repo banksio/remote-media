@@ -146,10 +146,19 @@ class Video{
         this.title = title;
         this.channel = channel;
         this.duration = duration;
+        this.state = -1;
+        this.startingTime = 0;
+        this.elapsedTime = 0;
     }
 
     setIDFromURL(url){
         this.id = getIDFromURL(url);
+    }
+
+    // Get the elapsed time of the video relative to the starting time
+    getElapsedTime(currentTime){
+        this.elapsedTime = Math.ceil((currentTime - this.startingTime) / 1000);
+        return this.elapsedTime;
     }
 }
 

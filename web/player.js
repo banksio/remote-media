@@ -9,6 +9,10 @@ var player, iframe, vid;
 var vid = 'pE49WK-oNjU';
 var $ = document.querySelector.bind(document);
 
+var firstVideo = false;
+// Preloading new videos
+var preloading = false;
+
 // This function creates an <iframe> (and YouTube player) after the API code downloads.
 function onYouTubeIframeAPIReady() {
     player = new YT.Player('player', {
@@ -25,12 +29,26 @@ function onYouTubeIframeAPIReady() {
 function onPlayerReady(event) {
     player = event.target;
     //iframe = $('#player');
-    // player.loadVideoById(vid);
+    player.loadVideoById(vid);
     //$("player").keydown(false);
-    player.cueVideoById(vid);
+    // player.cueVideoById(vid);
     muteVid();
+    // When a new video comes in,
+    socket.emit("recieverRequestNowPlaying");
 }
 
+socket.on("serverCurrentVideo", function(video){
+    if (player == undefined){
+        return;
+    }
+    if (firstVideo == false){
+        firstVideo = true;
+        console.log("recieveDDDDD " + video.id);
+        player.cueVideoById(video.id);
+        console.log("recieveDDDDD " + video.elapsedTime);
+        player.seekTo(video.elapsedTime);
+    }
+});
 
 // setTimeout(() => {
 //     const interval = setInterval(function() {
@@ -40,43 +58,51 @@ function onPlayerReady(event) {
 
 
 
-
+// Control the player when instructed by the server
 socket.on('serverPlayerControl',function(data){
-    state = player.getPlayerState()
+    state = player.getPlayerState();
     switch (data){
         case "pause":
             if (state != 3 && state != -1){
                 player.pauseVideo();
             }
-            break
+            break;
         case "play":
             player.playVideo();
-            break
+            break;
         case "mute":
             player.mute();
-            break
+            break;
         case "unmute":
             player.unMute();
-            break
+            break;
     }
-})
+});
 
-// Preloading new videos
-var preloading = false;
+
 
 // When a new video comes in, mute the player and play the video
 socket.on("serverNewVideo", function(data){
-    console.log("Preloading..." + data.value);
-    preloading = true;  // We are loading a new video
-    console.log(preloading)
-    socket.emit("recieverPlayerStatus", { "state": undefined, "preloading": true });
-    vid = data.value;
-    player.mute();
-    player.loadVideoById(vid);
+    if (firstVideo == false){
+        firstVideo = true;
+    }
+    preloadVideo(data.value);
 });
 
+
+// Preloading new video once already played one video; mute the player and play the video
+function preloadVideo(id){
+    console.log("Preloading..." + id);
+    preloading = true;  // We are loading a new video
+    console.log(preloading);
+    socket.emit("recieverPlayerStatus", { "state": undefined, "preloading": true });
+    vid = id;
+    player.mute();
+    player.loadVideoById(vid);
+}
+
+// When the player's state changes
 function onPlayerStateChange(event) {
-    
     newState = event.data;
     console.log(newState);
     if (preloading){  // If we're preloading
@@ -86,7 +112,7 @@ function onPlayerStateChange(event) {
                 // Update the tab title with the current Video ID
                 document.title = player.getVideoData().title + " - Remote Media";
                 sendVideoDetails();
-                preloadingNearlyDone();
+                preloadFinisher();
                 break;
             case 2:
                 // preloadingDone();
@@ -109,7 +135,7 @@ function onPlayerStateChange(event) {
     socket.emit("recieverPlayerStatus", { "state": newState, "preloading": preloading });
 }
 
-function preloadingNearlyDone(){
+function preloadFinisher(){
     console.log("Nearly preloaded.");
     player.pauseVideo();  // Pause the video
     player.seekTo(0); // Go back to the start
@@ -127,6 +153,7 @@ function sendVideoDetails(){
     var videoDetails = player.getVideoData();
     console.log(videoDetails);
     socket.emit("recieverVideoDetails", {
+        id: videoDetails.video_id,
         title: videoDetails.title,
         channel: videoDetails.author
     });
