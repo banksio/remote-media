@@ -51,8 +51,9 @@ io.on('connection', function (socket) {
 
     consoleLogWithTime("New Client " + currentClient.id);
 
-    socket.on("recieverConnected", function(name) {
+    socket.on("receiverNickname", function(name) {
         currentClient.name = name;
+        sendClients(defaultRoom);
     });
 
     // Get new video and send to recievers
