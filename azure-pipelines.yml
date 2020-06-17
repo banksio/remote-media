@@ -22,8 +22,11 @@ steps:
     npm install
   displayName: 'npm install'
 
-- task: Npm@1
-  inputs:
-    command: 'custom'
-    customCommand: 'test'
+- script: npm run testWithReport
   displayName: 'Run tests'
+
+- task: PublishTestResults@2
+  condition: succeededOrFailed()
+  inputs:
+    testRunner: JUnit
+    testResultsFiles: '**/TEST-RESULTS.xml'
