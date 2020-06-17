@@ -98,12 +98,12 @@
   width: 10rem;
 }
 
-body { 
-  /* overflow: hidden;
-  height: 100%; */
+/* body { 
+  overflow: hidden;
+  height: 100%;
 }
 
-/* @keyframes slideOutUp {
+@keyframes slideOutUp {
   from {
     transform: translate3d(0, 0, 0);
   }
