@@ -69,7 +69,7 @@ io.on('connection', function (socket) {
                 newVideo.setIDFromURL(urlArray[0]);
                 playVideo(newVideo);
                 defaultRoom.currentVideo = newVideo;
-                defaultRoom.currentVideo.state = 3;
+                defaultRoom.currentVideo.state = 5;
                 return;
             }
             // If there's multiple URLs
@@ -96,7 +96,6 @@ io.on('connection', function (socket) {
     socket.on("adminQueueControl", function (data) {
         switch (data) {
             case "prev":
-
                 break;
             case "skip":
                 playNextInQueue(defaultRoom);
@@ -124,38 +123,50 @@ io.on('connection', function (socket) {
         }
 
         // Save the state and the preloading stage
-        var state = status.state;
-        var preloading = status.preloading;
-        // console.log(defaultRoom.allPreloaded());
-        // There'll be no state yet if the client hasn't yet recieved a video
-        if (state == undefined) {
-            // Update the preloading status of the currentClient variable
-            currentClient.status.updatePreloading(preloading);
-            if (preloading) {
-                anyPreloading = true;
-            }
-            // consoleLogWithTime(data)
-            consoleLogWithTime(defaultRoom.clients);
-            // If everyone's preloaded, wait a millisecond then set the variable (not sure why the wait is here)
+        let state = status.state;
+        let preloading = status.preloading;
+        currentClient.status.updateState(state);
+        currentClient.status.updatePreloading(preloading);
+        sendClients(defaultRoom);
+        // consoleLogWithTime("New state recieved " + status.state);
+        // consoleLogWithTime("New preloading recieved " + status.preloading);
+        consoleLogWithTime("debug:PLAYER" + socket.id + " status: " + state + " preloading:" + preloading);
+        // If the client is currently preloading
+        if (preloading == true){
+            return;  // Don't continue
+        } else if (preloading == false && defaultRoom.currentVideo.state == 5){
+            // If everyone's preloaded, play the video
             if (defaultRoom.allPreloaded()) {
-                setTimeout(() => {
-                    anyPreloading = false;
-                }, 1);
+                // Set all the recievers playing
                 sendPlayerControl("play");
+                consoleLogWithTime("playing" + defaultRoom.allPreloaded());
                 // Set the server's video instance playing
                 defaultRoom.currentVideo.state = 1;
                 defaultRoom.currentVideo.startingTime = new Date().getTime();
             }
-            return;
+            return;  // Don't continue
         }
+        // There'll be no state yet if the client hasn't yet recieved a video
+        // if (state == undefined) {
+        //     // Update the preloading status of the currentClient variable
+        //     // currentClient.status.updatePreloading(preloading);
+        //     // if (preloading) {
+        //     //     anyPreloading = true;
+        //     // }
+        //     // consoleLogWithTime(data)
+        //     consoleLogWithTime(defaultRoom.clients);
+        //     // If everyone's preloaded, wait a millisecond then set the variable (not sure why the wait is here)
+
+        //     return;
+        // }
         // If there is a defined state,
 
         // Update the status of the current client
-        currentClient.status.updateStatus(status);
+        // currentClient.status.updateStatus(status);
 
-        consoleLogWithTime("debug:PLAYER" + socket.id + " status: " + status.state);
+
         // If anyone buffers (no one's preloading),
-        if (anyPreloading == false && status.state == 3) {
+        if (defaultRoom.allPreloaded() && status.state == 3) {
             // Add the socket to the array and pause
             buffering.push(socket.id);
             sendPlayerControl("pause");
@@ -180,7 +191,7 @@ io.on('connection', function (socket) {
             defaultRoom.currentVideo = nextVideo;
         }
 
-        sendClients(defaultRoom);
+
     });
 
     // Recieved video details from a reciever

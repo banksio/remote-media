@@ -1,10 +1,3 @@
-Object.prototype.allFalse = function() { 
-    for (var i in this) {
-        if (this[i] === true) return false;
-    }
-    return true;
-}
-
 class Room {
     constructor() {
         this.queue = new Queue();
@@ -24,7 +17,7 @@ class Room {
     allPreloaded() {
         // If any clients are preloading then return false
         for (var i in this.clients) {
-            if (this.clients[i].preloading === true) {
+            if (this.clients[i].status.preloading == true) {
                 return false;
             }
         }
@@ -157,7 +150,7 @@ class Video {
         this.title = title;
         this.channel = channel;
         this.duration = duration;
-        this.state = -1;
+        this.state = 5;
         this.startingTime = 0;
         this.elapsedTime = 0;
     }

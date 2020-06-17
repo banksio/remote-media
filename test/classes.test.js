@@ -178,7 +178,7 @@ describe('Room object tests', function () {
 
 // Room object tests
 describe('Room status checking tests', function () {
-    it('allPreloading should return false', function () {
+    it('allPreloading should return true', function () {
         let room = new classes.Room();
         let loginID = "test";
         let loginID2 = "anotherTest";
@@ -186,7 +186,7 @@ describe('Room status checking tests', function () {
         let login2 = new classes.Login(loginID2);
         room.addClient(login);
         room.addClient(login2);
-        assert(room.allPreloaded(), true);
+        assert.ok(room.allPreloaded());
     });
     it('allPreloading should return false', function () {
         let room = new classes.Room();
@@ -197,7 +197,7 @@ describe('Room status checking tests', function () {
         room.addClient(login);
         room.clients[loginID].status.updatePreloading(true);
         room.addClient(login2);
-        assert(room.allPreloaded(), false);
+        assert.equal(room.allPreloaded(), false);
     });
     it('allPreloading should return false', function () {
         let room = new classes.Room();
@@ -209,7 +209,7 @@ describe('Room status checking tests', function () {
         room.clients[loginID].status.updatePreloading(true);
         room.addClient(login2);
         room.clients[loginID2].status.updatePreloading(true);
-        assert(room.allPreloaded(), false);
+        assert.equal(room.allPreloaded(), false);
     });
     it('removeClient should remove a client', function () {
         let room = new classes.Room();

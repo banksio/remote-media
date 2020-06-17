@@ -5,7 +5,7 @@ tag.src = "https://www.youtube.com/iframe_api";
 var firstScriptTag = document.getElementsByTagName('script')[0];
 firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
-var player, iframe, vid;
+var player, iframe, vid, state;
 var vid = 'pE49WK-oNjU';
 var $ = document.querySelector.bind(document);
 
@@ -38,17 +38,17 @@ function onPlayerReady(event) {
 }
 
 socket.on("serverCurrentVideo", function (video) {
-    vid = video.id;
-    if (player == undefined) {
-        return;
-    }
-    if (firstVideo == false) {
-        firstVideo = true;
-        console.log("recieveDDDDD " + video.id);
-        player.cueVideoById(video.id);
-        console.log("recieveDDDDD " + video.elapsedTime);
-        player.seekTo(video.elapsedTime);
-    }
+    // vid = video.id;
+    // if (player == undefined) {
+    //     return;
+    // }
+    // if (firstVideo == false) {
+    //     firstVideo = true;
+    //     console.log("recieveDDDDD " + video.id);
+    //     player.cueVideoById(video.id);
+    //     console.log("recieveDDDDD " + video.elapsedTime);
+    //     player.seekTo(video.elapsedTime);
+    // }
 });
 
 // setTimeout(() => {
@@ -94,9 +94,9 @@ socket.on("serverNewVideo", function (data) {
 // Preloading new video once already played one video; mute the player and play the video
 function preloadVideo(id) {
     console.log("Preloading..." + id);
-    preloading = true;  // We are loading a new video
-    console.log(preloading);
-    socket.emit("recieverPlayerStatus", { "state": undefined, "preloading": true });
+    // Set preloading true, send to 
+    preloading = true;
+    socket.emit("recieverPlayerStatus", { "state": state, "preloading": true });
     vid = id;
     player.mute();
     player.loadVideoById(vid);
@@ -143,7 +143,7 @@ function preloadFinisher() {
     player.unMute();  // Unmute the video ready for playing
     preloading = false;
     console.log("Preloading done.");
-    socket.emit("recieverPlayerStatus", { "state": undefined, "preloading": false });
+    socket.emit("recieverPlayerStatus", { "state": state, "preloading": false });
 }
 
 function preloadingDone() {
