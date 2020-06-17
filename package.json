@@ -5,6 +5,7 @@
   "main": "server.js",
   "scripts": {
     "test": "mocha",
+    "testWithReport": "mocha test --reporter mocha-junit-reporter",
     "start": "node server.js"
   },
   "author": "banksio",
@@ -12,6 +13,7 @@
   "dependencies": {
     "express": "^4.17.1",
     "mocha": "^8.0.1",
+    "mocha-junit-reporter": "^2.0.0",
     "socket.io": "^2.3.0",
     "youtube-playlist": "^1.0.3"
   },

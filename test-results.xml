@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="Mocha Tests" time="0.0290" tests="25" failures="0">
+  <testsuite name="Root Suite" timestamp="2020-06-17T15:58:45" tests="0" time="0.0000" failures="0">
+  </testsuite>
+  <testsuite name="Video object URL parsing test" timestamp="2020-06-17T15:58:45" tests="5" file="G:\Development\GitHub\originals\remote-media\test\classes.test.js" time="0.0000" failures="0">
+    <testcase name="Video object URL parsing test Short youtu.be - ID should be p47fEXGabaY" time="0.0000" classname="Short youtu.be - ID should be p47fEXGabaY">
+    </testcase>
+    <testcase name="Video object URL parsing test Short youtu.be - ID should be ez1Kv8hiQGU" time="0.0000" classname="Short youtu.be - ID should be ez1Kv8hiQGU">
+    </testcase>
+    <testcase name="Video object URL parsing test Full length link - ID should be UBhdIcb84Hw" time="0.0000" classname="Full length link - ID should be UBhdIcb84Hw">
+    </testcase>
+    <testcase name="Video object URL parsing test Full length link with playlist - ID should be UBhdIcb84Hw" time="0.0000" classname="Full length link with playlist - ID should be UBhdIcb84Hw">
+    </testcase>
+    <testcase name="Video object URL parsing test Invalid video URL, should return undefined" time="0.0000" classname="Invalid video URL, should return undefined">
+    </testcase>
+  </testsuite>
+  <testsuite name="Video object timekeeping test" timestamp="2020-06-17T15:58:45" tests="2" file="G:\Development\GitHub\originals\remote-media\test\classes.test.js" time="0.0270" failures="0">
+    <testcase name="Video object timekeeping test Time after 5 seconds" time="0.0120" classname="Time after 5 seconds">
+    </testcase>
+    <testcase name="Video object timekeeping test Time after 10 seconds" time="0.0150" classname="Time after 10 seconds">
+    </testcase>
+  </testsuite>
+  <testsuite name="Queue tests" timestamp="2020-06-17T15:58:45" tests="4" file="G:\Development\GitHub\originals\remote-media\test\classes.test.js" time="0.0010" failures="0">
+    <testcase name="Queue tests Add single video, expect correct video object and queue length" time="0.0000" classname="Add single video, expect correct video object and queue length">
+    </testcase>
+    <testcase name="Queue tests Add single video from ID, expect correct video ID and queue length" time="0.0000" classname="Add single video from ID, expect correct video ID and queue length">
+    </testcase>
+    <testcase name="Queue tests Add two videos from CSV test queue length, ID and pop from queue" time="0.0010" classname="Add two videos from CSV test queue length, ID and pop from queue">
+    </testcase>
+    <testcase name="Queue tests Add one video from CSV, expect nothing added" time="0.0000" classname="Add one video from CSV, expect nothing added">
+    </testcase>
+  </testsuite>
+  <testsuite name="State object tests" timestamp="2020-06-17T15:58:45" tests="3" file="G:\Development\GitHub\originals\remote-media\test\classes.test.js" time="0.0000" failures="0">
+    <testcase name="State object tests Test update state, expect state to be updated" time="0.0000" classname="Test update state, expect state to be updated">
+    </testcase>
+    <testcase name="State object tests Test update preloading, expect preloading to be updated" time="0.0000" classname="Test update preloading, expect preloading to be updated">
+    </testcase>
+    <testcase name="State object tests Test update entire object, expect object to be updated" time="0.0000" classname="Test update entire object, expect object to be updated">
+    </testcase>
+  </testsuite>
+  <testsuite name="Login object tests" timestamp="2020-06-17T15:58:45" tests="3" file="G:\Development\GitHub\originals\remote-media\test\classes.test.js" time="0.0010" failures="0">
+    <testcase name="Login object tests Test constructor, expect id to be set" time="0.0010" classname="Test constructor, expect id to be set">
+    </testcase>
+    <testcase name="Login object tests Test constructor, expect name to be set" time="0.0000" classname="Test constructor, expect name to be set">
+    </testcase>
+    <testcase name="Login object tests Test constructor, expect State object to be created" time="0.0000" classname="Test constructor, expect State object to be created">
+    </testcase>
+  </testsuite>
+  <testsuite name="Room object tests" timestamp="2020-06-17T15:58:45" tests="4" file="G:\Development\GitHub\originals\remote-media\test\classes.test.js" time="0.0000" failures="0">
+    <testcase name="Room object tests Test constructor, expect new Queue object" time="0.0000" classname="Test constructor, expect new Queue object">
+    </testcase>
+    <testcase name="Room object tests Test constructor, expect new Video object" time="0.0000" classname="Test constructor, expect new Video object">
+    </testcase>
+    <testcase name="Room object tests Test addition of single client with valid ID, expect client to be added" time="0.0000" classname="Test addition of single client with valid ID, expect client to be added">
+    </testcase>
+    <testcase name="Room object tests Test addition of single client without valid ID, expect client to be rejected" time="0.0000" classname="Test addition of single client without valid ID, expect client to be rejected">
+    </testcase>
+  </testsuite>
+  <testsuite name="Room status checking tests" timestamp="2020-06-17T15:58:45" tests="4" file="G:\Development\GitHub\originals\remote-media\test\classes.test.js" time="0.0000" failures="0">
+    <testcase name="Room status checking tests allPreloading should return false" time="0.0000" classname="allPreloading should return false">
+    </testcase>
+    <testcase name="Room status checking tests allPreloading should return false" time="0.0000" classname="allPreloading should return false">
+    </testcase>
+    <testcase name="Room status checking tests allPreloading should return false" time="0.0000" classname="allPreloading should return false">
+    </testcase>
+    <testcase name="Room status checking tests removeClient should remove a client" time="0.0000" classname="removeClient should remove a client">
+    </testcase>
+  </testsuite>
+</testsuites>
