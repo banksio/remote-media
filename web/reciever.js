@@ -9,7 +9,7 @@ socket.on('connect', () => {
     
     // Function to open modal
     // Activate modal after page load
-    $("#nameModal").modal();
+    $("#nameModal").modal({backdrop: 'static', keyboard: false});
 });
 
 socket.on('disconnect', () => {
