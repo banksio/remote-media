@@ -160,3 +160,7 @@ body {
   opacity: 0%;
   display: none;
 }
+
+.modal {
+  top: 50px;
+}
