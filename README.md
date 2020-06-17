@@ -1,6 +1,7 @@
 # remote-media
 ![Azure DevOps builds](https://img.shields.io/azure-devops/build/banksio/ca05dcdb-cddf-47ad-b524-a5943bb56d8d/6)
-![David Dependencies](https://img.shields.io/david/banksio/remote-media)
+![Azure DevOps tests](https://img.shields.io/azure-devops/tests/banksio/remote-media/6)
+<!-- ![David Dependencies](https://img.shields.io/david/banksio/remote-media) -->
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/y/banksio/remote-media)
 ![Docker Pulls](https://img.shields.io/docker/pulls/banksio/remote-media)
 
