@@ -47,7 +47,6 @@ socket.on('volumeRecv',function(data){
     player.setVolume(data);
 });
 
-
 function frontendChangeConnectionIdentifier(connected) {
     let frontendElementConnectedStatus = document.getElementById("statusConnection");
     let frontendElementConnectedSpinner = document.getElementById("spinnerConnection");
@@ -86,7 +85,7 @@ function frontendChangeConnectionIdentifier(connected) {
                 event.stopPropagation();
                 }
                 form.classList.add('was-validated');
-
+                // Check whether button was pressed, if validated hide modal and send nickname to server
                 document.querySelector("#nicknameForm > div > div.modal-footer > button").addEventListener('click', function(event) {
                     let name = document.getElementById('validationDefault01').value;
                     if (name !== "") {
