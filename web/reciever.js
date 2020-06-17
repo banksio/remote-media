@@ -6,10 +6,6 @@ var socket = io(result + "/");
 socket.on('connect', () => {
     console.log(socket.id);
     frontendChangeConnectionIdentifier(true);
-    
-    // Function to open modal
-    // Activate modal after page load
-    $("#nameModal").modal({backdrop: 'static', keyboard: false});
 });
 
 socket.on('disconnect', () => {
@@ -75,6 +71,8 @@ function frontendChangeConnectionIdentifier(connected) {
 (function() {
     'use strict';
     window.addEventListener('load', function() {
+        // Start modal
+        $("#nameModal").modal({backdrop: 'static', keyboard: false});
         // Fetch all the forms we want to apply custom Bootstrap validation styles to
         var forms = document.getElementsByClassName('needs-validation');
         // Loop over them and prevent submission
