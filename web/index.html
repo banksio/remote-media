@@ -1,82 +1,86 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <!-- Required meta tags -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    
-    <!-- Website Favicon-->
-    <link rel="icon" href="favicon.ico" type='image/x-icon'/>
 
-    <!-- Title -->
-    <title>Remote Media</title>
+<head>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.1/css/all.css"
+  <!-- Website Favicon-->
+  <link rel="icon" href="favicon.ico" type='image/x-icon' />
+
+  <!-- Title -->
+  <title>Remote Media</title>
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.1/css/all.css"
     integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
 
-    <!-- Bootstrap core CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
+  <!-- Bootstrap core CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
     integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
-    
-    <!-- Custom CSS -->
-    <link rel="stylesheet" media="screen" href="styles.css"/>
-    
-    <!-- socket.io for communications -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.1/socket.io.js"></script>
-  </head>
-  <body>
 
-    <!--Testing-->
-    <!--pointer-events:none;-->
-    <div id="player" style="position:absolute;top:0;left:0;width:100%;height:100%;"></div>
+  <!-- Custom CSS -->
+  <link rel="stylesheet" media="screen" href="styles.css" />
 
-    <!-- Loading overlay -->
-    <div id="banner" class="overlayLoading">
-      <div id="overlayLoadingSpinner" class="d-flex justify-content-center">
-        <span id="statusConnection" class="text-warning">Reconnecting...</span>
-        <div id="spinnerConnection" class="spinner-border ml-auto text-warning" role="status" aria-hidden="true">
+  <!-- socket.io for communications -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.1/socket.io.js"></script>
+</head>
+
+<body>
+
+  <!--Testing-->
+  <!--pointer-events:none;-->
+  <div id="player" style="position:absolute;top:0;left:0;width:100%;height:100%;"></div>
+
+  <!-- Loading overlay -->
+  <div id="banner" class="overlayLoading">
+    <div id="overlayLoadingSpinner" class="d-flex justify-content-center">
+      <span id="statusConnection" class="text-warning">Reconnecting...</span>
+      <div id="spinnerConnection" class="spinner-border ml-auto text-warning" role="status" aria-hidden="true">
+      </div>
+    </div>
+  </div>
+
+  <!-- Nickname Modal Prompt -->
+  <div class="Container">
+    <div class="modal fade" id="nameModal" role="dialog">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header text-center">
+            <h4 class="modal-title w-100 font-weight-bold">Enter Nickname</h4>
+          </div>
+          <form class="needs-validation" id="nicknameForm">
+            <div class="modal-body mx-2">
+              <div class="md-form mb-2">
+                <label for="validationDefault01">Last name</label>
+                <input type="text" id="validationDefault01" class="form-control" placeholder="Nickname" required>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-success">Submit</button>
+              </div>
+          </form>
         </div>
       </div>
     </div>
 
-    <!-- Nickname Modal Prompt -->
-    <div class="Container">
-      <div class="modal fade" id="nameModal" role="dialog">
-        <div class="modal-dialog">
-          <div class="modal-content">
-            <div class="modal-header text-center">
-              <h4 class="modal-title w-100 font-weight-bold">Enter Nickname</h4>
-            </div>
-            <form class="needs-validation" id="nicknameForm">
-              <div class="modal-body mx-2">
-                  <div class="md-form mb-2">
-                    <label for="validationDefault01">Last name</label>
-                    <input type="text" id="validationDefault01" class="form-control" placeholder="Nickname" required>
-                  </div>
-              <div class="modal-footer">
-                <button type="button" class="btn btn-success">Submit</button>
-              </div>
-            </form>
-        </div>
-      </div>
-    </div> 
-
     <!--Custom JS -->
     <script src="reciever.js"></script>
     <script src="player.js"></script>
-    
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
-    integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
-    crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
-    integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
-    crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"
-    integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI"
-    crossorigin="anonymous"></script>
-    <!-- MDB core JavaScript -->
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mdbootstrap/4.7.1/js/mdb.min.js"></script>
 
-  </body>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+      integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+      crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+      integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+      crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"
+      integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI"
+      crossorigin="anonymous"></script>
+    <!-- MDB core JavaScript -->
+    <script type="text/javascript"
+      src="https://cdnjs.cloudflare.com/ajax/libs/mdbootstrap/4.7.1/js/mdb.min.js"></script>
+
+</body>
+
 </html>

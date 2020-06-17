@@ -20,8 +20,8 @@ var playlistShuffle = true;
 var defaultRoom = new server.Room();
 
 //function to provide well formatted date for console messages
-function consoleLogWithTime(msg){
-    console.log("["+new Date().getHours()+":"+new Date().getMinutes()+":"+new Date().getSeconds()+"]"+msg);
+function consoleLogWithTime(msg) {
+    console.log("[" + new Date().getHours() + ":" + new Date().getMinutes() + ":" + new Date().getSeconds() + "]" + msg);
 }
 consoleLogWithTime("[INFO] Starting server...");
 
@@ -31,7 +31,7 @@ var exp = express();
 //use it to serve pages from the web folder
 exp.use(express.static('web'));
 var web = exp.listen(port);
- 
+
 //get socketio to listen to the webserver's connection
 var io = socketio.listen(web, { log: false });
 //Create a callback function to deal with each connection.
@@ -52,7 +52,7 @@ io.on('connection', function (socket) {
 
     consoleLogWithTime("New Client " + currentClient.id);
 
-    socket.on("receiverNickname", function(name) {
+    socket.on("receiverNickname", function (name) {
         currentClient.name = name;
         sendClients(defaultRoom);
     });
@@ -78,7 +78,7 @@ io.on('connection', function (socket) {
             return;
         }
     });
-    
+
     // Text to speech
     socket.on("adminTTSRequest", function (data) {
         if (true) {
@@ -96,7 +96,7 @@ io.on('connection', function (socket) {
     socket.on("adminQueueControl", function (data) {
         switch (data) {
             case "prev":
-                
+
                 break;
             case "skip":
                 playNextInQueue(defaultRoom);
@@ -115,9 +115,9 @@ io.on('connection', function (socket) {
         }
         sendQueue(defaultRoom);
     });
-    
+
     // Status of the reciever
-    socket.on("recieverPlayerStatus", function(status){
+    socket.on("recieverPlayerStatus", function (status) {
         // If the socket's not initialised, skip it
         if (socket.id == undefined) {
             return;
@@ -161,7 +161,7 @@ io.on('connection', function (socket) {
             sendPlayerControl("pause");
             consoleLogWithTime("pausing cause buffer");
             consoleLogWithTime(status.state);
-        // If they're playing
+            // If they're playing
         } else if (status.state == 1) {
             // If anyone is buffering
             if (buffering.length > 0) {
@@ -184,8 +184,8 @@ io.on('connection', function (socket) {
     });
 
     // Recieved video details from a reciever
-    socket.on("recieverVideoDetails", function(videoDetails){
-        if (videoDetails.id != defaultRoom.currentVideo.id){
+    socket.on("recieverVideoDetails", function (videoDetails) {
+        if (videoDetails.id != defaultRoom.currentVideo.id) {
             consoleLogWithTime("Recieved invalid video details from " + currentClient.name);
             return;
         }
@@ -195,7 +195,7 @@ io.on('connection', function (socket) {
         sendNowPlaying(defaultRoom.currentVideo);
     });
 
-    socket.on("recieverPlayerReady", function(){
+    socket.on("recieverPlayerReady", function () {
         sendNowPlaying(defaultRoom.currentVideo);
     });
 
@@ -205,7 +205,7 @@ io.on('connection', function (socket) {
         defaultRoom.removeClient(currentClient);
         sendClients(defaultRoom);
     });
-    
+
     // Manage the client's connections
     socket.on("adminConnectionManagement", function (control) {
         consoleLogWithTime("Connection management request recieved");
@@ -217,55 +217,55 @@ io.on('connection', function (socket) {
             consoleLogWithTime("Disconnecting all clients...");
         }
     });
- 
+
 });
 
 // Refactored
-function playVideo(video){
-    var newID = {"value": video.id};
-    consoleLogWithTime("New Video ID sent: "+newID.value);
-    io.emit("serverNewVideo",newID);
+function playVideo(video) {
+    var newID = { "value": video.id };
+    consoleLogWithTime("New Video ID sent: " + newID.value);
+    io.emit("serverNewVideo", newID);
     return;
 }
 
-function sendQueue(room){
+function sendQueue(room) {
     // Send the whole queue
     var queue = room.queue;
     io.emit("serverQueueVideos", queue);
 }
 
-function sendQueueStatus(room){
+function sendQueueStatus(room) {
     // Send the queue but remove the videos array, no need to send that
     var queueStatus = room.queue;
     // queueStatus.videos = undefined;
     io.emit("serverQueueStatus", queueStatus);
 }
 
-function sendNowPlaying(video){
+function sendNowPlaying(video) {
     // Update elapsed time
     video.getElapsedTime(new Date().getTime());
     // Send the current video object to all clients (and admin panels)
     io.emit("serverCurrentVideo", video);
 }
 
-function queueShuffleToggle(room){
+function queueShuffleToggle(room) {
     var queue = room.queue;
     queue.shuffle = !queue.shuffle;
     return queue.shuffle;
 }
 
-function sendPlayerControl(control){
-    io.emit("serverPlayerControl",control);
+function sendPlayerControl(control) {
+    io.emit("serverPlayerControl", control);
 }
 
-function sendClients(room){
+function sendClients(room) {
     var clients = room.clients;
     io.emit("serverClients", clients);
 }
 
-function playNextInQueue(room){
+function playNextInQueue(room) {
     var nextVideo = defaultRoom.queue.popVideo();
-    if (nextVideo != undefined){
+    if (nextVideo != undefined) {
         playVideo(nextVideo);
         sendQueue(room);
     }

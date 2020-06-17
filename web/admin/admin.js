@@ -137,13 +137,13 @@ function speak() {
 // })
 
 // New video send to clients
-socket.on("serverNewVideo", function(data){
+socket.on("serverNewVideo", function (data) {
     // Show loading of thumbnail
     frontendChangeThumbnailSpinner(true);
 });
 
 // Recieved video details from the server
-socket.on("serverCurrentVideo", function(video){
+socket.on("serverCurrentVideo", function (video) {
     let nowplayingTitleElement = document.getElementById("nowPlayingTitle");
     let nowplayingChannelElement = document.getElementById("nowPlayingChannel");
     let nowplayingThumbnail = document.getElementById("imgNowPlaying");
@@ -165,7 +165,7 @@ socket.on("serverClients", function (clients) {
         if (client.status.state == "Admin") {
             continue;
         }
-        if (client.status.preloading){
+        if (client.status.preloading) {
             tableRef.innerHTML = tableRef.innerHTML + '<tr><td>' + client.name + '</td><td><span class=\'text-warning\'>' + stateIcons[client.status.state + 1] + '</span></td></tr>';
             continue;
         }
@@ -269,9 +269,9 @@ function frontendChangeMainSpinner(state) {
     return;
 }
 
-function frontendChangeThumbnailSpinner(visible){
+function frontendChangeThumbnailSpinner(visible) {
     let frontendElementThumbnailSpinner = document.querySelector("div.nowPlayingContainer > div");
-    if (visible){
+    if (visible) {
         frontendElementThumbnailSpinner.classList.remove("fadeOutDiv");
     } else {
         frontendElementThumbnailSpinner.classList.add("fadeOutDiv");

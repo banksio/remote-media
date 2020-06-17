@@ -1,124 +1,124 @@
-class Room{
-    constructor(){
+class Room {
+    constructor() {
         this.queue = new Queue();
         this.clients = {};
         this.currentVideo = new Video();
     }
 
-    addClient(client){
+    addClient(client) {
         // Only add a new client if it has a valid id
-        if (client.id != undefined){
+        if (client.id != undefined) {
             this.clients[client.id] = client;
         } else {
             throw "invalidClient";
         }
     }
 
-    allPreloaded(){
+    allPreloaded() {
         // If any clients are preloading then return false
-        for (let [id, client] of Object.entries(this.clients)){
-            if(client.status.preloading) return false;
+        for (let [id, client] of Object.entries(this.clients)) {
+            if (client.status.preloading) return false;
         }
         return true;
     }
 
-    removeClient(client){
+    removeClient(client) {
         // var clientIndex = this.clients.indexOf(client);
         // this.clients.splice(clientIndex, 1);
         delete this.clients[client.id];
     }
 }
 
-class Login{
-    constructor(id, name=undefined) {
+class Login {
+    constructor(id, name = undefined) {
         this.id = id;
         this.name = name;
         this.status = new State();
     }
 }
 
-class State{
-    constructor(state="Admin", preloading=false){
+class State {
+    constructor(state = "Admin", preloading = false) {
         this.state = state;
         this.preloading = preloading;
         this.timestamp;
     }
 
-    updateState(state){
+    updateState(state) {
         this.state = state;
     }
 
-    updatePreloading(preloading){
+    updatePreloading(preloading) {
         this.preloading = preloading;
     }
 
-    updateStatus(newStatus){
+    updateStatus(newStatus) {
         this.state = newStatus.state;
         this.preloading = newStatus.preloading;
     }
 
-    friendlyState(){
+    friendlyState() {
         // Return the string of the current state name
     }
 
 }
 
 class RoomState extends State {
-    constructor(){
+    constructor() {
         super(-2, false);
     }
 
-    setCurrentVideo(video){
+    setCurrentVideo(video) {
         this.currentVideo = video;
     }
 }
 
-class Queue{
-    constructor(shuffle=true) {
+class Queue {
+    constructor(shuffle = true) {
         this.videos = [];
         this.length = 0;
         this.shuffle = shuffle;
         this.name = "";
     }
 
-    addVideo(video){
+    addVideo(video) {
         // Add the video to the array and update the length
         this.videos.push(video);
         this.length = this.videos.length;
     }
 
-    addVideoFromID(id){
+    addVideoFromID(id) {
         // Generate a new video object and call addVideo
         var newVideo = new Video(id);
         this.addVideo(newVideo);
     }
 
-    addVideosFromURLs(urls){
+    addVideosFromURLs(urls) {
         // Split the comma-separated list
         var urlArray = urls.split(',');
         // console.log("LENGTH" + urlArray.length);
-        if (urlArray.length == 1){
+        if (urlArray.length == 1) {
             // If there's only one url in the list then don't add anything
             return;
         }
         // Add the id from each url in turn
-        for (var url of urlArray){
+        for (var url of urlArray) {
             var id = getIDFromURL(url);
-            if (id != undefined){
+            if (id != undefined) {
                 this.addVideoFromID(id);
                 // consoleLogWithTime(id);
             }
         }
     }
 
-    popVideo(){
+    popVideo() {
         // Ensure there are actually videos to pop
-        if (this.videos.length <= 0){
+        if (this.videos.length <= 0) {
             return undefined;
         }
         // Are we shuffling?
-        if (this.shuffle){
-            console.log("WEYHEY")
+        if (this.shuffle) {
+            console.log("WEYHEY");
             // We're shuffling, so get a random video
             var nextIndex = Math.floor(Math.random() * this.videos.length);  // Random from the queue
             console.log(this.length);
@@ -132,7 +132,7 @@ class Queue{
         }
     }
 
-    empty(){
+    empty() {
         // Reset video list, index and length
         this.videos = [];
         this.length = 0;
@@ -140,8 +140,8 @@ class Queue{
     }
 }
 
-class Video{
-    constructor(id=undefined, title=undefined, channel=undefined, duration=undefined) {
+class Video {
+    constructor(id = undefined, title = undefined, channel = undefined, duration = undefined) {
         this.id = id;
         this.title = title;
         this.channel = channel;
@@ -151,19 +151,19 @@ class Video{
         this.elapsedTime = 0;
     }
 
-    setIDFromURL(url){
+    setIDFromURL(url) {
         this.id = getIDFromURL(url);
     }
 
     // Get the elapsed time of the video relative to the starting time
-    getElapsedTime(currentTime){
+    getElapsedTime(currentTime) {
         this.elapsedTime = Math.ceil((currentTime - this.startingTime) / 1000);
         return this.elapsedTime;
     }
 }
 
-function getIDFromURL(url){
-    var id = undefined;
+function getIDFromURL(url) {
+    // var id = undefined;
 
     const regex = /(?:\.be\/(.*?)(?:\?|$)|watch\?v=(.*?)(?:\&|$|\n))/ig;
     let m;
@@ -173,18 +173,18 @@ function getIDFromURL(url){
         if (m.index === regex.lastIndex) {
             regex.lastIndex++;
         }
-    
+
         // The result can be accessed through the `m`-variable.
         m.forEach((match, groupIndex) => {
-            if (groupIndex == 0){
+            if (groupIndex == 0) {
                 return "oof";
             }
-            if (match == undefined){
+            if (match == undefined) {
                 return "oof";
             }
             console.log(`Found match, group ${groupIndex}: ${match}`);
             id = match;
-            
+
         });
     }
     // console.log(id);
