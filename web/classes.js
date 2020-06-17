@@ -1,3 +1,10 @@
+Object.prototype.allFalse = function() { 
+    for (var i in this) {
+        if (this[i] === true) return false;
+    }
+    return true;
+}
+
 class Room {
     constructor() {
         this.queue = new Queue();
@@ -16,8 +23,10 @@ class Room {
 
     allPreloaded() {
         // If any clients are preloading then return false
-        for (let [id, client] of Object.entries(this.clients)) {
-            if (client.status.preloading) return false;
+        for (var i in this.clients) {
+            if (this.clients[i].preloading === true) {
+                return false;
+            }
         }
         return true;
     }
@@ -41,7 +50,7 @@ class State {
     constructor(state = "Admin", preloading = false) {
         this.state = state;
         this.preloading = preloading;
-        this.timestamp;
+        this.timestamp = undefined;
     }
 
     updateState(state) {
@@ -55,6 +64,7 @@ class State {
     updateStatus(newStatus) {
         this.state = newStatus.state;
         this.preloading = newStatus.preloading;
+        this.timestamp = newStatus.timestamp;
     }
 
     friendlyState() {
@@ -74,7 +84,7 @@ class RoomState extends State {
 }
 
 class Queue {
-    constructor(shuffle = true) {
+    constructor(shuffle = false) {
         this.videos = [];
         this.length = 0;
         this.shuffle = shuffle;
@@ -118,17 +128,19 @@ class Queue {
         }
         // Are we shuffling?
         if (this.shuffle) {
-            console.log("WEYHEY");
             // We're shuffling, so get a random video
             var nextIndex = Math.floor(Math.random() * this.videos.length);  // Random from the queue
             console.log(this.length);
             console.log(nextIndex);
             var nextVideo = this.videos[nextIndex];  // Get next video object
             this.videos.splice(nextIndex, 1);  // Remove from queue
+            this.length = this.videos.length;  // Update queue length
             return nextVideo;
         } else {
             // Not shuffling, just get the next video
-            return this.videos.shift();
+            let nextVideo = this.videos.shift();
+            this.length = this.videos.length;  // Update queue length
+            return nextVideo;
         }
     }
 
@@ -136,7 +148,6 @@ class Queue {
         // Reset video list, index and length
         this.videos = [];
         this.length = 0;
-        this.index = 0;
     }
 }
 
@@ -157,13 +168,13 @@ class Video {
 
     // Get the elapsed time of the video relative to the starting time
     getElapsedTime(currentTime) {
-        this.elapsedTime = Math.ceil((currentTime - this.startingTime) / 1000);
+        this.elapsedTime = Math.round((currentTime - this.startingTime) / 1000);
         return this.elapsedTime;
     }
 }
 
 function getIDFromURL(url) {
-    // var id = undefined;
+    let id;
 
     const regex = /(?:\.be\/(.*?)(?:\?|$)|watch\?v=(.*?)(?:\&|$|\n))/ig;
     let m;
@@ -182,7 +193,7 @@ function getIDFromURL(url) {
             if (match == undefined) {
                 return "oof";
             }
-            console.log(`Found match, group ${groupIndex}: ${match}`);
+            // console.log(`Found match, group ${groupIndex}: ${match}`);
             id = match;
 
         });
