@@ -147,7 +147,7 @@ socket.on("serverCurrentVideo", function (video) {
     let nowplayingTitleElement = document.getElementById("nowPlayingTitle");
     let nowplayingChannelElement = document.getElementById("nowPlayingChannel");
     let nowplayingThumbnail = document.getElementById("imgNowPlaying");
-    nowplayingThumbnail.src = "http://i3.ytimg.com/vi/" + video.id + "/maxresdefault.jpg";
+    nowplayingThumbnail.src = "https://i3.ytimg.com/vi/" + video.id + "/maxresdefault.jpg";
     nowplayingTitleElement.innerText = video.title;
     nowplayingChannelElement.innerText = video.channel;
     frontendChangeThumbnailSpinner(false);

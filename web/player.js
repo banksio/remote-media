@@ -29,7 +29,7 @@ function onYouTubeIframeAPIReady() {
 function onPlayerReady(event) {
     player = event.target;
     //iframe = $('#player');
-    player.loadVideoById(vid);
+    preloadVideo(vid);
     //$("player").keydown(false);
     // player.cueVideoById(vid);
     muteVid();

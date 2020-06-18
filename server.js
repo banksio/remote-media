@@ -122,7 +122,7 @@ io.on('connection', function (socket) {
             return;
         }
 
-        // Save the state and the preloading stage
+        // Save the state and the preloading state, send to clients
         let state = status.state;
         let preloading = status.preloading;
         currentClient.status.updateState(state);
@@ -131,6 +131,7 @@ io.on('connection', function (socket) {
         // consoleLogWithTime("New state recieved " + status.state);
         // consoleLogWithTime("New preloading recieved " + status.preloading);
         consoleLogWithTime("debug:PLAYER" + socket.id + " status: " + state + " preloading:" + preloading);
+
         // If the client is currently preloading
         if (preloading == true){
             return;  // Don't continue
