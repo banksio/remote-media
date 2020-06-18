@@ -9,7 +9,7 @@ var player, iframe, vid, state;
 var vid = 'pE49WK-oNjU';
 var $ = document.querySelector.bind(document);
 
-var firstVideo = false;
+var firstVideo = true;
 // Preloading new videos
 var preloading = false;
 
@@ -38,17 +38,7 @@ function onPlayerReady(event) {
 }
 
 socket.on("serverCurrentVideo", function (video) {
-    // vid = video.id;
-    // if (player == undefined) {
-    //     return;
-    // }
-    // if (firstVideo == false) {
-    //     firstVideo = true;
-    //     console.log("recieveDDDDD " + video.id);
-    //     player.cueVideoById(video.id);
-    //     console.log("recieveDDDDD " + video.elapsedTime);
-    //     player.seekTo(video.elapsedTime);
-    // }
+    vid = video.id;
 });
 
 // setTimeout(() => {
@@ -88,6 +78,13 @@ socket.on("serverNewVideo", function (data) {
         firstVideo = true;
     }
     preloadVideo(data.value);
+});
+
+socket.on("serverVideoTimeStamp", function (timestamp) {
+    console.log("playingFirst" + timestamp);
+    firstVideo = false;
+    player.playVideo();
+    player.seekTo(timestamp);
 });
 
 
@@ -133,7 +130,7 @@ function onPlayerStateChange(event) {
         }
     }
     socket.emit("playerinfo", { currentTime: player.getCurrentTime(), socketID: socket.id, state: newState });
-    socket.emit("recieverPlayerStatus", { "state": newState, "preloading": preloading });
+    socket.emit("recieverPlayerStatus", { "state": newState, "preloading": preloading, "firstVideo": firstVideo });
 }
 
 function preloadFinisher() {

@@ -132,10 +132,7 @@ io.on('connection', function (socket) {
         // consoleLogWithTime("New preloading recieved " + status.preloading);
         consoleLogWithTime("debug:PLAYER" + socket.id + " status: " + state + " preloading:" + preloading);
 
-        // If the client is currently preloading
-        if (preloading == true){
-            return;  // Don't continue
-        } else if (preloading == false && defaultRoom.currentVideo.state == 5){
+        if (preloading == false && defaultRoom.currentVideo.state == 5){  // If this client is preloaded and the server is waiting to start a video
             // If everyone's preloaded, play the video
             if (defaultRoom.allPreloaded()) {
                 // Set all the recievers playing
@@ -146,7 +143,13 @@ io.on('connection', function (socket) {
                 defaultRoom.currentVideo.startingTime = new Date().getTime();
             }
             return;  // Don't continue
+        } else if (preloading == false && defaultRoom.currentVideo.state == 1 && status.firstVideo){  // If this client is preloaded and the server is already playing a video
+            socket.emit("serverVideoTimeStamp", defaultRoom.currentVideo.getElapsedTime());
+            return;  // Don't continue
+        } else if (preloading == true){  // If the client is currently preloading
+            return;  // Don't continue
         }
+
         // There'll be no state yet if the client hasn't yet recieved a video
         // if (state == undefined) {
         //     // Update the preloading status of the currentClient variable

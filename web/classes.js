@@ -160,7 +160,7 @@ class Video {
     }
 
     // Get the elapsed time of the video relative to the starting time
-    getElapsedTime(currentTime) {
+    getElapsedTime(currentTime=new Date().getTime()) {
         this.elapsedTime = Math.round((currentTime - this.startingTime) / 1000);
         return this.elapsedTime;
     }
