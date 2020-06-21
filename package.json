@@ -1,6 +1,6 @@
 {
   "name": "remote-media",
-  "version": "0.8.4",
+  "version": "1.0.0-alpha.1",
   "description": "A small app to control other client's media remotely.",
   "main": "server.js",
   "scripts": {
@@ -30,5 +30,8 @@
   "homepage": "https://github.com/banksio/remote-media#readme",
   "jshintConfig": {
     "esversion": 6
+  },
+  "directories": {
+    "test": "test"
   }
 }

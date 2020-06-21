@@ -182,15 +182,6 @@ io.on('connection', function (socket) {
     //     console.log("PING OF CLIENT " + currentClient.id + " = " + currentClient.ping);
     // }, 1000);
 
-    // socket.on("recieverTimestampRequest", function (){
-    //     sendIndividualTimestamp(socket, defaultRoom.currentVideo.getElapsedTime());
-    // });
-
-    // the client code
-    // socket.on('recieverTimestampRequest', (fn) => {
-    //     fn(defaultRoom.currentVideo.getElapsedTime());
-    // });
-
     socket.on('recieverTimestampRequest', (fn) => {
         fn(defaultRoom.currentVideo.getElapsedTime());
     });

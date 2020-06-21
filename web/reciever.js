@@ -138,7 +138,7 @@ function frontendChangeConnectionStatusText(show, connected = true) {
 }
 
 function frontendShowNotificationBanner(notification, persist) {
-    console.log("BANNO MODE");
+    console.log("Banner shown");
     let frontendNotificationBanner = document.getElementById("notificationBanner");  // The banner
     let frontendNotificationText = document.getElementById("notificationText");  // The reconnecting text and spinner
 
