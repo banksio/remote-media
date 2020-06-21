@@ -1,3 +1,5 @@
+const { TouchBarScrubber } = require("electron");
+
 class Room {
     constructor() {
         this.queue = new Queue();
@@ -24,6 +26,17 @@ class Room {
         return true;
     }
 
+    getBuffering() {
+        // If any clients are buffering then return false
+        let bufferingClients = [];
+        for (var i in this.clients) {
+            if (this.clients[i].status.state > 2) {
+                bufferingClients.push(this.clients[i]);
+            }
+        }
+        return bufferingClients;
+    }
+
     removeClient(client) {
         // var clientIndex = this.clients.indexOf(client);
         // this.clients.splice(clientIndex, 1);
@@ -36,6 +49,25 @@ class Login {
         this.id = id;
         this.name = name;
         this.status = new State();
+        this._pingHistory = [];
+    }
+
+    set ping(ping){
+        if (this._pingHistory.length >= 5){
+            this._pingHistory.shift();
+        }
+        this._pingHistory.push(ping);
+    }
+
+    get ping(){
+        let totalPing = 0;
+        let pingCount = 0;
+        this._pingHistory.forEach(ping => {
+            totalPing += ping;
+            pingCount += 1;
+        });
+        let avgPing = totalPing / pingCount;
+        return avgPing;
     }
 }
 
@@ -43,21 +75,25 @@ class State {
     constructor(state = "Admin", preloading = false) {
         this.state = state;
         this.preloading = preloading;
-        this.timestamp = undefined;
+        this.requiresTimestamp = false;
+        this.playerLoading = true;
     }
 
     updateState(state) {
         this.state = state;
+        // return this.cbStateChange();
     }
 
     updatePreloading(preloading) {
         this.preloading = preloading;
+        // return this.cbStateChange();
     }
 
     updateStatus(newStatus) {
         this.state = newStatus.state;
         this.preloading = newStatus.preloading;
-        this.timestamp = newStatus.timestamp;
+        // return this.cbStateChange();
+        // this.timestamp = newStatus.timestamp;
     }
 
     friendlyState() {
@@ -150,9 +186,11 @@ class Video {
         this.title = title;
         this.channel = channel;
         this.duration = duration;
-        this.state = 5;
+        this._state = 5;
         this.startingTime = 0;
         this.elapsedTime = 0;
+        this._pausedSince = 0;
+        this._pausedTime = 0;
     }
 
     setIDFromURL(url) {
@@ -161,8 +199,70 @@ class Video {
 
     // Get the elapsed time of the video relative to the starting time
     getElapsedTime(currentTime=new Date().getTime()) {
-        this.elapsedTime = Math.round((currentTime - this.startingTime) / 1000);
+        // this.elapsedTime = Math.round((currentTime - this.startingTime) / 1000);
+        if (this._pausedSince != 0){
+
+        }
+        this.elapsedTime = (((currentTime - this.startingTime) - this._pausedTime) / 1000);
+        console.log("time " + this.elapsedTime + "oof" + this._pausedTime / 1000);
         return this.elapsedTime;
+    }
+
+    set timestamp(ts){
+        this.startingTime = new Date().getTime() - (ts * 1000);
+        this._pausedTime = 0;
+        this._pausedSince = 0;
+    }
+
+    pauseTimer(time=new Date().getTime()){
+        this._pausedSince = time;  // Set the time of pausing
+        console.log("PAUSEDVID");
+    }
+
+    resumeTimer(time=new Date().getTime()){
+        this._pausedTime += (time - this._pausedSince);
+        this._pausedSince = 0;
+        console.log("RESUMED VID. PAUSED FOR" + this._pausedTime);
+    }
+
+    get pausedTime(){
+        if (this._pausedSince != 0){
+            return (this._pausedTime + (new Date().getTime() - this._pausedSince)) / 1000;
+        }
+        return this._pausedTime / 1000;
+    }
+
+    get state(){
+        return this._state;
+    }
+
+    set state(newState){
+        this._state = newState;
+        console.log(this.startingTime);
+        console.log(this._state);
+        console.log(this._pausedSince);
+        if (this.startingTime != 0){  // If the video has elapsed time
+            if (this._state != 1){  // If the video is paused for buffering
+                this.pauseTimer();
+            } else if (this._state == 1) {  // If the video is playing
+                if (this._pausedSince != 0){  // And it was previously paused
+                    this.resumeTimer();
+                }
+            }
+        } else if (this._state == 1){
+            this.startingTime = new Date().getTime();
+        }
+        if (this.cbStateDelay){
+            setTimeout(() => {
+                if (this.state != 1){
+                    return this.cbStateDelay(this.state);
+                }
+            }, 2000);
+        }
+        if (this.cbPlaying){
+            return this.cbPlaying();
+        }
+        return;
     }
 }
 

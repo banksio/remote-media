@@ -4,17 +4,19 @@ var result = arr[0] + "//" + arr[2];
 var socket = io(result + "/");
 
 socket.on('connect', () => {
-    console.log(socket.id);
-    frontendChangeConnectionIdentifier(true);
+    console.log("Connected to server with socket ID " + socket.id);
+    frontendChangeConnectionIdentifier(1);
 });
 
 socket.on('disconnect', () => {
-    console.log(socket.id);
-    frontendChangeConnectionIdentifier(false);
+    console.log("Disconnected from server.");
+    frontendChangeConnectionIdentifier(0);
 });
 
 // let name = prompt("Enter a name: ");
-// socket.emit("recieverConnected", name);
+// socket.binary(false).emit("recieverConnected", name);
+
+console.log("Waiting for server...");
 
 function muteVid() {
     console.log("Not an admin panel.");
@@ -28,6 +30,7 @@ socket.on("serverConnectionManagement", function (data) {
             break;
         case "discon":
             socket.disconnect();
+            frontendChangeConnectionIdentifier(2);
             break;
         default:
             console.log("Unknown site command.");
@@ -43,56 +46,169 @@ socket.on('volumeRecv', function (data) {
     player.setVolume(data);
 });
 
+socket.on("serverBufferingClients", function (buffering) {
+    let names = "Waiting for ";
+    buffering.forEach(client => {
+        names += (client.name + " ");
+    });
+    frontendShowNotificationBanner(names, true);
+});
+
+// socket.on('pingTime', () => {
+//     console.log("Pinged");
+//     socket.emit('pongTime');
+// });
+
+// // the client code
+// socket.on('ferret', (name, fn) => {
+//     fn('woot');
+// });
+
+function frontendChangeBanner(notificationObject) {
+
+}
+
+function pushTimestampToServer(timestamp) {
+    socket.emit("recieverTimestampSyncRequest", timestamp);
+}
+
+setInterval(() => {
+    
+}, 1000);
+
 function frontendChangeConnectionIdentifier(connected) {
-    let frontendElementConnectedStatus = document.getElementById("statusConnection");
-    let frontendElementConnectedSpinner = document.getElementById("spinnerConnection");
-    let frontendElementBanner = document.getElementById("banner");
-    //connected boolean
-    if (connected) {
-        // frontendElementBanner.classList.remove("showBanner");
-        frontendElementConnectedStatus.innerText = "Connected";
-        frontendElementConnectedStatus.classList.remove("text-warning");
-        frontendElementConnectedStatus.classList.add("text-success");
-        frontendElementConnectedSpinner.style.visibility = "hidden";
-        frontendElementBanner.classList.add("hideBanner");
+    let frontendElementConnectedSpinner = document.getElementById("bannerReconnectingSpinner");  // The reconnecting text and spinner
+    let frontendElementBanner = document.getElementById("connectionBanner");  // The banner
 
+    switch (connected) {
+        case 0:  // Reconnecting
+            // Remove the previous status text
+            frontendChangeConnectionStatusText(false);
+            // Show the spinner
+            frontendElementConnectedSpinner.classList.remove("d-none");
+            frontendElementConnectedSpinner.classList.add("d-flex");
+            // Show the banner
+            frontendElementBanner.classList.remove("hideBanner");
+            break;
+        case 1:  // Connected
+            // Remove the spinner
+            frontendElementConnectedSpinner.classList.remove("d-flex");
+            frontendElementConnectedSpinner.classList.add("d-none");
+            // Show the connected text
+            frontendChangeConnectionStatusText(true, true);
+            // Show the banner
+            frontendElementBanner.classList.remove("hideBanner");
+            // Hide the banner (after 3s)
+            frontendElementBanner.classList.add("hideBanner");
+            break;
+        case 2:  // Disconnected
+            // Remove the spinner
+            frontendElementConnectedSpinner.classList.remove("d-flex");
+            frontendElementConnectedSpinner.classList.add("d-none");
+            // Show the disconnected text
+            frontendChangeConnectionStatusText(true, false);
+            // Show the banner
+            frontendElementBanner.classList.remove("hideBanner");
+
+            break;
+        default:
+            break;
+    }
+    return;
+}
+
+function frontendChangeConnectionStatusText(show, connected = true) {
+    let elementConnectionStatusText = document.getElementById("statusConnection");  // The connection text when the reconnecting spinner is NOT displayed
+    if (show) {
+        elementConnectionStatusText.classList.remove("d-none");
     } else {
-        frontendElementBanner.classList.remove("hideBanner");
-        frontendElementConnectedSpinner.style.visibility = "visible";
-        frontendElementConnectedStatus.innerText = "Reconnecting...";
-        frontendElementConnectedStatus.classList.remove("text-success");
-        frontendElementConnectedStatus.classList.add("text-warning");
+        elementConnectionStatusText.classList.add("d-none");
+        return;
+    }
+    if (connected) {
+        elementConnectionStatusText.innerText = "Connected";
+        elementConnectionStatusText.classList.remove("text-danger");
+        elementConnectionStatusText.classList.add("text-success");
+    } else {
+        elementConnectionStatusText.innerText = "Disconnected";
+        elementConnectionStatusText.classList.add("text-danger");
+        elementConnectionStatusText.classList.remove("text-success");
+    }
+    return;
+}
 
+function frontendShowNotificationBanner(notification, persist) {
+    console.log("BANNO MODE");
+    let frontendNotificationBanner = document.getElementById("notificationBanner");  // The banner
+    let frontendNotificationText = document.getElementById("notificationText");  // The reconnecting text and spinner
+
+    switch (persist) {
+        case true:  // Don't hide after showing
+            // Remove the previous status text
+            frontendChangeConnectionStatusText(false);
+            // Show the spinner
+            frontendNotificationBanner.classList.remove("d-none");
+            frontendNotificationBanner.classList.add("d-flex");
+            // Set the notification text
+            frontendNotificationText.innerText = notification;
+            // Show the banner
+            frontendNotificationBanner.classList.remove("hideBanner");
+            break;
+        case false:  // Hide after showing
+            // Set the notification text
+            frontendNotificationText.innerText = notification;
+            // Show the banner
+            frontendNotificationBanner.classList.remove("hideBanner");
+            // Hide the banner
+            setTimeout(() => {
+                frontendNotificationBanner.classList.add("hideBanner");
+            }, 750);
+            break;
+        default:
+            break;
+    }
+    return;
+}
+
+function frontendShowSideControlPanel(show) {
+    let frontendSeekControlPanel = document.getElementById("seekControlPanel");  // The banner
+
+    if (show){
+        // Show the sidebar
+        frontendSeekControlPanel.classList.remove("hidecontrol-right");
+    } else {
+        // Show the sidebar
+        frontendSeekControlPanel.classList.add("hidecontrol-right");
     }
     return;
 }
 
 // Validation Check for Nickname
-(function () {
-    'use strict';
-    window.addEventListener('load', function () {
-        // Start modal
-        $("#nameModal").modal({ backdrop: 'static', keyboard: false });
-        // Fetch all the forms we want to apply custom Bootstrap validation styles to
-        var forms = document.getElementsByClassName('needs-validation');
-        // Loop over them and prevent submission
-        var validation = Array.prototype.filter.call(forms, function (form) {
-            form.addEventListener('click', function (event) {
-                if (form.checkValidity() === false) {
-                    event.preventDefault();
-                    event.stopPropagation();
-                }
-                form.classList.add('was-validated');
-                // Check whether button was pressed, if validated hide modal and send nickname to server
-                document.querySelector("#nicknameForm > div > div.modal-footer > button").addEventListener('click', function (event) {
-                    let name = document.getElementById('validationDefault01').value;
-                    if (name !== "") {
-                        $('#nameModal').modal('hide');
-                        socket.emit("receiverNickname", name);
-                    }
-                }, false);
+// (function () {
+//     'use strict';
+//     window.addEventListener('load', function () {
+//         // Start modal
+//         $("#nameModal").modal({ backdrop: 'static', keyboard: false });
+//         // Fetch all the forms we want to apply custom Bootstrap validation styles to
+//         var forms = document.getElementsByClassName('needs-validation');
+//         // Loop over them and prevent submission
+//         var validation = Array.prototype.filter.call(forms, function (form) {
+//             form.addEventListener('click', function (event) {
+//                 if (form.checkValidity() === false) {
+//                     event.preventDefault();
+//                     event.stopPropagation();
+//                 }
+//                 form.classList.add('was-validated');
+//                 // Check whether button was pressed, if validated hide modal and send nickname to server
+//                 document.querySelector("#nicknameForm > div > div.modal-footer > button").addEventListener('click', function (event) {
+//                     let name = document.getElementById('validationDefault01').value;
+//                     if (name !== "") {
+//                         $('#nameModal').modal('hide');
+//                         socket.binary(false).emit("receiverNickname", name);
+//                     }
+//                 }, false);
 
-            }, false);
-        });
-    }, false);
-})();
+//             }, false);
+//         });
+//     }, false);
+// })();

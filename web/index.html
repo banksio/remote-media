@@ -34,13 +34,36 @@
   <div id="player" style="position:absolute;top:0;left:0;width:100%;height:100%;"></div>
 
   <!-- Loading overlay -->
-  <div id="banner" class="overlayLoading">
-    <div id="overlayLoadingSpinner" class="d-flex justify-content-center">
-      <span id="statusConnection" class="text-warning">Reconnecting...</span>
+  <div id="connectionBanner" class="banner">
+    <div id="bannerReconnectingSpinner" class="d-none d-flex align-items-center">
+      <span class="text-warning">Reconnecting...</span>
       <div id="spinnerConnection" class="spinner-border ml-auto text-warning" role="status" aria-hidden="true">
       </div>
     </div>
+    <span id="statusConnection" class="text-success d-none">Connected</span>
   </div>
+
+  <div id="notificationBanner" class="banner hideBanner">
+    <!-- <div id="bannerReconnectingSpinner" class="d-none d-flex align-items-center">
+      <span class="text-warning">Reconnecting...</span>
+      <div id="spinnerConnection" class="spinner-border ml-auto text-warning" role="status" aria-hidden="true">
+      </div>
+    </div> -->
+    <span id="notificationText" class="text-light">Playing new video...</span>
+  </div>
+
+  <div style="overflow: hidden;">
+    <div id="seekControlPanel" class="side-control-right d-flex flex-column text-light hidecontrol-right">
+      <div class="controlPanelButton d-flex flex-column" onclick="requestTimestampFromServer();">
+        <i class="fas fa-undo text-light"></i> Re sync
+      </div>
+      <div class="controlPanelButton d-flex flex-column " onclick="pushTimestampToServer(player.getCurrentTime());">
+        <i class="fas fa-sync text-light"></i> Sync others
+      </div>
+  
+    </div>
+  </div>
+
 
   <!-- Nickname Modal Prompt -->
   <div class="Container">
