@@ -1,7 +1,7 @@
 # remote-media
-[![Azure DevOps builds](https://img.shields.io/azure-devops/build/banksio/ca05dcdb-cddf-47ad-b524-a5943bb56d8d/6)](https://banksio.visualstudio.com/remote-media/_build/latest?definitionId=6&branchName=master)
-[![Azure DevOps tests](https://img.shields.io/azure-devops/tests/banksio/remote-media/6)](https://banksio.visualstudio.com/remote-media/_build/latest?definitionId=6&branchName=master)
-[![Azure DevOps coverage](https://img.shields.io/azure-devops/coverage/banksio/remote-media/6)](https://banksio.visualstudio.com/remote-media/_build/latest?definitionId=6&branchName=master)
+[![Azure DevOps builds (branch)](https://img.shields.io/azure-devops/build/banksio/ca05dcdb-cddf-47ad-b524-a5943bb56d8d/6/master)](https://banksio.visualstudio.com/remote-media/_build/latest?definitionId=6&branchName=master)
+[![Azure DevOps tests (branch)](https://img.shields.io/azure-devops/tests/banksio/remote-media/6/master)](https://banksio.visualstudio.com/remote-media/_build/latest?definitionId=6&branchName=master)
+[![Azure DevOps coverage (branch)](https://img.shields.io/azure-devops/coverage/banksio/remote-media/6/master)](https://banksio.visualstudio.com/remote-media/_build/latest?definitionId=6&branchName=master)
 [![David](https://img.shields.io/david/banksio/remote-media)](https://david-dm.org/banksio/remote-media)
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/y/banksio/remote-media)
 [![Docker Pulls](https://img.shields.io/docker/pulls/banksio/remote-media)](https://hub.docker.com/r/banksio/remote-media)
