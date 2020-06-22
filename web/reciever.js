@@ -184,31 +184,31 @@ function frontendShowSideControlPanel(show) {
 }
 
 // Validation Check for Nickname
-// (function () {
-//     'use strict';
-//     window.addEventListener('load', function () {
-//         // Start modal
-//         $("#nameModal").modal({ backdrop: 'static', keyboard: false });
-//         // Fetch all the forms we want to apply custom Bootstrap validation styles to
-//         var forms = document.getElementsByClassName('needs-validation');
-//         // Loop over them and prevent submission
-//         var validation = Array.prototype.filter.call(forms, function (form) {
-//             form.addEventListener('click', function (event) {
-//                 if (form.checkValidity() === false) {
-//                     event.preventDefault();
-//                     event.stopPropagation();
-//                 }
-//                 form.classList.add('was-validated');
-//                 // Check whether button was pressed, if validated hide modal and send nickname to server
-//                 document.querySelector("#nicknameForm > div > div.modal-footer > button").addEventListener('click', function (event) {
-//                     let name = document.getElementById('validationDefault01').value;
-//                     if (name !== "") {
-//                         $('#nameModal').modal('hide');
-//                         socket.binary(false).emit("receiverNickname", name);
-//                     }
-//                 }, false);
+(function () {
+    'use strict';
+    window.addEventListener('load', function () {
+        // Start modal
+        $("#nameModal").modal({ backdrop: 'static', keyboard: false });
+        // Fetch all the forms we want to apply custom Bootstrap validation styles to
+        var forms = document.getElementsByClassName('needs-validation');
+        // Loop over them and prevent submission
+        var validation = Array.prototype.filter.call(forms, function (form) {
+            form.addEventListener('click', function (event) {
+                if (form.checkValidity() === false) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+                // Check whether button was pressed, if validated hide modal and send nickname to server
+                document.querySelector("#nicknameForm > div > div.modal-footer > button").addEventListener('click', function (event) {
+                    let name = document.getElementById('validationDefault01').value;
+                    if (name !== "") {
+                        $('#nameModal').modal('hide');
+                        socket.binary(false).emit("receiverNickname", name);
+                    }
+                }, false);
 
-//             }, false);
-//         });
-//     }, false);
-// })();
+            }, false);
+        });
+    }, false);
+})();
