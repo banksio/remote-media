@@ -23,10 +23,16 @@ steps:
   displayName: 'npm install'
 
 - script: npm run testWithReport
-  displayName: 'Run tests'
+  displayName: 'Run tests and generate reports'
 
 - task: PublishTestResults@2
   condition: succeededOrFailed()
   inputs:
     testRunner: JUnit
     testResultsFiles: '**/test-results.xml'
+
+- task: PublishCodeCoverageResults@1
+  inputs:
+    codeCoverageTool: 'Cobertura'
+    summaryFileLocation: '**/cobertura-coverage.xml'
+    failIfCoverageEmpty: true
