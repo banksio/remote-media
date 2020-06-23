@@ -114,6 +114,14 @@
   }
 } */
 
+#version_footer {
+  float: right;
+}
+
+#credit_footer {
+  float: left;
+}
+
 .hideBanner {
   transition-delay: 3s;
   transform: translate3d(0, -100%, 0);

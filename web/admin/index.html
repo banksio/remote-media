@@ -30,7 +30,7 @@
 <body>
   <nav class="navbar navbar-expand-sm navbar-light bg-light mb-4">
     <!-- <div class="container"> -->
-    <a class="navbar-brand" href="#">Remote Media</a>
+    <a class="navbar-brand" href="#">Remote Media - <small class="text-muted">Admin Panel</small></a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
       aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
@@ -38,11 +38,11 @@
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav mr-auto">
         <li class="nav-item">
-          <a class="nav-link" href="/">Reciever</a>
+          <a class="nav-link" href="/" target="_blank" alt="Open a receiver in a new tab">Reciever</a>
         </li>
-        <li class="nav-item active">
+        <!-- <li class="nav-item active">
           <a class="nav-link" href=".">Admin Panel <span class="sr-only">(current)</span></a>
-        </li>
+        </li> -->
       </ul>
     </div>
     <!-- </div> -->
@@ -189,27 +189,16 @@
           </div>
         </div>
       </div>
-      <!-- <div class="col-3">
-          <h3>Status</h3>
-          
-        </div> -->
     </div>
   </main>
 
   <footer class="footer mt-auto py-3">
-    <div class="container">
-      <span class="text-muted"><a href="https://www.github.com/banksio/remote-media">Remote Media</a>, &lt;/&gt; with ❤
+      <span id="credit_footer" class="text-muted float-left ml-3"><a href="https://www.github.com/banksio/remote-media">Remote Media</a>, &lt;/&gt; with ❤
         by <a href="https://www.github.com/banksio"><img src="https://avatars3.githubusercontent.com/u/30214760?v=4">
           banksio</a> & <a href="https://www.github.com/Mattsio"><img src="https://avatars3.githubusercontent.com/u/64006630">
             Mattsio</a></span>
-      <span class="text-muted float-right">Version 0.8.4</span>
-    </div>
+      <span id="version_footer" class="text-muted float-right mr-3">Version 0.8.4</span>
   </footer>
-  <!-- <footer class="footer">
-      <div class="container">
-        <span class="footer-content">Remote Media, &lt;/&gt; with ❤ by banksio</span>
-      </div>
-    </footer> -->
 
   <script type="text/javascript"
     src="https://gdata.youtube.com/feeds/api/videos/videoid?v=2&alt=json-in-script&format=5&callback=getTitle"></script>
