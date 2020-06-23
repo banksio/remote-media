@@ -151,9 +151,7 @@ io.on('connection', function (socket) {
         }
         // If the client has finished playing and the queue is not empty
         if (status.state == 0 && defaultRoom.queue.length > 0) {
-            let nextVideo = defaultRoom.queue.popVideo();
-            playVideo(nextVideo);
-            defaultRoom.currentVideo = nextVideo;
+            playNextInQueue(defaultRoom);
         }
     });
 
@@ -202,13 +200,9 @@ io.on('connection', function (socket) {
             var urlArray = inputData.split(',');
             // If there's only one URL
             if (urlArray.length == 1) {
-                var newVideo = new server.Video();
-                newVideo.setIDFromURL(urlArray[0]);
-                playVideo(newVideo);
-                defaultRoom.currentVideo = newVideo;
-                defaultRoom.currentVideo.cbStateDelay = checkVideoStartDelay;
-                defaultRoom.currentVideo.state = 5;
-                // defaultRoom.currentVideo._stateCB = shout;
+                let newVideo = new server.Video();
+                newVideo.setIDFromURL(url);
+                playNewVideoInRoom(newVideo, defaultRoom);
                 return;
             }
             // If there's multiple URLs
@@ -280,6 +274,9 @@ io.on('connection', function (socket) {
 
 });
 
+
+// Refactored
+
 // Send timestamp to a client
 function sendIndividualTimestamp(socket, timestamp) {
     socket.binary(false).emit("serverVideoTimestamp", timestamp);
@@ -290,16 +287,23 @@ function broadcastTimestamp(timestamp) {
     io.binary(false).emit("serverVideoTimestamp", timestamp);
 }
 
-// Refactored
-function playVideo(video) {
-    var newID = { "value": video.id };
+// Set a new video playing on the server
+function playNewVideoInRoom(videoObj, room) {
+    broadcastVideo(videoObj);
+    room.currentVideo = videoObj;
+    room.currentVideo.cbStateDelay = checkVideoStartDelay;
+    room.currentVideo.state = 5;
+}
+
+function broadcastVideo(videoObj) {
+    let newID = { "value": videoObj.id };
     consoleLogWithTime("New Video ID sent: " + newID.value);
     io.binary(false).emit("serverNewVideo", newID);
     return;
 }
 
-function playVideoIndividualClient(video, socket) {
-    var newID = { "value": video.id };
+function playVideoIndividualClient(videoObj, socket) {
+    let newID = { "value": videoObj.id };
     consoleLogWithTime("New Video ID sent to client " + socket.id + ": " + newID.value);
     socket.binary(false).emit("serverNewVideo", newID);
     return;
@@ -307,13 +311,13 @@ function playVideoIndividualClient(video, socket) {
 
 function sendQueue(room) {
     // Send the whole queue
-    var queue = room.queue;
+    let queue = room.queue;
     io.binary(false).emit("serverQueueVideos", queue);
 }
 
 function sendQueueStatus(room) {
     // Send the queue but remove the videos array, no need to send that
-    var queueStatus = room.queue;
+    let queueStatus = room.queue;
     // queueStatus.videos = undefined;
     io.binary(false).emit("serverQueueStatus", queueStatus);
 }
@@ -326,7 +330,7 @@ function sendNowPlaying(video) {
 }
 
 function queueShuffleToggle(room) {
-    var queue = room.queue;
+    let queue = room.queue;
     queue.shuffle = !queue.shuffle;
     return queue.shuffle;
 }
@@ -336,14 +340,14 @@ function sendPlayerControl(control) {
 }
 
 function broadcastClients(room) {
-    var clients = room.clients;
+    let clients = room.clients;
     io.binary(false).emit("serverClients", clients);
 }
 
 function playNextInQueue(room) {
-    var nextVideo = defaultRoom.queue.popVideo();
+    let nextVideo = room.queue.popVideo();
     if (nextVideo != undefined) {
-        playVideo(nextVideo);
+        playNewVideoInRoom(nextVideo, room);
         sendQueue(room);
     }
     return;
