@@ -3,17 +3,6 @@ const assert = require('assert');
 // Classes
 var classes = require('../web/classes');
 
-// describe('Simple Math Test', () => {
-//  it('should return 2', () => {
-//         assert.equal(1 + 1, 2);
-//     });
-//  it('should return 9', () => {
-//         assert.equal(3 * 3, 9);
-//     });
-// });
-
-
-
 // Test video object ID parsing
 describe('Video object URL parsing test', function () {
     let video = new classes.Video();
@@ -47,16 +36,16 @@ describe('Video object timekeeping test', function () {
     this.timeout(15000);
     let video = new classes.Video();
     it('Time after 5 seconds',function (done) {
+        let elapsedTime = 5000;
         video.startingTime = new Date().getTime();
-        setTimeout(function () {
-            done(assert.equal(5, video.getElapsedTime(new Date(Date.now() + 5000).getTime())));
-        }, 1);
+        let timestamp = video.getElapsedTime(new Date(Date.now() + elapsedTime).getTime());
+        done(assert.ok((4.980 < timestamp && timestamp < 5.020), video.getElapsedTime(new Date(Date.now() + elapsedTime).getTime())));
     });
     it('Time after 10 seconds',function (done) {
+        let elapsedTime = 10000;
         video.startingTime = new Date().getTime();
-        setTimeout(function () {
-            done(assert.equal(10, video.getElapsedTime(new Date(Date.now() + 10000).getTime())));
-        }, 1);
+        let timestamp = video.getElapsedTime(new Date(Date.now() + elapsedTime).getTime());
+        done(assert.ok((9.980 < timestamp && timestamp < 10.020), video.getElapsedTime(new Date(Date.now() + elapsedTime).getTime())));
     });
 });
 

@@ -32,40 +32,40 @@ var btnPlaylistShuffleToggle = document.getElementById('btnPlaylistShuffle');
 
 var pause = document.getElementById('pause');
 pause.addEventListener("click", function () {
-    socket.emit("adminPlayerControl", "pause");
+    socket.binary(false).emit("adminPlayerControl", "pause");
 });
 var play = document.getElementById('play');
 play.addEventListener("click", function () {
-    socket.emit("adminPlayerControl", "play");
+    socket.binary(false).emit("adminPlayerControl", "play");
 });
 
 var prev = document.getElementById('prev');
 prev.addEventListener("click", function () {
-    socket.emit("adminQueueControl", "prev");
+    socket.binary(false).emit("adminQueueControl", "prev");
 });
 var skip = document.getElementById('skip');
 skip.addEventListener("click", function () {
-    socket.emit("adminQueueControl", "skip");
+    socket.binary(false).emit("adminQueueControl", "skip");
 });
 
 var emptyPlaylist = document.getElementById('emptyPlaylist');
 emptyPlaylist.addEventListener("click", function () {
-    socket.emit("adminQueueControl", "empty");
+    socket.binary(false).emit("adminQueueControl", "empty");
 });
 
 // Not currently used
 // var mute = document.getElementById('1mute');
 // mute.addEventListener("click", function() {
-//   socket.emit("playerControl", "mute");
+//   socket.binary(false).emit("playerControl", "mute");
 // })
 // var unmute = document.getElementById('unmute');
 // unmute.addEventListener("click", function() {
-//   socket.emit("playerControl", "unmute");
+//   socket.binary(false).emit("playerControl", "unmute");
 // })
 
 function send() {
     var val = document.getElementById("target").value;
-    socket.emit("adminNewVideo", { value: val, pass: true });
+    socket.binary(false).emit("adminNewVideo", { value: val, pass: true });
 }
 
 function sendAppend() {
@@ -90,10 +90,10 @@ function sendAppend() {
     //             return;
     //         }
     //         // console.log(`Found match, group ${groupIndex}: ${match}`);
-    //         socket.emit("targetAppend",{value: match, pass: document.getElementById("password").value});
+    //         socket.binary(false).emit("targetAppend",{value: match, pass: document.getElementById("password").value});
     //     });
     // }
-    socket.emit("targetAppend", { value: val, pass: document.getElementById("password").value });
+    socket.binary(false).emit("targetAppend", { value: val, pass: document.getElementById("password").value });
 }
 
 function getTitle(data) {
@@ -107,15 +107,15 @@ function getTitle(data) {
 }
 
 function vol() {
-    socket.emit('volumeSend', volSlider.value);
+    socket.binary(false).emit('volumeSend', volSlider.value);
 }
 
 function reloadClients() {
-    socket.emit("adminConnectionManagement", "reload");
+    socket.binary(false).emit("adminConnectionManagement", "reload");
 }
 
 function disconnectClients() {
-    socket.emit("adminConnectionManagement", "discon");
+    socket.binary(false).emit("adminConnectionManagement", "discon");
 }
 
 socket.on("volumeRecv", function (data) {
@@ -129,7 +129,7 @@ function muteVid() {
 
 function speak() {
     var val = document.getElementById("speechBox").value;
-    socket.emit("adminTTSRequest", { value: val, pass: document.getElementById("password").value });
+    socket.binary(false).emit("adminTTSRequest", { value: val, pass: document.getElementById("password").value });
 }
 
 // socket.on("playerinfo",function(data){
@@ -209,7 +209,7 @@ socket.on("serverQueueVideos", function (queueData) {
 
 function toggleShuffle(toggled) {
     var newState = (toggled == 'false');  // Invert boolean from DOM
-    socket.emit("adminQueueControl", "toggleShuffle");
+    socket.binary(false).emit("adminQueueControl", "toggleShuffle");
 }
 
 socket.on("serverQueueStatus", function (status) {
@@ -225,6 +225,11 @@ function queueUpdateStatus(status) {
     }
     btnPlaylistShuffleToggle.ariaPressed = status.shuffle;
 }
+
+// // the client code
+// socket.on('ferret', (name, fn) => {
+//     fn('woot');
+// });
 
 socket.on('initFinished', function () {
     frontendChangeMainSpinner(0);
