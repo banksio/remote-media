@@ -95,7 +95,6 @@ io.on('connection', function (socket) {
                 consoleLogWithTime("playing" + defaultRoom.allPreloaded());
                 // Set the server's video instance playing
                 defaultRoom.currentVideo.state = 1;
-
                 // defaultRoom.currentVideo.startingTime = new Date().getTime();
             }
             return;  // Don't continue
@@ -201,7 +200,7 @@ io.on('connection', function (socket) {
             // If there's only one URL
             if (urlArray.length == 1) {
                 let newVideo = new server.Video();
-                newVideo.setIDFromURL(url);
+                newVideo.setIDFromURL(urlArray[0]);
                 playNewVideoInRoom(newVideo, defaultRoom);
                 return;
             }

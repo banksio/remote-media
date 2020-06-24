@@ -39,3 +39,8 @@
     color: #FFFFFF;
     font-weight: bold;
 }
+
+.fadeOutDiv {
+    opacity: 0%;
+    display: none;
+}
