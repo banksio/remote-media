@@ -262,14 +262,14 @@ class Video {
         // console.log(this._state);
         // console.log(this._pausedSince);
         if (this.startingTime != 0){  // If the video has elapsed time
-            if (this._state != 1){  // If the video is paused for buffering
+            if (this.state != 1){  // If the video is paused for buffering
                 this.pauseTimer();
-            } else if (this._state == 1) {  // If the video is playing
+            } else if (this.state == 1) {  // If the video is playing
                 if (this._pausedSince != 0){  // And it was previously paused
                     this.resumeTimer();
                 }
             }
-        } else if (this._state == 1){
+        } else if (this.state == 1){
             this.startingTime = new Date().getTime();
         }
         if (this.cbStateDelay){
@@ -283,7 +283,7 @@ class Video {
         if (this.state == 1){
             this._cbWhenFinishedTimeout = setTimeout(() => {
                 return this._cbWhenFinished();
-            }, this._duration - this.elapsedTime);
+            }, (this._duration - (this.elapsedTime * 1000)));
         }
         if (this.cbPlaying){
             return this.cbPlaying();
