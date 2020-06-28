@@ -1,6 +1,6 @@
 {
   "name": "remote-media",
-  "version": "1.0.0-alpha.3",
+  "version": "1.0.0-alpha.4",
   "description": "A small app to control other client's media remotely.",
   "main": "server.js",
   "scripts": {

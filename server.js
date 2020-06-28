@@ -148,8 +148,9 @@ io.on('connection', function (socket) {
                 }
             }
         }
-        // If the client has finished playing and the queue is not empty
-        if (status.state == 0 && defaultRoom.queue.length > 0) {
+        // If the server has a video playing, client has finished playing and the queue is not empty
+        // Status == 1 prevents the server getting confused when multiple clients respond
+        if (defaultRoom.currentVideo.state == 1 && status.state == 0 && defaultRoom.queue.length > 0) {
             playNextInQueue(defaultRoom);
         }
     });
@@ -359,9 +360,13 @@ function shout(video) {
 // Called when the video does not start for two seconds
 function checkVideoStartDelay(videoState){
     consoleLogWithTime("Current video state is " + videoState);
-    let buffering = defaultRoom.getBuffering();
+    broadcastBufferingClients(defaultRoom);  // TODO: Refactor into generic room object
+}
+
+function broadcastBufferingClients(room){
+    let buffering = room.getBuffering();
     buffering.forEach(client => {
-        console.log("Waiting on " + client.name + " with state " + client.status.state);
+        consoleLogWithTime("Waiting on " + client.name + " with state " + client.status.state);
     });
     io.binary(false).emit("serverBufferingClients", buffering);
 }

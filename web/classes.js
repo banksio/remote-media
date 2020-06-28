@@ -191,6 +191,7 @@ class Video {
         this.elapsedTime = 0;
         this._pausedSince = 0;
         this._pausedTime = 0;
+        
     }
 
     setIDFromURL(url) {
@@ -253,11 +254,12 @@ class Video {
             this.startingTime = new Date().getTime();
         }
         if (this.cbStateDelay){
-            setTimeout(() => {
+            this._stateDelayInterval = setTimeout(() => {
                 if (this.state != 1){
                     return this.cbStateDelay(this.state);
                 }
             }, 2000);
+            // clearInterval(1);
         }
         if (this.cbPlaying){
             return this.cbPlaying();

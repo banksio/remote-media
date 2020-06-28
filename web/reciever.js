@@ -49,7 +49,7 @@ socket.on('volumeRecv', function (data) {
 socket.on("serverBufferingClients", function (buffering) {
     let names = "Waiting for ";
     buffering.forEach(client => {
-        names += (client.name + " ");
+        names += (client.name + ", ");
     });
     frontendShowNotificationBanner(names, true);
 });
