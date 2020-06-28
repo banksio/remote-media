@@ -159,8 +159,8 @@ class Queue {
         if (this.shuffle) {
             // We're shuffling, so get a random video
             var nextIndex = Math.floor(Math.random() * this.videos.length);  // Random from the queue
-            console.log(this.length);
-            console.log(nextIndex);
+            console.log("[classes.js][ServerQueue] Queue is of length " + this.length);
+            console.log("[classes.js][ServerQueue] The next queue video index is " + nextIndex);
             var nextVideo = this.videos[nextIndex];  // Get next video object
             this.videos.splice(nextIndex, 1);  // Remove from queue
             this.length = this.videos.length;  // Update queue length
@@ -185,7 +185,7 @@ class Video {
         this.id = id;
         this.title = title;
         this.channel = channel;
-        this.duration = duration;
+        this._duration = duration;
         this._state = 5;
         this.startingTime = 0;
         this.elapsedTime = 0;
@@ -205,7 +205,7 @@ class Video {
 
         }
         this.elapsedTime = (((currentTime - this.startingTime) - this._pausedTime) / 1000);
-        console.log("time " + this.elapsedTime + "oof" + this._pausedTime / 1000);
+        console.log("[classes.js][ServerVideo] The video's currently elapsed time is " + this.elapsedTime + " and has been paused for " + this._pausedTime / 1000);
         return this.elapsedTime;
     }
 
@@ -217,13 +217,32 @@ class Video {
 
     pauseTimer(time=new Date().getTime()){
         this._pausedSince = time;  // Set the time of pausing
-        console.log("PAUSEDVID");
+        console.log("[classes.js][ServerVideo] The video has been set paused.");
+        if (this._cbWhenFinishedTimeout){
+            clearTimeout(this._cbWhenFinishedTimeout);
+        }
     }
 
     resumeTimer(time=new Date().getTime()){
         this._pausedTime += (time - this._pausedSince);
         this._pausedSince = 0;
-        console.log("RESUMED VID. PAUSED FOR" + this._pausedTime);
+        // Callback when the video has finished
+
+        console.log("[classes.js][ServerVideo] The video has been resumed. It was paused for " + this._pausedTime);
+    }
+
+    whenFinished(cbWhenFinished) {
+        this._cbWhenFinished = cbWhenFinished;
+        return;
+    }
+
+    set duration(time){
+        this._duration = time * 1000;
+        return;
+    }
+
+    get duration(){
+        return this._duration;
     }
 
     get pausedTime(){
@@ -239,9 +258,9 @@ class Video {
 
     set state(newState){
         this._state = newState;
-        console.log(this.startingTime);
-        console.log(this._state);
-        console.log(this._pausedSince);
+        // console.log(this.startingTime);
+        // console.log(this._state);
+        // console.log(this._pausedSince);
         if (this.startingTime != 0){  // If the video has elapsed time
             if (this._state != 1){  // If the video is paused for buffering
                 this.pauseTimer();
@@ -260,6 +279,11 @@ class Video {
                 }
             }, 2000);
             // clearInterval(1);
+        }
+        if (this.state == 1){
+            this._cbWhenFinishedTimeout = setTimeout(() => {
+                return this._cbWhenFinished();
+            }, this._duration - this.elapsedTime);
         }
         if (this.cbPlaying){
             return this.cbPlaying();

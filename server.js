@@ -1,6 +1,7 @@
 // Include dependencies
 const socketio = require('socket.io');
 const express = require('express');
+const path = require('path');
 const ytlist = require('youtube-playlist');
 
 // Classes
@@ -23,11 +24,27 @@ var defaultRoom = new server.Room();
 function consoleLogWithTime(msg) {
     console.log("[" + new Date().getHours() + ":" + new Date().getMinutes() + ":" + new Date().getSeconds() + "]" + msg);
 }
+
+function prettyPrintClientID(client){
+    return (client.id + " (" + client.name + ")");
+}
+
 consoleLogWithTime("[INFO] Starting server...");
 
 consoleLogWithTime("[INFO] Starting express...");
 //create express object
 var exp = express();
+
+// Serve the reciever
+exp.get('/', function(req, res) {
+    res.sendFile(path.join(__dirname + '/views/index.html'));
+});
+
+// Serve the admin panel
+exp.get('/admin', function(req, res) {
+    res.sendFile(path.join(__dirname + '/views/admin.html'));
+});
+
 //use it to serve pages from the web folder
 exp.use(express.static('web'));
 var web = exp.listen(port);
@@ -48,18 +65,18 @@ io.on('connection', function (socket) {
     broadcastClients(defaultRoom);
     socket.binary(false).emit('initFinished');
 
-    consoleLogWithTime("New Client " + currentClient.id);
+    consoleLogWithTime("[CliMgnt] New Client " + currentClient.id);
 
     // The reciever's player has loaded
     socket.on("recieverPlayerReady", function () {
-        console.log("RECIEVED READY " + currentClient.id);
+        consoleLogWithTime("[CliMgnt] " + prettyPrintClientID(currentClient) + " is ready. ");
         // Update the state in our server
         currentClient.status.playerLoading = false;
         // Is there currently a video playing on the server?
         // If there is, we should send it to the newly created client.
         if (defaultRoom.currentVideo.state == 1) {
             // There is a video playing, so the client will need to preload it and then go to the timestamp
-            playVideoIndividualClient(defaultRoom.currentVideo, socket);
+            preloadVideoIndividualClient(defaultRoom.currentVideo, socket);
             // This client needs a timestamp ASAP, this should be picked up by the status checking function
             currentClient.status.requiresTimestamp = true;
         }
@@ -83,16 +100,18 @@ io.on('connection', function (socket) {
         currentClient.status.updateState(state);
         currentClient.status.updatePreloading(preloading);
         broadcastClients(defaultRoom);
-        // consoleLogWithTime("New state recieved " + status.state);
-        // consoleLogWithTime("New preloading recieved " + status.preloading);
-        consoleLogWithTime("debug:PLAYER" + socket.id + " status: " + state + " preloading:" + preloading);
+        consoleLogWithTime("[CliStatus] " + prettyPrintClientID(currentClient) + " has new status:" + " status: " + state + " preloading:" + preloading);
 
         if (preloading == false && defaultRoom.currentVideo.state == 5) {  // If this client is preloaded and the server is waiting to start a video
             // If everyone's preloaded, play the video
             if (defaultRoom.allPreloaded()) {
+                if (defaultRoom.currentVideo.duration == 0){
+                    consoleLogWithTime("[Preload] Video details not recieved, cannot play video.");
+                    return;
+                }
                 // Set all the recievers playing
                 sendPlayerControl("play");
-                consoleLogWithTime("playing" + defaultRoom.allPreloaded());
+                consoleLogWithTime("[Preload] Everyone has finished preloading, playing the video " + defaultRoom.allPreloaded());
                 // Set the server's video instance playing
                 defaultRoom.currentVideo.state = 1;
                 // defaultRoom.currentVideo.startingTime = new Date().getTime();
@@ -100,7 +119,7 @@ io.on('connection', function (socket) {
             return;  // Don't continue
         } else if (preloading == false && defaultRoom.currentVideo.state == 1 && currentClient.status.requiresTimestamp) {  // If this client is preloaded and the server is already playing a video
             currentClient.status.requiresTimestamp = false;
-            console.log("GETTINGTIME");
+            consoleLogWithTime("[ClientVideo] " + prettyPrintClientID(currentClient) + " requires a timestamp. Sending one to it now.");
             sendIndividualTimestamp(socket, defaultRoom.currentVideo.getElapsedTime());
             return;  // Don't continue
         } else if (preloading == true) {  // If the client is currently preloading
@@ -125,32 +144,33 @@ io.on('connection', function (socket) {
         // Update the status of the current client
         // currentClient.status.updateStatus(status);
 
-
         // If the client buffers and no one's preloading,
-        if (defaultRoom.allPreloaded() && status.state == 3) {
+        if (status.state == 3 && defaultRoom.allPreloaded()) {
             // Add the socket to the array and pause all the clients
             buffering.push(socket.id);
             sendPlayerControl("pause");
             defaultRoom.currentVideo.state = 3;
-            consoleLogWithTime("pausing cause buffer");
-            consoleLogWithTime(status.state);
-            // If client is playing
+            consoleLogWithTime("[BufferMgnt] " + prettyPrintClientID(currentClient) + " is buffering. The video has been paused.");
+        // If client is playing
         } else if (status.state == 1) {
-            // If anyone was listed as buffering
+            // If anyone was previously listed as buffering
             if (buffering.length > 0) {
                 // Remove this client from the buffering array, they're ready
-                // consoleLogWithTime(status.state);
+                consoleLogWithTime("[BufferMgnt] " + prettyPrintClientID(currentClient) + " has stopped buffering.");
                 buffering.splice(buffering.indexOf(socket.id), 1);
+                // If that means no one is buffering now, resume everyone
                 if (buffering.length == 0) {
-                    consoleLogWithTime("resuming");
+                    consoleLogWithTime("[BufferMgnt] No one is buffering, resuming the video.");
                     sendPlayerControl("play");  // Play all the recievers
                     defaultRoom.currentVideo.state = 1;  // Tell the server the video's now playing again
                 }
             }
         }
+
         // If the server has a video playing, client has finished playing and the queue is not empty
         // Status == 1 prevents the server getting confused when multiple clients respond
         if (defaultRoom.currentVideo.state == 1 && status.state == 0 && defaultRoom.queue.length > 0) {
+            consoleLogWithTime("[ServerQueue] " + prettyPrintClientID(currentClient) + " has finished. Playing the next video.");
             playNextInQueue(defaultRoom);
         }
     });
@@ -158,12 +178,13 @@ io.on('connection', function (socket) {
     // Recieved video details from a reciever
     socket.on("recieverVideoDetails", function (videoDetails) {
         if (videoDetails.id != defaultRoom.currentVideo.id) {
-            consoleLogWithTime("Recieved invalid video details from " + currentClient.name);
+            consoleLogWithTime("[ServerVideo] Recieved invalid video details from " + prettyPrintClientID(currentClient));
             return;
         }
-        consoleLogWithTime("Recieved video details from " + currentClient.name);
+        consoleLogWithTime("[ServerVideo] Recieved video details from " + prettyPrintClientID(currentClient));
         defaultRoom.currentVideo.title = videoDetails.title;
         defaultRoom.currentVideo.channel = videoDetails.channel;
+        defaultRoom.currentVideo.duration = videoDetails.duration;
         sendNowPlaying(defaultRoom.currentVideo);
     });
 
@@ -202,7 +223,7 @@ io.on('connection', function (socket) {
             if (urlArray.length == 1) {
                 let newVideo = new server.Video();
                 newVideo.setIDFromURL(urlArray[0]);
-                playNewVideoInRoom(newVideo, defaultRoom);
+                preloadNewVideoInRoom(newVideo, defaultRoom);
                 return;
             }
             // If there's multiple URLs
@@ -227,7 +248,7 @@ io.on('connection', function (socket) {
         } else if (data == "play") {
             defaultRoom.currentVideo.resumeTimer();
         }
-        consoleLogWithTime("Video Control: " + data);
+        consoleLogWithTime("[VideoControl] Video Control: " + data);
     });
 
     // Queue control
@@ -239,12 +260,12 @@ io.on('connection', function (socket) {
                 playNextInQueue(defaultRoom);
                 break;
             case "empty":
-                consoleLogWithTime("Emptying playlist");
+                consoleLogWithTime("[ServerQueue] Emptying playlist");
                 defaultRoom.queue.empty();
                 break;
             case "toggleShuffle":
                 queueShuffleToggle(defaultRoom);
-                consoleLogWithTime("Shuffle: " + defaultRoom.queue.shuffle);
+                consoleLogWithTime("[ServerQueue] Shuffle: " + defaultRoom.queue.shuffle);
                 sendQueueStatus(defaultRoom);
                 return;
             default:
@@ -258,16 +279,16 @@ io.on('connection', function (socket) {
         consoleLogWithTime("Connection management request recieved");
         if (control == "reload") {
             io.binary(false).emit("serverConnectionManagement", "reload");
-            consoleLogWithTime("Reloading all clients...");
+            consoleLogWithTime("[CliMgnt] Reloading all clients...");
         } else {
             io.binary(false).emit("serverConnectionManagement", "discon");
-            consoleLogWithTime("Disconnecting all clients...");
+            consoleLogWithTime("[CliMgnt] Disconnecting all clients...");
         }
     });
 
     // Remove client when they disconnect
     socket.on('disconnect', () => {
-        console.log("disconnected");
+        console.log("[CliMgnt] " + prettyPrintClientID(currentClient) + " has disconnected.");
         defaultRoom.removeClient(currentClient);
         broadcastClients(defaultRoom);
     });
@@ -282,27 +303,31 @@ function sendIndividualTimestamp(socket, timestamp) {
     socket.binary(false).emit("serverVideoTimestamp", timestamp);
 }
 
-// Send timestamp to all client
+// Send timestamp to all clients
 function broadcastTimestamp(timestamp) {
     io.binary(false).emit("serverVideoTimestamp", timestamp);
 }
 
 // Set a new video playing on the server
-function playNewVideoInRoom(videoObj, room) {
-    broadcastVideo(videoObj);
+function preloadNewVideoInRoom(videoObj, room) {
+    broadcastPreloadVideo(videoObj);
     room.currentVideo = videoObj;
     room.currentVideo.cbStateDelay = checkVideoStartDelay;
     room.currentVideo.state = 5;
+    room.currentVideo.whenFinished(function() {
+        // Video has finished.
+        consoleLogWithTime("[ServerVideo] The video has finished.");
+    });
 }
 
-function broadcastVideo(videoObj) {
+function broadcastPreloadVideo(videoObj) {
     let newID = { "value": videoObj.id };
     consoleLogWithTime("New Video ID sent: " + newID.value);
     io.binary(false).emit("serverNewVideo", newID);
     return;
 }
 
-function playVideoIndividualClient(videoObj, socket) {
+function preloadVideoIndividualClient(videoObj, socket) {
     let newID = { "value": videoObj.id };
     consoleLogWithTime("New Video ID sent to client " + socket.id + ": " + newID.value);
     socket.binary(false).emit("serverNewVideo", newID);
@@ -347,7 +372,7 @@ function broadcastClients(room) {
 function playNextInQueue(room) {
     let nextVideo = room.queue.popVideo();
     if (nextVideo != undefined) {
-        playNewVideoInRoom(nextVideo, room);
+        preloadNewVideoInRoom(nextVideo, room);
         sendQueue(room);
     }
     return;

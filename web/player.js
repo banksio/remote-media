@@ -17,7 +17,7 @@ var preloading = false;
 function onYouTubeIframeAPIReady() {
     player = new YT.Player('player', {
         // playerVars: {'autoplay': 1, 'controls': 1, 'rel' : 0, 'fs' : 0},
-        playerVars: { 'autoplay': 1, 'controls': 1, 'disablekb': 1 },
+        playerVars: { 'autoplay': 1, 'controls': 1, 'disablekb': 1, 'fs': 0 },
         events: {
             'onReady': onPlayerReady,
             'onStateChange': onPlayerStateChange
@@ -189,10 +189,12 @@ function compareTimestamps(client, server){
 
 function sendVideoDetails() {
     var videoDetails = player.getVideoData();
+    var videoDuration = player.getDuration();
     console.log(videoDetails);
     socket.binary(false).emit("recieverVideoDetails", {
         id: videoDetails.video_id,
         title: videoDetails.title,
-        channel: videoDetails.author
+        channel: videoDetails.author,
+        duration: videoDuration
     });
 }
