@@ -140,6 +140,7 @@ function onPlayerStateChange(event) {
         switch (newState) {
             case 0:
                 document.title = "Remote Media";
+                playScreensaver();
                 break;
             case 1:
                 // Update the tab title with the current Video ID
@@ -197,4 +198,9 @@ function sendVideoDetails() {
         channel: videoDetails.author,
         duration: videoDuration
     });
+}
+
+function playScreensaver() {
+    document.getElementById("screensaver").classList.remove("fadeOutDiv");
+    console.log("Hiding screensaver");
 }
