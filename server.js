@@ -93,6 +93,7 @@ io.on('connection', function (socket) {
         if (socket.id == undefined) {
             return;
         }
+        consoleLogWithTime("[Server Video] The current video timestamp is " + defaultRoom.currentVideo.getElapsedTime());
         // Get the current state and use for logic
         let previousPreloadingState = currentClient.status.preloading;
         // Save the state and the preloading state, send to clients
@@ -129,6 +130,7 @@ io.on('connection', function (socket) {
                 // We'll send the client a timestamp so it can sync with the server
                 currentClient.status.requiresTimestamp = false;
                 consoleLogWithTime("[ClientVideo] " + prettyPrintClientID(currentClient) + " requires a timestamp. Sending one to it now.");
+                console.log("[CliMgnt] " + prettyPrintClientID(currentClient) + " has been sent a timestamp.");
                 sendIndividualTimestamp(socket, defaultRoom.currentVideo.getElapsedTime());
                 return;  // Don't continue with this function
             }
@@ -211,6 +213,7 @@ io.on('connection', function (socket) {
     // }, 1000);
 
     socket.on('recieverTimestampRequest', (fn) => {
+        console.log("[CliMgnt] " + prettyPrintClientID(currentClient) + " has requested a timestamp.");
         fn(defaultRoom.currentVideo.getElapsedTime());
     });
 

@@ -204,6 +204,10 @@ class Video {
         if (this._pausedSince != 0){
 
         }
+        if (this.startingTime == 0){
+            this.elapsedTime = 0;
+            return 0;
+        }
         this.elapsedTime = (((currentTime - this.startingTime) - this._pausedTime) / 1000);
         console.log("[classes.js][ServerVideo] The video's currently elapsed time is " + this.elapsedTime + " and has been paused for " + this._pausedTime / 1000);
         return this.elapsedTime;
@@ -271,6 +275,7 @@ class Video {
             }
         } else if (this.state == 1){
             this.startingTime = new Date().getTime();
+
         }
         if (this.cbStateDelay){
             this._stateDelayInterval = setTimeout(() => {
