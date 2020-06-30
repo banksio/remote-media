@@ -86,9 +86,22 @@ io.on('connection', function (socket) {
         }
     });
 
-    socket.on("receiverNickname", function (name) {
-        currentClient.name = name;
+    // Replaced with code beneath
+    // socket.on("receiverNickname", function (name) {
+    //     currentClient.name = name;
+    //     broadcastClients(defaultRoom);
+    // });
+
+    // Acknowledge the reciever's nickname and let them know if it's valid or not
+    socket.on('receiverNickname', (nick, fn) => {
+        // TODO: Check for any other clients with the same nickname and return the error
+        // Set the nickname
+        currentClient.name = nick;
+        // Upadte clients for admin panels
         broadcastClients(defaultRoom);
+        consoleLogWithTime("[CliNick] " + prettyPrintClientID(currentClient) + " has set their nickname.");
+        // Empty response is success, tells reciever to continue
+        fn();
     });
 
     // Status of the reciever

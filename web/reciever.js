@@ -203,8 +203,9 @@ function frontendShowSideControlPanel(show) {
                 document.querySelector("#nicknameForm > div > div.modal-footer > button").addEventListener('click', function (event) {
                     let name = document.getElementById('validationDefault01').value;
                     if (name !== "") {
-                        $('#nameModal').modal('hide');
-                        socket.binary(false).emit("receiverNickname", name);
+                        // Check nickname async
+                        // TODO: Show loading spinner or something
+                        checkNickname(name);
                     }
                 }, false);
 
@@ -212,3 +213,16 @@ function frontendShowSideControlPanel(show) {
         });
     }, false);
 })();
+
+function checkNickname(nick) {
+    socket.emit('receiverNickname', nick, (error) => { // args are sent in order to acknowledgement function
+        // If response is true, we're good
+        if (error == undefined){
+            $('#nameModal').modal('hide');
+            return;
+        }
+        // If response is false, there's been an error
+        alert("Setting nickname has been encountered an error: " + error);
+        return error;
+    });
+}
