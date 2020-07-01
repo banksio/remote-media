@@ -6,6 +6,7 @@ const ytlist = require('youtube-playlist');
 
 // Classes
 var server = require('./web/classes');
+const { Video } = require('./web/classes');
 
 // Constants 
 const port = 3694;
@@ -214,6 +215,7 @@ io.on('connection', function (socket) {
         defaultRoom.currentVideo.title = videoDetails.title;
         defaultRoom.currentVideo.channel = videoDetails.channel;
         defaultRoom.currentVideo.duration = videoDetails.duration;
+        consoleLogWithTime("The video duration is " + videoDetails.duration);
         sendNowPlaying(defaultRoom.currentVideo);
     });
 
@@ -247,6 +249,18 @@ io.on('connection', function (socket) {
     socket.on("adminNewVideo", function (data) {
         var inputData = data.value;
         if (true) {
+            // If we've got a playlist JSON on our hands
+            if (inputData.substring(0, 8) == "RMPLYLST"){
+                let playlistJSON = JSON.parse(inputData.substring(8));
+                for (let [url, details] of Object.entries(playlistJSON)) {
+                    let newVideo = new Video(undefined, details.title, details.channel);
+                    newVideo.setIDFromURL(url);
+                    defaultRoom.queue.addVideo(newVideo);
+                }
+                sendQueue(defaultRoom);
+                playNextInQueue(defaultRoom);
+                return;
+            }
             // Split the CSV
             var urlArray = inputData.split(',');
             // If there's only one URL
@@ -259,6 +273,7 @@ io.on('connection', function (socket) {
             // If there's multiple URLs
             defaultRoom.queue.addVideosFromURLs(inputData);
             sendQueue(defaultRoom);
+            playNextInQueue(defaultRoom);
             return;
         }
     });
@@ -346,7 +361,8 @@ function preloadNewVideoInRoom(videoObj, room) {
     room.currentVideo.state = 5;
     room.currentVideo.whenFinished(function() {
         // Video has finished.
-        consoleLogWithTime("[ServerVideo] The video has finished.");
+        
+        consoleLogWithTime("[ServerVideo] The video has finished. Elapsed time: " + room.currentVideo.getElapsedTime());
         playNextInQueue(room);
     });
 }
@@ -384,10 +400,8 @@ function sendNowPlaying(video) {
     // Update elapsed time
     // video.getElapsedTime(new Date().getTime());  // UPDATE no longer used
     // Send the current video object to all clients (and admin panels)
-    console.log("SENDO MODE");
-    console.log(video);
+    // console.log(video);
     io.binary(false).emit("serverCurrentVideo", JSON.stringify(video, video.cyclicReplacer));
-    console.log("SENDO MODE");
 }
 
 function queueShuffleToggle(room) {

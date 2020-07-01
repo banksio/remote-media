@@ -297,6 +297,7 @@ class Video {
             this._cbWhenFinishedTimeout = setTimeout(() => {
                 return this._cbWhenFinished();
             }, (this._duration - (this.elapsedTime * 1000)));
+            console.log("OOOF Set timeout to " + (this._duration - (this.elapsedTime * 1000)));
         }
         if (this.cbPlaying){
             return this.cbPlaying();

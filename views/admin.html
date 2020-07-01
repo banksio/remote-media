@@ -118,12 +118,12 @@
                                 <p class="videoTitle mb-1">Next up:</p>
                                 <div class="row">
                                     <div class="col-8">
-                                        <p class="videoTitleNext">Ariana Grande - break up with your girlfriend, i'm
+                                        <p id="videoTitleNext" class="videoTitleNext">Ariana Grande - break up with your girlfriend, i'm
                                             bored (Official Video)
                                         </p>
                                     </div>
                                     <div class="col-4">
-                                        <img class="img-fluid mb-2"
+                                        <img id="videoThumbnailNext" class="img-fluid mb-2"
                                             src="https://i3.ytimg.com/vi/LH4Y1ZUUx2g/maxresdefault.jpg" />
                                     </div>
                                 </div>
@@ -155,7 +155,8 @@
                                     <thead>
                                         <tr>
                                             <td>Number</td>
-                                            <td>Video ID</td>
+                                            <td>Title</td>
+                                            <td>Channel</td>
                                         </tr>
                                     </thead>
                                     <tbody id="playlist-table-body">
@@ -211,7 +212,7 @@
         </div>
     </main>
 
-    <footer class="footer mt-auto py-3">
+    <footer class="footer py-3">
         <span id="credit_footer" class="text-muted float-left ml-3"><a
                 href="https://www.github.com/banksio/remote-media">Remote Media</a>, &lt;/&gt; with ❤
             by <a href="https://www.github.com/banksio"><img

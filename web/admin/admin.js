@@ -150,7 +150,7 @@ socket.on("serverCurrentVideo", function (video) {
     let nowplayingTitleElement = document.getElementById("nowPlayingTitle");
     let nowplayingChannelElement = document.getElementById("nowPlayingChannel");
     let nowplayingThumbnail = document.getElementById("imgNowPlaying");
-    nowplayingThumbnail.src = "https://i3.ytimg.com/vi/" + video.id + "/maxresdefault.jpg";
+    nowplayingThumbnail.src = getThumbnailSrc(video);
     nowplayingTitleElement.innerText = video.title;
     nowplayingChannelElement.innerText = video.channel;
     frontendChangeThumbnailSpinner(false);
@@ -176,23 +176,11 @@ socket.on("serverClients", function (clients) {
     }
 });
 
-socket.on("playlistInfoObj", function (playlist) {
-    // Get a reference to the table, and empty it
-    let tableRef = document.getElementById("playlist-table-body");
-    tableRef.innerHTML = "";
-
-    var i = 1;
-    for (var video of playlist) {
-        // console.log(video);
-        // $('#playlist-table-body tr:last').after('<tr><td>'+ i +'</td><td>'+ video["id"] +'</td></tr>');
-        tableRef.innerHTML = tableRef.innerHTML + '<tr><td>' + i + '</td><td>' + video.id + '</td></tr>';
-        i++;
-    }
-});
-
 socket.on("serverQueueVideos", function (queueData) {
     // Get a reference to the table, and empty it
     let tableRef = document.getElementById("playlist-table-body");
+    let upNextTitle = document.getElementById("videoTitleNext");
+    let upNextImage = document.getElementById("videoThumbnailNext");
     tableRef.innerHTML = "";
     // console.log(queueData);
     var videos = queueData.videos;
@@ -202,13 +190,19 @@ socket.on("serverQueueVideos", function (queueData) {
             // console.log(video);
             var videoID = video.id;
             // $('#playlist-table-body tr:last').after('<tr><td>'+ i +'</td><td>'+ video["id"] +'</td></tr>');
-            tableRef.innerHTML = tableRef.innerHTML + '<tr><td>' + i + '</td><td>' + videoID + '</td></tr>';
+            tableRef.innerHTML = tableRef.innerHTML + '<tr><td>' + i + '</td><td>' + video.title + '</td><td>' + video.channel + '</td></tr>';
             i++;
         }
+        upNextTitle.innerText = videos[0].title;
+        upNextImage.src = getThumbnailSrc(videos[0]);
     }
 
     queueUpdateStatus(queueData);
 });
+
+function getThumbnailSrc(video) {
+    return "https://i3.ytimg.com/vi/" + video.id + "/maxresdefault.jpg";
+}
 
 function toggleShuffle(toggled) {
     var newState = (toggled == 'false');  // Invert boolean from DOM
