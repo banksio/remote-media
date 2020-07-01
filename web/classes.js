@@ -194,6 +194,14 @@ class Video {
         
     }
 
+    cyclicReplacer(key,value) {
+        if (key=="cbStateDelay") return undefined;
+        else if (key=="_stateDelayInterval") return undefined;
+        else if (key=="_cbWhenFinished") return undefined;
+        else if (key=="_cbWhenFinishedTimeout") return undefined;
+        else return value;
+    }
+
     setIDFromURL(url) {
         this.id = getIDFromURL(url);
     }

@@ -214,9 +214,10 @@ function frontendShowSideControlPanel(show) {
     }, false);
 })();
 
+// Ask the server to validate the nickname and get the response
 function checkNickname(nick) {
-    socket.emit('receiverNickname', nick, (error) => { // args are sent in order to acknowledgement function
-        // If response is true, we're good
+    socket.emit('receiverNickname', nick, (error) => { // Async callback with server's validation response
+        // If response is true, we're good - hide the modal
         if (error == undefined){
             $('#nameModal').modal('hide');
             return;

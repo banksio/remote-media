@@ -67,6 +67,7 @@ io.on('connection', function (socket) {
     // Send all data to new clients and admin panels
     sendQueue(defaultRoom);
     broadcastClients(defaultRoom);
+    if (defaultRoom.currentVideo.state == 1) sendNowPlaying(defaultRoom.currentVideo);
     socket.binary(false).emit('initFinished');
 
     consoleLogWithTime("[CliMgnt] New Client " + currentClient.id);
@@ -377,11 +378,16 @@ function sendQueueStatus(room) {
     io.binary(false).emit("serverQueueStatus", queueStatus);
 }
 
+
+
 function sendNowPlaying(video) {
     // Update elapsed time
     // video.getElapsedTime(new Date().getTime());  // UPDATE no longer used
     // Send the current video object to all clients (and admin panels)
-    io.binary(false).emit("serverCurrentVideo", video);
+    console.log("SENDO MODE");
+    console.log(video);
+    io.binary(false).emit("serverCurrentVideo", JSON.stringify(video, video.cyclicReplacer));
+    console.log("SENDO MODE");
 }
 
 function queueShuffleToggle(room) {

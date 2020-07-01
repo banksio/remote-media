@@ -144,6 +144,9 @@ socket.on("serverNewVideo", function (data) {
 
 // Recieved video details from the server
 socket.on("serverCurrentVideo", function (video) {
+    video = JSON.parse(video);
+    console.log("Recieved video details from server");
+    // console.log(JSON.parse(video));
     let nowplayingTitleElement = document.getElementById("nowPlayingTitle");
     let nowplayingChannelElement = document.getElementById("nowPlayingChannel");
     let nowplayingThumbnail = document.getElementById("imgNowPlaying");
@@ -159,7 +162,7 @@ socket.on("serverClients", function (clients) {
     let tableRef = document.getElementById("data-table-body");
     tableRef.innerHTML = "";
 
-    console.log(clients);
+    // console.log(clients);
 
     for (let [id, client] of Object.entries(clients)) {
         if (client.status.state == "Admin") {
@@ -180,7 +183,7 @@ socket.on("playlistInfoObj", function (playlist) {
 
     var i = 1;
     for (var video of playlist) {
-        console.log(video);
+        // console.log(video);
         // $('#playlist-table-body tr:last').after('<tr><td>'+ i +'</td><td>'+ video["id"] +'</td></tr>');
         tableRef.innerHTML = tableRef.innerHTML + '<tr><td>' + i + '</td><td>' + video.id + '</td></tr>';
         i++;
@@ -191,12 +194,12 @@ socket.on("serverQueueVideos", function (queueData) {
     // Get a reference to the table, and empty it
     let tableRef = document.getElementById("playlist-table-body");
     tableRef.innerHTML = "";
-    console.log(queueData);
+    // console.log(queueData);
     var videos = queueData.videos;
     if (videos.length > 0) {
         var i = 1;
         for (var video of videos) {
-            console.log(video);
+            // console.log(video);
             var videoID = video.id;
             // $('#playlist-table-body tr:last').after('<tr><td>'+ i +'</td><td>'+ video["id"] +'</td></tr>');
             tableRef.innerHTML = tableRef.innerHTML + '<tr><td>' + i + '</td><td>' + videoID + '</td></tr>';
