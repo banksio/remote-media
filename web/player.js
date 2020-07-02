@@ -140,11 +140,12 @@ function onPlayerStateChange(event) {
         switch (newState) {
             case 0:
                 document.title = "Remote Media";
-                playScreensaver();
+                startScreensaver();
                 break;
             case 1:
                 // Update the tab title with the current Video ID
                 document.title = player.getVideoData().title + " - Remote Media";
+                stopScreensaver();
                 // break; // Fall through to next case
             case 2:
                 compareWithServerTimestamp();
@@ -200,7 +201,3 @@ function sendVideoDetails() {
     });
 }
 
-function playScreensaver() {
-    document.getElementById("screensaver").classList.remove("fadeOutDiv");
-    console.log("Hiding screensaver");
-}
