@@ -231,8 +231,8 @@ class Video {
         this._pausedSince = time;  // Set the time of pausing
         console.log("[classes.js][ServerVideo] The video has been set paused.");
         // if (this._cbWhenFinishedTimeout){
-        clearTimeout(this._cbWhenFinishedTimeout);
-        console.log("DEBUGGGGGGGGGGGG The timeout has been cleared ");
+        // clearTimeout(this._cbWhenFinishedTimeout);
+        // console.log("DEBUGGGGGGGGGGGG The timeout has been cleared ");
         // }
     }
 
@@ -294,13 +294,16 @@ class Video {
             }, 2000);
             // clearInterval(1);
         }
-        if (this.state == 1){
-            console.log("DEBUGGGGGGGGGGGG Cleared any existing timestamp");
-            clearTimeout(this._cbWhenFinished);
-            
+        if (this.state == 1 && this._cbWhenFinishedTimeout == undefined){
+            // console.log("DEBUGGGGGGGGGGGG Cleared any existing timestamp");
+            // clearTimeout(this._cbWhenFinished);
+            this.oof1 = (this._duration - (this.elapsedTime * 1000));
+            this.oof2 = new Date().getTime();
             console.log("DEBUGGGGGGGGGGGG Set timeout to " + (this._duration - (this.elapsedTime * 1000)));
             this._cbWhenFinishedTimeout = setTimeout(() => {
                 console.log("THE VIDEO HAS FINISHED");
+                console.log("OFFFFFFFFFFFFFFFFFFFFFFFFFOOOFFFFFFFFFFFFFFFFFFFFF" + ((new Date().getTime()) - this.oof2));
+                console.log(this.oof1);
                 return this._cbWhenFinished();
             }, (this._duration - (this.elapsedTime * 1000)));
 

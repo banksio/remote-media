@@ -31,7 +31,7 @@
   },
   "homepage": "https://github.com/banksio/remote-media#readme",
   "jshintConfig": {
-    "esversion": 6
+    "esversion": 10
   },
   "directories": {
     "test": "test"

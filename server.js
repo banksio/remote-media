@@ -338,6 +338,19 @@ io.on('connection', function (socket) {
         broadcastClients(defaultRoom);
     });
 
+    socket.on('test', function (params) {
+        var oof = new Date().getTime();
+
+        function timeTest(){
+            console.log("started");
+            var oof2 = setTimeout(() => {
+                console.log("OFFFFFFFFFFFFFFFFFFFFFFFFFOOOFFFFFFFFFFFFFFFFFFFFF" + ((new Date().getTime()) - oof));
+            }, 213301);
+        }
+
+        timeTest();
+    });
+
 });
 
 
