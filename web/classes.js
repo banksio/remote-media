@@ -230,9 +230,9 @@ class Video {
     pauseTimer(time=new Date().getTime()){
         this._pausedSince = time;  // Set the time of pausing
         console.log("[classes.js][ServerVideo] The video has been set paused.");
-        if (this._cbWhenFinishedTimeout){
-            clearTimeout(this._cbWhenFinishedTimeout);
-        }
+        // if (this._cbWhenFinishedTimeout){
+        //     clearTimeout(this._cbWhenFinishedTimeout);
+        // }
     }
 
     resumeTimer(time=new Date().getTime()){
@@ -294,10 +294,17 @@ class Video {
             // clearInterval(1);
         }
         if (this.state == 1){
-            this._cbWhenFinishedTimeout = setTimeout(() => {
-                return this._cbWhenFinished();
-            }, (this._duration - (this.elapsedTime * 1000)));
-            console.log("OOOF Set timeout to " + (this._duration - (this.elapsedTime * 1000)));
+            if (this._cbWhenFinishedTimeout){
+                console.log("Timeout already set ");
+            } else {
+                console.log("OOOF Set timeout to " + (this._duration - (this.elapsedTime * 1000)));
+                this._cbWhenFinishedTimeout = setTimeout(() => {
+                    console.log("THE VIDEO HAS FINISHED");
+                    return this._cbWhenFinished();
+                }, (this._duration - (this.elapsedTime * 1000)));
+            }
+
+            
         }
         if (this.cbPlaying){
             return this.cbPlaying();
