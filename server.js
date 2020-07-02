@@ -357,7 +357,7 @@ function broadcastTimestamp(timestamp) {
 function preloadNewVideoInRoom(videoObj, room) {
     broadcastPreloadVideo(videoObj);
     room.currentVideo = videoObj;
-    // room.currentVideo.cbStateDelay = checkVideoStartDelay;
+    room.currentVideo.cbStateDelay = checkVideoStartDelay;
     room.currentVideo.state = 5;
     room.currentVideo.whenFinished(function() {
         // Video has finished.

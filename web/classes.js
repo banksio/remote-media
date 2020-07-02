@@ -230,9 +230,10 @@ class Video {
     pauseTimer(time=new Date().getTime()){
         this._pausedSince = time;  // Set the time of pausing
         console.log("[classes.js][ServerVideo] The video has been set paused.");
-        // if (this._cbWhenFinishedTimeout){
-        //     clearTimeout(this._cbWhenFinishedTimeout);
-        // }
+        if (this._cbWhenFinishedTimeout){
+            clearTimeout(this._cbWhenFinishedTimeout);
+            console.log("MATTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT The timeout has been cleared ");
+        }
     }
 
     resumeTimer(time=new Date().getTime()){
