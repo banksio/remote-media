@@ -140,10 +140,12 @@ function onPlayerStateChange(event) {
         switch (newState) {
             case 0:
                 document.title = "Remote Media";
+                startScreensaver();
                 break;
             case 1:
                 // Update the tab title with the current Video ID
                 document.title = player.getVideoData().title + " - Remote Media";
+                stopScreensaver();
                 // break; // Fall through to next case
             case 2:
                 compareWithServerTimestamp();
@@ -198,3 +200,4 @@ function sendVideoDetails() {
         duration: videoDuration
     });
 }
+
