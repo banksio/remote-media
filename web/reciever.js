@@ -189,30 +189,32 @@ function frontendShowSideControlPanel(show) {
     window.addEventListener('load', function () {
         // Start modal
         $("#nameModal").modal({ backdrop: 'static', keyboard: false });
+        
         // Fetch all the forms we want to apply custom Bootstrap validation styles to
         var forms = document.getElementsByClassName('needs-validation');
         // Loop over them and prevent submission
         var validation = Array.prototype.filter.call(forms, function (form) {
-            form.addEventListener('click', function (event) {
-                if (form.checkValidity() === false) {
-                    event.preventDefault();
-                    event.stopPropagation();
-                }
-                form.classList.add('was-validated');
-                // Check whether button was pressed, if validated hide modal and send nickname to server
-                document.querySelector("#nicknameForm > div > div.modal-footer > button").addEventListener('click', function (event) {
-                    let name = document.getElementById('validationDefault01').value;
-                    if (name !== "") {
-                        // Check nickname async
-                        // TODO: Show loading spinner or something
-                        checkNickname(name);
-                    }
-                }, false);
+            form.addEventListener('submit', function (event) {
+                event.preventDefault();
+                event.stopPropagation();
 
+                // Check validity and don't continue if invalid
+                let valid = form.checkValidity();
+                form.classList.add('was-validated');
+                if (valid === false) return;
+
+                // Validate and send nickname
+                let name = document.getElementById('validationDefault01').value;
+                if (name !== "") {
+                    // Check nickname async
+                    // TODO: Show loading spinner or something
+                    checkNickname(name);
+                }
             }, false);
         });
     }, false);
 })();
+
 
 // Ask the server to validate the nickname and get the response
 function checkNickname(nick) {

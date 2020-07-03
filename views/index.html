@@ -68,17 +68,19 @@
 
     <!-- Nickname Modal Prompt -->
     <div class="Container">
-        <div class="modal fade" id="nameModal" role="dialog" onsubmit="return false;">
+        <div class="modal fade" id="nameModal" role="dialog">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header text-center">
                         <h4 class="modal-title w-100 font-weight-bold">Enter Nickname</h4>
                     </div>
-                    <form class="needs-validation" id="nicknameForm">
+                    <form class="needs-validation" id="nicknameForm" novalidate="true">
                         <div class="modal-body mx-2">
                             <div class="md-form mb-2">
-                                <input type="text" id="validationDefault01" class="form-control" placeholder="Nickname"
-                                    required>
+                                <input type="text" id="validationDefault01" class="form-control" placeholder="Nickname" required>
+                                <div class="invalid-feedback">
+                                    You must enter a nickname.
+                                </div>
                             </div>
                             <div class="modal-footer">
                                 <button type="submit" class="btn btn-success">Submit</button>
