@@ -4,7 +4,7 @@ class Room {
     constructor() {
         this.queue = new Queue();
         this.clients = {};
-        this.currentVideo = new Video();
+        this._currentVideo = new Video();
     }
 
     addClient(client) {
@@ -41,6 +41,15 @@ class Room {
         // var clientIndex = this.clients.indexOf(client);
         // this.clients.splice(clientIndex, 1);
         delete this.clients[client.id];
+    }
+
+    set currentVideo(video){
+        clearTimeout(this._cbWhenFinished);
+        this._currentVideo = video;
+    }
+
+    get currentVideo(){
+        return this._currentVideo;
     }
 }
 
