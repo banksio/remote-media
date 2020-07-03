@@ -1,7 +1,7 @@
 var x = Math.floor(Math.random() * window.innerWidth)
 var y = Math.floor(Math.random() * window.innerHeight);
-var xSpeed = 1;
-var ySpeed = 1;
+var xSpeed = 2;
+var ySpeed = 2;
 var logoImgSrc = '/branding/logo.png';
 var vewPoint;
 

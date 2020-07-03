@@ -34,6 +34,22 @@
     <!--pointer-events:none;-->
     <div id="player" style="position:absolute;top:0;left:0;width:100%;height:100%;"></div>
 
+
+    <div style="overflow: hidden;">
+        <div id="seekControlPanel" class="side-control-right d-flex flex-column text-light hidecontrol-right">
+            <div class="controlPanelButton d-flex flex-column" onclick="requestTimestampFromServer();">
+                <i class="fas fa-undo text-light"></i> Re sync
+            </div>
+            <div class="controlPanelButton d-flex flex-column "
+                onclick="pushTimestampToServer(player.getCurrentTime());">
+                <i class="fas fa-sync text-light"></i> Sync others
+            </div>
+
+        </div>
+    </div>
+
+    <div id="screensaver" class="fadeOutDiv"></div>
+
     <!-- Loading overlay -->
     <div id="connectionBanner" class="banner">
         <div id="bannerReconnectingSpinner" class="d-none d-flex align-items-center">
@@ -53,18 +69,7 @@
         <span id="notificationText" class="text-light">Playing new video...</span>
     </div>
 
-    <div style="overflow: hidden;">
-        <div id="seekControlPanel" class="side-control-right d-flex flex-column text-light hidecontrol-right">
-            <div class="controlPanelButton d-flex flex-column" onclick="requestTimestampFromServer();">
-                <i class="fas fa-undo text-light"></i> Re sync
-            </div>
-            <div class="controlPanelButton d-flex flex-column "
-                onclick="pushTimestampToServer(player.getCurrentTime());">
-                <i class="fas fa-sync text-light"></i> Sync others
-            </div>
 
-        </div>
-    </div>
 
 
     <!-- Nickname Modal Prompt -->
@@ -92,7 +97,7 @@
     </div>
 
     <script src="/dvd.js"></script>
-    <div id="screensaver" class="fadeOutDiv"></div>
+
 
         <!--Custom JS -->
         <script src="/reciever.js"></script>
