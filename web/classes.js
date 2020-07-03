@@ -44,7 +44,7 @@ class Room {
     }
 
     set currentVideo(video){
-        clearTimeout(this._cbWhenFinished);
+        clearTimeout(this.currentVideo._cbWhenFinished);
         this._currentVideo = video;
     }
 
