@@ -52,14 +52,14 @@ class Login {
         this._pingHistory = [];
     }
 
-    set ping(ping){
-        if (this._pingHistory.length >= 5){
+    set ping(ping) {
+        if (this._pingHistory.length >= 5) {
             this._pingHistory.shift();
         }
         this._pingHistory.push(ping);
     }
 
-    get ping(){
+    get ping() {
         let totalPing = 0;
         let pingCount = 0;
         this._pingHistory.forEach(ping => {
@@ -191,14 +191,14 @@ class Video {
         this.elapsedTime = 0;
         this._pausedSince = 0;
         this._pausedTime = 0;
-        
+
     }
 
-    cyclicReplacer(key,value) {
-        if (key=="cbStateDelay") return undefined;
-        else if (key=="_stateDelayInterval") return undefined;
-        else if (key=="_cbWhenFinished") return undefined;
-        else if (key=="_cbWhenFinishedTimeout") return undefined;
+    cyclicReplacer(key, value) {
+        if (key == "cbStateDelay") return undefined;
+        else if (key == "_stateDelayInterval") return undefined;
+        else if (key == "_cbWhenFinished") return undefined;
+        else if (key == "_cbWhenFinishedTimeout") return undefined;
         else return value;
     }
 
@@ -207,12 +207,12 @@ class Video {
     }
 
     // Get the elapsed time of the video relative to the starting time
-    getElapsedTime(currentTime=new Date().getTime()) {
+    getElapsedTime(currentTime = new Date().getTime()) {
         // this.elapsedTime = Math.round((currentTime - this.startingTime) / 1000);
-        if (this._pausedSince != 0){
+        if (this._pausedSince != 0) {
 
         }
-        if (this.startingTime == 0){
+        if (this.startingTime == 0) {
             this.elapsedTime = 0;
             return 0;
         }
@@ -221,13 +221,13 @@ class Video {
         return this.elapsedTime;
     }
 
-    set timestamp(ts){
+    set timestamp(ts) {
         this.startingTime = new Date().getTime() - (ts * 1000);
         this._pausedTime = 0;
         this._pausedSince = 0;
     }
 
-    pauseTimer(time=new Date().getTime()){
+    pauseTimer(time = new Date().getTime()) {
         this._pausedSince = time;  // Set the time of pausing
         console.log("[classes.js][ServerVideo] The video has been set paused.");
         // if (this._cbWhenFinishedTimeout){
@@ -236,7 +236,7 @@ class Video {
         // }
     }
 
-    resumeTimer(time=new Date().getTime()){
+    resumeTimer(time = new Date().getTime()) {
         this._pausedTime += (time - this._pausedSince);
         this._pausedSince = 0;
         // Callback when the video has finished
@@ -249,67 +249,69 @@ class Video {
         return;
     }
 
-    set duration(time){
+    set duration(time) {
         this._duration = time * 1000;
         return;
     }
 
-    get duration(){
+    get duration() {
         return this._duration;
     }
 
-    get pausedTime(){
-        if (this._pausedSince != 0){
+    get pausedTime() {
+        if (this._pausedSince != 0) {
             return (this._pausedTime + (new Date().getTime() - this._pausedSince)) / 1000;
         }
         return this._pausedTime / 1000;
     }
 
-    get state(){
+    get state() {
         return this._state;
     }
 
-    set state(newState){
+    set state(newState) {
         this._state = newState;
         // console.log(this.startingTime);
         // console.log(this._state);
         // console.log(this._pausedSince);
-        if (this.startingTime != 0){  // If the video has elapsed time
-            if (this.state != 1){  // If the video is paused for buffering
+        if (this.startingTime != 0) {  // If the video has elapsed time
+            if (this.state != 1) {  // If the video is paused for buffering
                 this.pauseTimer();
             } else if (this.state == 1) {  // If the video is playing
-                if (this._pausedSince != 0){  // And it was previously paused
+                if (this._pausedSince != 0) {  // And it was previously paused
                     this.resumeTimer();
                 }
             }
-        } else if (this.state == 1){
+        } else if (this.state == 1) {
             this.startingTime = new Date().getTime();
 
         }
-        if (this.cbStateDelay){
+        if (this.cbStateDelay) {
             this._stateDelayInterval = setTimeout(() => {
-                if (this.state != 1){
+                if (this.state != 1) {
                     return this.cbStateDelay(this.state);
                 }
             }, 2000);
             // clearInterval(1);
         }
-        if (this.state == 1 && this._cbWhenFinishedTimeout == undefined){
-            console.log("DEBUGGGGGGGGGGGG Cleared any existing timestamp");
+        if (this.state == 1) {
+            let oof0 = makeid(5);
+            
+            console.log(oof0 + " DEBUGGGGGGGGGGGG Cleared any existing timestamp");
             clearTimeout(this._cbWhenFinished);
             this.oof1 = (this._duration - (this.elapsedTime * 1000));
             this.oof2 = new Date().getTime();
-            console.log("DEBUGGGGGGGGGGGG Set timeout to " + (this._duration - (this.elapsedTime * 1000)));
-            this._cbWhenFinishedTimeout = setTimeout(() => {
-                console.log("THE VIDEO HAS FINISHED");
-                console.log("OFFFFFFFFFFFFFFFFFFFFFFFFFOOOFFFFFFFFFFFFFFFFFFFFF" + ((new Date().getTime()) - this.oof2));
-                console.log(this.oof1);
+            console.log(oof0 + " DEBUGGGGGGGGGGGG Set timeout to " + (this._duration - (this.elapsedTime * 1000)));
+            this._cbWhenFinishedTimeout = setTimeout((id) => {
+                console.log(oof0 + " THE VIDEO HAS FINISHED");
+                console.log(oof0 + " OFFFFFFFFFFFFFFFFFFFFFFFFFOOOFFFFFFFFFFFFFFFFFFFFF" + ((new Date().getTime()) - this.oof2));
+                console.log(oof0 + " " + this.oof1);
                 return this._cbWhenFinished();
-            }, (this._duration - (this.elapsedTime * 1000)));
+            }, (this._duration - (this.elapsedTime * 1000)), oof0);
 
-            
+
         }
-        if (this.cbPlaying){
+        if (this.cbPlaying) {
             return this.cbPlaying();
         }
         return;
@@ -343,6 +345,16 @@ function getIDFromURL(url) {
     }
     // console.log(id);
     return id;
+}
+
+function makeid(length) {
+    var result = '';
+    var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    var charactersLength = characters.length;
+    for (var i = 0; i < length; i++) {
+        result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return result;
 }
 
 module.exports = {
