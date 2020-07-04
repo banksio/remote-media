@@ -1,5 +1,4 @@
-// BASED ON ADMIN.JS
-
+// BASED ON ADMIN.JS 04/07/20
 var url = window.location.href;
 var arr = url.split("/");
 var result = arr[0] + "//" + arr[2];
@@ -31,6 +30,7 @@ const stateIcons = [
 //page elements
 var volSlider = document.getElementById("volume");
 var btnPlaylistShuffleToggle = document.getElementById('btnPlaylistShuffle');
+var checkQueueChuffle = document.getElementById('shuffleCheck');
 
 var pause = document.getElementById('pause');
 pause.addEventListener("click", function () {
@@ -70,8 +70,10 @@ function send() {
     socket.binary(false).emit("adminNewVideo", { value: val, pass: true });
 }
 
-function sendAppend() {
-    var val = document.getElementById("targetAppend").value;
+
+function sendAppend(data) {
+    // var val = document.getElementById("targetAppend").value;
+    // alert(data);
     // var id = undefined;
 
     // const regex = /(?:\.be\/(.*?)(?:\?|$)|watch\?v=(.*?)(?:\&|$|\n))/ig;
@@ -95,7 +97,7 @@ function sendAppend() {
     //         socket.binary(false).emit("targetAppend",{value: match, pass: document.getElementById("password").value});
     //     });
     // }
-    socket.binary(false).emit("targetAppend", { value: val, pass: document.getElementById("password").value });
+    socket.binary(false).emit("adminQueueAppend", { value: data });
 }
 
 function getTitle(data) {
@@ -131,7 +133,7 @@ function muteVid() {
 
 function speak() {
     var val = document.getElementById("speechBox").value;
-    socket.binary(false).emit("adminTTSRequest", { value: val, pass: "placeholder" });
+    socket.binary(false).emit("adminTTSRequest", { value: val, pass: document.getElementById("password").value });
 }
 
 // socket.on("playerinfo",function(data){
@@ -141,7 +143,7 @@ function speak() {
 // New video send to clients
 socket.on("serverNewVideo", function (data) {
     // Show loading of thumbnail
-    // frontendChangeThumbnailSpinner(true);
+    frontendChangeThumbnailSpinner(true);
 });
 
 // Recieved video details from the server
@@ -155,7 +157,7 @@ socket.on("serverCurrentVideo", function (video) {
     // nowplayingThumbnail.src = getThumbnailSrc(video);
     nowplayingTitleElement.innerText = video.title;
     nowplayingChannelElement.innerText = video.channel;
-    // frontendChangeThumbnailSpinner(false);
+    frontendChangeThumbnailSpinner(false);
     // console.log(videoDetails);
 });
 
@@ -216,13 +218,11 @@ socket.on("serverQueueStatus", function (status) {
 });
 
 function queueUpdateStatus(status) {
-
     if (status.shuffle) {
-        btnPlaylistShuffleToggle.classList.add("active");
+        checkQueueChuffle.checked = true;
     } else {
-        btnPlaylistShuffleToggle.classList.remove("active");
+        checkQueueChuffle.checked = false;
     }
-    btnPlaylistShuffleToggle.ariaPressed = status.shuffle;
 }
 
 // // the client code
