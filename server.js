@@ -50,6 +50,41 @@ exp.get('/admin', function(req, res) {
     res.sendFile(path.join(__dirname + '/views/admin.html'));
 });
 
+// Serve css
+exp.get('/stylesheets/fa.css', function(req, res) {
+    res.sendFile(path.join(__dirname + '/node_modules/@fortawesome/fontawesome-free/css/all.css'));
+});
+
+// Serve socket.io
+exp.get('/js/socket.io.js', function(req, res) {
+    res.sendFile(path.join(__dirname + '/node_modules/socket.io-client/dist/socket.io.js'));
+});
+
+// Serve socket.io
+exp.get('/js/socket.io.js.map', function(req, res) {
+    res.sendFile(path.join(__dirname + '/node_modules/socket.io-client/dist/socket.io.js.map'));
+});
+
+// Serve bootstrap and popper js
+exp.get('/js/bootstrap.bundle.min.js', function(req, res) {
+    res.sendFile(path.join(__dirname + '/node_modules/bootstrap/dist/js/bootstrap.bundle.min.js'));
+});
+
+// Serve bootstrap and popper js
+exp.get('/js/bootstrap.bundle.min.js.map', function(req, res) {
+    res.sendFile(path.join(__dirname + '/node_modules/bootstrap/dist/js/bootstrap.bundle.min.js.map'));
+});
+
+// Serve jQuery
+exp.get('/js/jquery.slim.min.js', function(req, res) {
+    res.sendFile(path.join(__dirname + '/node_modules/jquery/dist/jquery.slim.min.js'));
+});
+
+// Serve jQuery
+exp.get('/js/jquery.slim.min.js.map', function(req, res) {
+    res.sendFile(path.join(__dirname + '/node_modules/jquery/dist/jquery.slim.min.js.map'));
+});
+
 //use it to serve pages from the web folder
 exp.use(express.static('web'));
 var web = exp.listen(port);
@@ -248,34 +283,47 @@ io.on('connection', function (socket) {
     // Get new video and send to recievers
     socket.on("adminNewVideo", function (data) {
         var inputData = data.value;
-        if (true) {
-            // If we've got a playlist JSON on our hands
-            if (inputData.substring(0, 8) == "RMPLYLST"){
-                let playlistJSON = JSON.parse(inputData.substring(8));
-                for (let [url, details] of Object.entries(playlistJSON)) {
-                    let newVideo = new Video(undefined, details.title, details.channel);
-                    newVideo.setIDFromURL(url);
-                    defaultRoom.queue.addVideo(newVideo);
-                }
-                sendQueue(defaultRoom);
-                playNextInQueue(defaultRoom);
-                return;
+        var urlArray = inputData.split(',');
+        // If there's only one URL
+        if (urlArray.length == 1) {
+            let newVideo = new server.Video();
+            newVideo.setIDFromURL(urlArray[0]);
+            preloadNewVideoInRoom(newVideo, defaultRoom);
+        }
+        return;
+    });
+
+    socket.on("adminQueueAppend", function (data) {
+        console.log(data);
+        var inputData = data.value;
+        // If we've got a playlist JSON on our hands
+        if (inputData.substring(0, 8) == "RMPLYLST"){
+            let playlistJSON = JSON.parse(inputData.substring(8));
+            for (let [url, details] of Object.entries(playlistJSON)) {
+                let newVideo = new Video(undefined, details.title, details.channel);
+                newVideo.setIDFromURL(url);
+                defaultRoom.queue.addVideo(newVideo);
             }
-            // Split the CSV
-            var urlArray = inputData.split(',');
-            // If there's only one URL
-            if (urlArray.length == 1) {
-                let newVideo = new server.Video();
-                newVideo.setIDFromURL(urlArray[0]);
-                preloadNewVideoInRoom(newVideo, defaultRoom);
-                return;
-            }
-            // If there's multiple URLs
-            defaultRoom.queue.addVideosFromURLs(inputData);
             sendQueue(defaultRoom);
             playNextInQueue(defaultRoom);
             return;
+        // If not, it'll probably be a CSV or single video
+        } else {
+            // Split the CSV
+            var urlArray = inputData.split(',');
+            // If there's only one URL, add that
+            if (urlArray.length == 1) {
+                let newVideo = new server.Video();
+                newVideo.setIDFromURL(urlArray[0]);
+                defaultRoom.queue.addVideo(newVideo);
+            // If there's multiple URLs, pass the CSV to the handling function
+            } else if (urlArray.length >= 1){
+                defaultRoom.queue.addVideosFromURLs(inputData);
+            }
         }
+        sendQueue(defaultRoom);
+        playNextInQueue(defaultRoom);
+        return;
     });
 
     // Text to speech

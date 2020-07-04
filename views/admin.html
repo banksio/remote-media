@@ -17,14 +17,13 @@
         integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
 
     <!-- Bootstrap core CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
-        integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+    <link rel="stylesheet" href="/stylesheets/bootstrap.css" integrity="sha256-dSN4eEpFiiOEvf2uZacpudkuT2W0vJ5l2K3pm6dkj/4=" crossorigin="anonymous">
 
     <!-- Custom CSS -->
     <link rel="stylesheet" media="screen" href="/admin/adminStyles.css" />
 
     <!-- socket.io for communications -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.1/socket.io.js"></script>
+    <script src="/js/socket.io.js" integrity="sha256-bQmrZe4yPnQrLTY+1gYylfNMBuGfnT/HKsCGX+9Xuqo="></script>
 </head>
 
 <body>
@@ -48,168 +47,160 @@
         <!-- </div> -->
     </nav>
 
-    <main role="main" class="container-fluid">
+    <main role="main" class="container-fluid px-5">
         <div class="row">
-            <div class="col-2">
-                <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
-                    <a class="nav-link active" id="v-pills-home-tab" data-toggle="pill" href="#v-pills-home" role="tab"
-                        aria-controls="v-pills-home" aria-selected="true">Dashboard</a>
-                    <a class="nav-link" id="v-pills-queue-tab" data-toggle="pill" href="#v-pills-queue" role="tab"
-                        aria-controls="v-pills-queue" aria-selected="false">Queue</a>
-                    <a class="nav-link" id="v-pills-clients-tab" data-toggle="pill" href="#v-pills-clients" role="tab"
-                        aria-controls="v-pills-clients" aria-selected="false">Clients</a>
-                    <div class="notifBanner d-flex align-items-center container mt-4">
-                        <span id="statusConnection" class="text-warning">Reconnecting...</span>
-                        <div id="spinnerConnection" class="spinner-border ml-auto text-warning" role="status"
-                            aria-hidden="true">
+            <div class="col-lg-5">
+                <div class="nowPlayingContainer mb-2">
+                    <div class="d-flex justify-content-center">
+                        <div class="spinner-border" role="status">
+                            <span class="sr-only">Loading...</span>
                         </div>
                     </div>
-                    <div id="statusSpinner" class="d-flex align-items-center container mt-4">
-                        <strong id="statusLoading">Connecting...</strong>
-                        <div class="spinner-border text-primary ml-auto" role="status" aria-hidden="true"></div>
-                    </div>
-
+                    <img id="imgNowPlaying" class="img-fluid mb-0"
+                        src="https://i3.ytimg.com/vi/LH4Y1ZUUx2g/maxresdefault.jpg" />
+                    <!-- <iframe src="../" class="img-fluid mb-0"></iframe> -->
                 </div>
+
+                <strong>
+                    <p id="nowPlayingTitle" class="videoTitle mb-1">Ariana Grande - break up with your
+                        girlfriend, i'm bored
+                        (Official Video)
+                    </p>
+                </strong>
+                <p id="nowPlayingChannel" class="videoChannel mb-4">Ariana Grande</p>
+                <!-- <label for="speechBox">Text to Speech:</label>
+                <div class="input-group">
+                <input class="form-control" id="speechBox"/>
+                <div class="input-group-append">
+                    <button class="btn btn-primary" onclick="speak();">Speak</button>
+                </div>
+                </div> -->
+                <button class="btn btn-primary btn-sm" id="play"><i class="fas fa-play"></i>
+                    Play</button>
+                <button class="btn btn-primary btn-sm" id="pause"><i class="fas fa-pause"></i>
+                    Pause</button>
+
+                <button class="btn btn-primary btn-sm disabled" id="prev"><i
+                        class="fas fa-step-backward"></i>
+                    Previous</button>
+                <button class="btn btn-primary btn-sm" id="skip"><i class="fas fa-step-forward"></i>
+                    Next</button>
+
+                <br>
+                <br>
+                <p class="videoTitle mb-1">Next up:</p>
+                <div class="row">
+                    <div class="col-8">
+                        <p id="videoTitleNext" class="videoTitleNext">Ariana Grande - break up with your girlfriend, i'm
+                            bored (Official Video)
+                        </p>
+                    </div>
+                    <div class="col-4">
+                        <img id="videoThumbnailNext" class="img-fluid mb-2"
+                            src="https://i3.ytimg.com/vi/LH4Y1ZUUx2g/maxresdefault.jpg" />
+                    </div>
+                </div>
+                <hr>
+                <div class="notifBanner d-flex align-items-center container mt-4">
+                    <span id="statusConnection" class="text-warning">Reconnecting...</span>
+                    <div id="spinnerConnection" class="spinner-border ml-auto text-warning" role="status"
+                        aria-hidden="true">
+                        <div class="spinner-border" role="status">
+                            <span class="sr-only">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+                <div id="statusSpinner" class="d-flex align-items-center container mt-4">
+                    <strong id="statusLoading">Connecting...</strong>
+                    <div class="spinner-border text-primary ml-auto" role="status" aria-hidden="true"></div>
+                </div>
+                <hr>
+                <button class="btn btn-warning" onclick="reloadClients();"><i class="fas fa-sync-alt"></i>
+                    Reload
+                    All</button>
+                <button class="btn btn-danger" onclick="disconnectClients();"><i
+                        class="fas fa-sign-out-alt"></i>
+                    Disconnect All</button>
+                <br>
+                <br>
+                <table class="table" id="data-table">
+                    <thead>
+                        <tr>
+                            <td>Name</td>
+                            <td>State</td>
+                        </tr>
+                    </thead>
+                    <tbody id="data-table-body">
+                        <tr>
+                            <td colspan="3" style="text-align:center">There are no items to list...</td>
+                        </tr>
+                    </tbody>
+                </table>
+
             </div>
-            <div class="col-10">
-                <div class="tab-content" id="v-pills-tabContent">
-                    <div class="tab-pane fade show active" id="v-pills-home" role="tabpanel"
-                        aria-labelledby="v-pills-home-tab">
-                        <div class="row">
-                            <div class="col-lg-4">
-                                <div class="nowPlayingContainer mb-2">
-                                    <div class="d-flex justify-content-center">
-                                        <div class="spinner-border" role="status">
-                                            <span class="sr-only">Loading...</span>
-                                        </div>
-                                    </div>
-                                    <img id="imgNowPlaying" class="img-fluid mb-0"
-                                        src="https://i3.ytimg.com/vi/LH4Y1ZUUx2g/maxresdefault.jpg" />
-                                    <!-- <iframe src="../" class="img-fluid mb-0"></iframe> -->
-                                </div>
-
-                                <strong>
-                                    <p id="nowPlayingTitle" class="videoTitle mb-1">Ariana Grande - break up with your
-                                        girlfriend, i'm bored
-                                        (Official Video)
-                                    </p>
-                                </strong>
-                                <p id="nowPlayingChannel" class="videoChannel mb-4">Ariana Grande</p>
-                                <!-- <label for="speechBox">Text to Speech:</label>
-                  <div class="input-group">
-                    <input class="form-control" id="speechBox"/>
-                    <div class="input-group-append">
-                      <button class="btn btn-primary" onclick="speak();">Speak</button>
-                    </div>
-                  </div> -->
-                                <button class="btn btn-primary btn-sm" id="play"><i class="fas fa-play"></i>
-                                    Play</button>
-                                <button class="btn btn-primary btn-sm" id="pause"><i class="fas fa-pause"></i>
-                                    Pause</button>
-
-                                <button class="btn btn-primary btn-sm disabled" id="prev"><i
-                                        class="fas fa-step-backward"></i>
-                                    Previous</button>
-                                <button class="btn btn-primary btn-sm" id="skip"><i class="fas fa-step-forward"></i>
-                                    Next</button>
-
-                                <br>
-                                <br>
-                                <p class="videoTitle mb-1">Next up:</p>
-                                <div class="row">
-                                    <div class="col-8">
-                                        <p id="videoTitleNext" class="videoTitleNext">Ariana Grande - break up with your girlfriend, i'm
-                                            bored (Official Video)
-                                        </p>
-                                    </div>
-                                    <div class="col-4">
-                                        <img id="videoThumbnailNext" class="img-fluid mb-2"
-                                            src="https://i3.ytimg.com/vi/LH4Y1ZUUx2g/maxresdefault.jpg" />
-                                    </div>
-                                </div>
-
-                            </div>
-                            <div class="col-lg-7">
-                                <div class="controlscontainer">
-
-                                    <br>
-                                    <br>
-                                </div>
-                                <div class="input-group">
-                                    <input class="form-control disabled" id="targetAppend" />
-                                    <div class="input-group-append">
-                                        <button class="btn btn-primary disabled" onclick="//sendAppend();"><i
-                                                class="fas fa-plus"></i></button>
-                                    </div>
-                                </div>
-
-                                <br>
-                                <button class="btn btn-danger" id="emptyPlaylist"><i class="fas fa-times"></i> Empty
-                                    Playlist</button>
-                                <button id="btnPlaylistShuffle" onclick="toggleShuffle(this.ariaPressed);" type="button"
-                                    class="btn btn-warning" aria-pressed="false"><i class="fas fa-random"></i>
-                                    Shuffle</button>
-                                <br>
-                                <br>
-                                <div class="input-group">
-                                    <input class="form-control" id="target" />
-
-                                    <div class="input-group-append">
-                                        <button class="btn btn-primary" onclick="send();">Play</button>
-                                    </div>
-                                </div>
-                                <br>
-                                <table class="table" id="playlist-table">
-                                    <thead>
-                                        <tr>
-                                            <td>Number</td>
-                                            <td>Title</td>
-                                            <td>Channel</td>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="playlist-table-body">
-                                        <tr>
-                                            <td colspan="3" style="text-align:center">There are no items to list...</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-
+            <!-- Right hand side -->
+            <div class="col-lg-7">
+                <ul class="nav nav-tabs mb-2" id="adminTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                      <a class="nav-link active" id="queue-tab" data-toggle="tab" href="#queue" role="tab" aria-controls="queue" aria-selected="true">Queue</a>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                      <a class="nav-link" id="quickpush-tab" data-toggle="tab" href="#quickpush" role="tab" aria-controls="quickpush" aria-selected="false">Quick Push</a>
+                    </li>
+                </ul>
+                <div class="tab-content" id="adminTabContent">
+                    <div class="tab-pane fade show active" id="queue" role="tabpanel" aria-labelledby="queue-tab">
+                        <div class="input-group">
+                            <input class="form-control disabled" id="targetAppend" />
+                            <div class="input-group-append">
+                                <button class="btn btn-primary" onclick="sendAppend(document.getElementById('targetAppend').value);"><i
+                                        class="fas fa-plus"></i></button>
                             </div>
                         </div>
-                    </div>
-                    <div class="tab-pane fade" id="v-pills-queue" role="tabpanel" aria-labelledby="v-pills-queue-tab">
-
-                    </div>
-                    <div class="tab-pane fade" id="v-pills-clients" role="tabpanel"
-                        aria-labelledby="v-pills-clients-tab">
-                        <div class="col-lg-6">
-                            <button class="btn btn-warning" onclick="reloadClients();"><i class="fas fa-sync-alt"></i>
-                                Reload
-                                All</button>
-                            <button class="btn btn-danger" onclick="disconnectClients();"><i
-                                    class="fas fa-sign-out-alt"></i>
-                                Disconnect All</button>
-                            <br>
-                            <br>
-                            <table class="table" id="data-table">
-                                <thead>
-                                    <tr>
-                                        <td>Name</td>
-                                        <td>State</td>
-                                    </tr>
-                                </thead>
-                                <tbody id="data-table-body">
-                                    <tr>
-                                        <td colspan="3" style="text-align:center">There are no items to list...</td>
-                                    </tr>
-                                </tbody>
-                            </table>
+        
+                        <br>
+                        
+                        <!-- <button id="btnPlaylistShuffle" onclick="toggleShuffle(this.ariaPressed);" type="button" class="btn btn-warning" aria-pressed="false"><i class="fas fa-random"></i> Shuffle</button> -->
+                        
+                        <div class="d-flex flex-row-reverse">
+                            <button class="btn btn-danger btn-sm" id="emptyPlaylist"><i class="fas fa-times"></i> Empty Playlist</button>
+                            <div class="form-check form-check-inline my-auto">
+                                <input class="form-check-input" type="checkbox" onchange="toggleShuffle(this.checked);" checked="true" id="shuffleCheck">
+                                <label class="form-check-label" for="shuffleCheck">
+                                  Shuffle
+                                </label>
+                            </div>
                         </div>
+                        
+                        <br>
+                        <br>
+                        <table class="table" id="playlist-table">
+                            <thead>
+                                <tr>
+                                    <td>Number</td>
+                                    <td>Title</td>
+                                    <td>Channel</td>
+                                </tr>
+                            </thead>
+                            <tbody id="playlist-table-body">
+                                <tr>
+                                    <td colspan="3" style="text-align:center">There are no items to list...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        
                     </div>
-                    <div class="tab-pane fade" id="v-pills-settings" role="tabpanel"
-                        aria-labelledby="v-pills-settings-tab">...
+                    <div class="tab-pane fade" id="quickpush" role="tabpanel" aria-labelledby="quickpush-tab">
+                        <div class="input-group">
+                            <input class="form-control" id="target" />
+        
+                            <div class="input-group-append">
+                                <button class="btn btn-primary" onclick="send();">Play Now</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
+                
             </div>
         </div>
     </main>
@@ -222,7 +213,7 @@
                 banksio</a> & <a href="https://www.github.com/Mattsio"><img
                     src="https://avatars3.githubusercontent.com/u/64006630">
                 Mattsio</a></span>
-        <span id="version_footer" class="text-muted float-right mr-3">v1.0.0-alpha.4</span>
+        <span id="version_footer" class="text-muted float-right mr-3">v1.0.0-alpha.5 (dev)</span>
     </footer>
 
     <script type="text/javascript"
@@ -233,18 +224,8 @@
     <script src="/admin/admin.js"></script>
     <!-- <script src="../player.js"></script> -->
 
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
-        integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
-        crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
-        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
-        crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"
-        integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI"
-        crossorigin="anonymous"></script>
-    <!-- MDB core JavaScript -->
-    <script type="text/javascript"
-        src="https://cdnjs.cloudflare.com/ajax/libs/mdbootstrap/4.7.1/js/mdb.min.js"></script>
+    <script src="/js/jquery.slim.min.js"integrity="sha256-4+XzXVhsDmqanXGHaHvgh1gMQKX40OUvDEBTu8JcmNs="></script>
+    <script src="/js/bootstrap.bundle.min.js" integrity="sha256-Xt8pc4G0CdcRvI0nZ2lRpZ4VHng0EoUDMlGcBSQ9HiQ="></script>
 
     <!-- SCRIPT FOR SLIDER -->
     <!-- <script>
