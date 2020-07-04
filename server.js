@@ -50,6 +50,11 @@ exp.get('/admin', function(req, res) {
     res.sendFile(path.join(__dirname + '/views/admin.html'));
 });
 
+// Serve the party mode
+exp.get('/party', function(req, res) {
+    res.sendFile(path.join(__dirname + '/views/party.html'));
+});
+
 //use it to serve pages from the web folder
 exp.use(express.static('web'));
 var web = exp.listen(port);
@@ -344,7 +349,7 @@ io.on('connection', function (socket) {
         function timeTest(){
             console.log("started");
             var oof2 = setTimeout(() => {
-                console.log("OFFFFFFFFFFFFFFFFFFFFFFFFFOOOFFFFFFFFFFFFFFFFFFFFF" + ((new Date().getTime()) - oof));
+                console.log("OFFFFFFFFFFFFFFFFFFFFFFFFFOOOFFFFFFFFFFFFFFFFFFFFF" + ((new Date().getTime()) - oof)); // WTF is this???
             }, 213301);
         }
 
