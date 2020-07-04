@@ -194,6 +194,11 @@ function frontendShowSideControlPanel(show) {
         var forms = document.getElementsByClassName('needs-validation');
         // Loop over them and prevent submission
         var validation = Array.prototype.filter.call(forms, function (form) {
+            form.addEventListener('input', function (event) {
+                let valid = form.checkValidity();
+                form.classList.add('was-validated');
+                if (valid === false) return;
+            }, false);
             form.addEventListener('submit', function (event) {
                 event.preventDefault();
                 event.stopPropagation();

@@ -29,6 +29,7 @@ const stateIcons = [
 //page elements
 var volSlider = document.getElementById("volume");
 var btnPlaylistShuffleToggle = document.getElementById('btnPlaylistShuffle');
+var checkQueueChuffle = document.getElementById('shuffleCheck');
 
 var pause = document.getElementById('pause');
 pause.addEventListener("click", function () {
@@ -68,8 +69,10 @@ function send() {
     socket.binary(false).emit("adminNewVideo", { value: val, pass: true });
 }
 
-function sendAppend() {
-    var val = document.getElementById("targetAppend").value;
+
+function sendAppend(data) {
+    // var val = document.getElementById("targetAppend").value;
+    // alert(data);
     // var id = undefined;
 
     // const regex = /(?:\.be\/(.*?)(?:\?|$)|watch\?v=(.*?)(?:\&|$|\n))/ig;
@@ -93,7 +96,7 @@ function sendAppend() {
     //         socket.binary(false).emit("targetAppend",{value: match, pass: document.getElementById("password").value});
     //     });
     // }
-    socket.binary(false).emit("targetAppend", { value: val, pass: document.getElementById("password").value });
+    socket.binary(false).emit("adminQueueAppend", { value: data });
 }
 
 function getTitle(data) {
@@ -214,13 +217,11 @@ socket.on("serverQueueStatus", function (status) {
 });
 
 function queueUpdateStatus(status) {
-
     if (status.shuffle) {
-        btnPlaylistShuffleToggle.classList.add("active");
+        checkQueueChuffle.checked = true;
     } else {
-        btnPlaylistShuffleToggle.classList.remove("active");
+        checkQueueChuffle.checked = false;
     }
-    btnPlaylistShuffleToggle.ariaPressed = status.shuffle;
 }
 
 // // the client code
