@@ -158,7 +158,6 @@ socket.on("serverCurrentVideo", function (video) {
     nowplayingTitleElement.innerText = video.title;
     nowplayingChannelElement.innerText = video.channel;
     // frontendChangeThumbnailSpinner(false);
-    changePlayerSize();
     // console.log(videoDetails);
 });
 
@@ -282,9 +281,3 @@ function frontendChangeConnectionIdentifier(connected) {
 //         frontendElementThumbnailSpinner.classList.add("fadeOutDiv");
 //     }
 // }
-
-function changePlayerSize() {
-    width = document.getElementById("player").clientWidth;
-    height = width * (9/16)
-    document.getElementById("player").height = height;
-}
