@@ -6,6 +6,7 @@ const ytlist = require('youtube-playlist');
 
 // Classes
 var server = require('./web/classes');
+var rmUtils = require('./rmUtilities');
 const { Video } = require('./web/classes');
 
 // Constants 
@@ -133,6 +134,7 @@ io.on('connection', function (socket) {
     socket.on('receiverNickname', (nick, fn) => {
         // TODO: Check for any other clients with the same nickname and return the error
         // Set the nickname
+        // Instead of this, use new function from rmUtils
         currentClient.name = nick;
         // Upadte clients for admin panels
         broadcastClients(defaultRoom);
@@ -454,8 +456,6 @@ function sendQueueStatus(room) {
     // queueStatus.videos = undefined;
     io.binary(false).emit("serverQueueStatus", queueStatus);
 }
-
-
 
 function sendNowPlaying(video) {
     // Update elapsed time

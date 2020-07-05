@@ -82,6 +82,12 @@ describe('Queue tests', function () {
         assert.equal(queue.popVideo(), undefined);
         assert.equal(queue.length, 0);
     });
+
+    it('Add single video, get video from queue', function () {
+        let queue = new classes.Queue();
+        queue.addVideo(video);
+        assert.equal(queue.getNextVideo(), video);
+    });
 });
 
 // Test State object
@@ -210,5 +216,44 @@ describe('Room status checking tests', function () {
         room.addClient(login2);
         room.removeClient(login);
         assert.ok(typeof room.clients[login] == "undefined");
+    });
+});
+
+// Room object tests
+describe('Room client management tests', function () {
+    it('Array should be ["Name1"]', function () {
+        let room = new classes.Room();
+        let loginID = "test";
+        let login = new classes.Login(loginID);
+        login.name = "Name1";
+        room.addClient(login);
+        let nameArray = room.getAllClientNames();
+        assert.equal(nameArray, ["Name1"]);
+    });
+    it('Array should be ["First", "21562"]', function () {
+        let room = new classes.Room();
+        let loginID = "test";
+        let loginID2 = "anotherTest";
+        let login = new classes.Login(loginID);
+        let login2 = new classes.Login(loginID2);
+        login.name = "First";
+        login2.name = "21562";
+        room.addClient(login);
+        room.addClient(login2);
+        let nameArray = room.getAllClientNames();
+        assert.equal(nameArray, ["First", "21562"]);
+    });
+    it('Array should be ["6172", "Crashed"]', function () {
+        let room = new classes.Room();
+        let loginID = "test";
+        let loginID2 = "anotherTest";
+        let login = new classes.Login(loginID);
+        let login2 = new classes.Login(loginID2);
+        login.name = "6172";
+        login2.name = "Crashed";
+        room.addClient(login);
+        room.addClient(login2);
+        let nameArray = room.getAllClientNames();
+        assert.equal(nameArray, ["6172", "Crashed"]);
     });
 });

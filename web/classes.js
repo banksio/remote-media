@@ -56,7 +56,7 @@ class Room {
 class Login {
     constructor(id, name = undefined) {
         this.id = id;
-        this.name = name;
+        this._name = name;
         this.status = new State();
         this._pingHistory = [];
     }
@@ -77,6 +77,10 @@ class Login {
         });
         let avgPing = totalPing / pingCount;
         return avgPing;
+    }
+
+    get name() {
+        return this._name;
     }
 }
 
