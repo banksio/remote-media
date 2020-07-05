@@ -143,7 +143,7 @@ function speak() {
 // New video send to clients
 socket.on("serverNewVideo", function (data) {
     // Show loading of thumbnail
-    frontendChangeThumbnailSpinner(true);
+    // frontendChangeThumbnailSpinner(true);
 });
 
 // Recieved video details from the server
@@ -157,7 +157,8 @@ socket.on("serverCurrentVideo", function (video) {
     // nowplayingThumbnail.src = getThumbnailSrc(video);
     nowplayingTitleElement.innerText = video.title;
     nowplayingChannelElement.innerText = video.channel;
-    frontendChangeThumbnailSpinner(false);
+    // frontendChangeThumbnailSpinner(false);
+    changePlayerSize();
     // console.log(videoDetails);
 });
 
@@ -281,3 +282,9 @@ function frontendChangeConnectionIdentifier(connected) {
 //         frontendElementThumbnailSpinner.classList.add("fadeOutDiv");
 //     }
 // }
+
+function changePlayerSize() {
+    width = document.getElementById("player").clientWidth;
+    height = width * (9/16)
+    document.getElementById("player").height = height;
+}
