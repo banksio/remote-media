@@ -14,7 +14,7 @@ describe('Room client management tests', function () {
         login.name = "Nick";
         room.addClient(login);
         room.addClient(login2);
-        assert.throws(rmUtils.setNicknameInRoom(login2, "Nick", room));
+        assert.throws(() => { rmUtils.setNicknameInRoom(login2, "Nick", room) }, Error);
     });
 
     it('Nickname setting function should not throw as client already exists with same nickname', function () {

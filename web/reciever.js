@@ -220,7 +220,6 @@ function frontendShowSideControlPanel(show) {
     }, false);
 })();
 
-
 // Ask the server to validate the nickname and get the response
 function checkNickname(nick) {
     socket.emit('receiverNickname', nick, (error) => { // Async callback with server's validation response

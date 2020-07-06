@@ -228,7 +228,7 @@ describe('Room client management tests', function () {
         login.name = "Name1";
         room.addClient(login);
         let nameArray = room.getAllClientNames();
-        assert.equal(nameArray, ["Name1"]);
+        assert.deepEqual(nameArray, ["Name1"]);
     });
     it('Array should be ["First", "21562"]', function () {
         let room = new classes.Room();
@@ -241,7 +241,7 @@ describe('Room client management tests', function () {
         room.addClient(login);
         room.addClient(login2);
         let nameArray = room.getAllClientNames();
-        assert.equal(nameArray, ["First", "21562"]);
+        assert.deepEqual(nameArray, ["First", "21562"]);
     });
     it('Array should be ["6172", "Crashed"]', function () {
         let room = new classes.Room();
@@ -254,6 +254,6 @@ describe('Room client management tests', function () {
         room.addClient(login);
         room.addClient(login2);
         let nameArray = room.getAllClientNames();
-        assert.equal(nameArray, ["6172", "Crashed"]);
+        assert.deepEqual(nameArray, ["6172", "Crashed"]);
     });
 });

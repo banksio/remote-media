@@ -1,8 +1,12 @@
 var server = require('./web/classes');
 
+
 function setNicknameInRoom(client, nickname, room) {
-    return true;
-    return false;
+    if (room.getAllClientNames().includes(nickname) == true) {
+        throw new Error("Validation Error");
+    } else {
+        client.name = nickname; 
+    }   
 }
 
 module.exports = {
