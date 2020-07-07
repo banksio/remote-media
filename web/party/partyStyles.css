@@ -1,3 +1,7 @@
+body {
+    overflow-x: hidden;
+}
+
 /* Footer */
 
 .footer {
@@ -12,11 +16,11 @@
     width: auto;
 }
 
-.nowPlayingContainer {
+.playerContainer {
     position: relative;
 }
 
-.nowPlayingContainer .d-flex {
+.playerContainer .d-flex {
     float: left;
     position: absolute;
     left: 0px;
@@ -31,7 +35,7 @@
     transition: opacity 0.5s ease, display 0.5s;
 }
 
-.nowPlayingContainer .d-flex .spinner-border {
+.playerContainer .d-flex .spinner-border {
     float: left;
     position: absolute;
     top: calc(50% - 1rem);
