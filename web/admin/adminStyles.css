@@ -44,3 +44,7 @@
     opacity: 0%;
     /* display: none; */
 }
+
+.tr-active {
+    background-color: #00000011;
+}

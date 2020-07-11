@@ -104,6 +104,7 @@ io.on('connection', function (socket) {
     // Send all data to new clients and admin panels
     sendQueue(defaultRoom);
     broadcastClients(defaultRoom);
+    sendQueueStatus(defaultRoom);
     if (defaultRoom.currentVideo.state == 1) sendNowPlaying(defaultRoom.currentVideo);
     socket.binary(false).emit('initFinished');
 
@@ -135,6 +136,7 @@ io.on('connection', function (socket) {
         // TODO: Check for any other clients with the same nickname and return the error
         // Set the nickname
         // Instead of this, use new function from rmUtils
+        console.log(nick);
         currentClient.name = nick;
         // Upadte clients for admin panels
         broadcastClients(defaultRoom);
@@ -296,33 +298,7 @@ io.on('connection', function (socket) {
     });
 
     socket.on("adminQueueAppend", function (data) {
-        console.log(data);
-        var inputData = data.value;
-        // If we've got a playlist JSON on our hands
-        if (inputData.substring(0, 8) == "RMPLYLST"){
-            let playlistJSON = JSON.parse(inputData.substring(8));
-            for (let [url, details] of Object.entries(playlistJSON)) {
-                let newVideo = new Video(undefined, details.title, details.channel);
-                newVideo.setIDFromURL(url);
-                defaultRoom.queue.addVideo(newVideo);
-            }
-            sendQueue(defaultRoom);
-            playNextInQueue(defaultRoom);
-            return;
-        // If not, it'll probably be a CSV or single video
-        } else {
-            // Split the CSV
-            var urlArray = inputData.split(',');
-            // If there's only one URL, add that
-            if (urlArray.length == 1) {
-                let newVideo = new server.Video();
-                newVideo.setIDFromURL(urlArray[0]);
-                defaultRoom.queue.addVideo(newVideo);
-            // If there's multiple URLs, pass the CSV to the handling function
-            } else if (urlArray.length >= 1){
-                defaultRoom.queue.addVideosFromURLs(inputData);
-            }
-        }
+        defaultRoom.queue.addVideosCombo(data.value);
         sendQueue(defaultRoom);
         playNextInQueue(defaultRoom);
         return;
@@ -330,9 +306,7 @@ io.on('connection', function (socket) {
 
     // Text to speech
     socket.on("adminTTSRequest", function (data) {
-        if (true) {
-            io.binary(false).emit("serverTTSSpeak", data.value);
-        }
+        io.binary(false).emit("serverTTSSpeak", data.value);
     });
 
     // Control the recievers video players
@@ -350,6 +324,7 @@ io.on('connection', function (socket) {
     socket.on("adminQueueControl", function (data) {
         switch (data) {
             case "prev":
+                playPrevInQueue(defaultRoom);
                 break;
             case "skip":
                 playNextInQueue(defaultRoom);
@@ -362,6 +337,7 @@ io.on('connection', function (socket) {
                 queueShuffleToggle(defaultRoom);
                 consoleLogWithTime("[ServerQueue] Shuffle: " + defaultRoom.queue.shuffle);
                 sendQueueStatus(defaultRoom);
+                sendQueue(defaultRoom);
                 return;
             default:
                 break;
@@ -446,13 +422,18 @@ function preloadVideoIndividualClient(videoObj, socket) {
 
 function sendQueue(room) {
     // Send the whole queue
-    let queue = room.queue;
+    let queue = { 
+        videos: room.queue.videos,
+        length: room.queue.length,
+        index: room.queue._currentIndex
+    };
+    // console.log(queue);
     io.binary(false).emit("serverQueueVideos", queue);
 }
 
 function sendQueueStatus(room) {
     // Send the queue but remove the videos array, no need to send that
-    let queueStatus = room.queue;
+    let queueStatus = { shuffle: room.queue.shuffle };
     // queueStatus.videos = undefined;
     io.binary(false).emit("serverQueueStatus", queueStatus);
 }
@@ -481,7 +462,16 @@ function broadcastClients(room) {
 }
 
 function playNextInQueue(room) {
-    let nextVideo = room.queue.popVideo();
+    let nextVideo = room.queue.nextVideo();
+    if (nextVideo != undefined) {
+        preloadNewVideoInRoom(nextVideo, room);
+        sendQueue(room);
+    }
+    return;
+}
+
+function playPrevInQueue(room) {
+    let nextVideo = room.queue.previousVideo();
     if (nextVideo != undefined) {
         preloadNewVideoInRoom(nextVideo, room);
         sendQueue(room);

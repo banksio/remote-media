@@ -29,7 +29,7 @@ const stateIcons = [
 //page elements
 var volSlider = document.getElementById("volume");
 var btnPlaylistShuffleToggle = document.getElementById('btnPlaylistShuffle');
-var checkQueueChuffle = document.getElementById('shuffleCheck');
+var checkQueueShuffle = document.getElementById('shuffleCheck');
 
 var pause = document.getElementById('pause');
 pause.addEventListener("click", function () {
@@ -172,14 +172,18 @@ socket.on("serverClients", function (clients) {
             continue;
         }
         if (client.status.preloading) {
-            tableRef.innerHTML = tableRef.innerHTML + '<tr><td>' + client.name + '</td><td><span class=\'text-warning\'>' + stateIcons[client.status.state + 1] + '</span></td></tr>';
+            tableRef.innerHTML = tableRef.innerHTML + '<tr><td>' + client._name + '</td><td><span class=\'text-warning\'>' + stateIcons[client.status.state + 1] + '</span></td></tr>';
             continue;
         }
-        tableRef.innerHTML = tableRef.innerHTML + '<tr><td>' + client.name + '</td><td>' + stateIcons[client.status.state + 1] + '</td></tr>';
+        tableRef.innerHTML = tableRef.innerHTML + '<tr><td>' + client._name + '</td><td>' + stateIcons[client.status.state + 1] + '</td></tr>';
     }
 });
 
 socket.on("serverQueueVideos", function (queueData) {
+    // alert("oof");
+    // prompt("queue", JSON.stringify(queueData));
+    // queueData = JSON.parse(queueData);
+    // return;
     // Get a reference to the table, and empty it
     let tableRef = document.getElementById("playlist-table-body");
     let upNextTitle = document.getElementById("videoTitleNext");
@@ -190,17 +194,34 @@ socket.on("serverQueueVideos", function (queueData) {
     if (videos.length > 0) {
         var i = 1;
         for (var video of videos) {
+            // prompt("", video);
             // console.log(video);
             var videoID = video.id;
             // $('#playlist-table-body tr:last').after('<tr><td>'+ i +'</td><td>'+ video["id"] +'</td></tr>');
-            tableRef.innerHTML = tableRef.innerHTML + '<tr><td>' + i + '</td><td>' + video.title + '</td><td>' + video.channel + '</td></tr>';
+            if (i == queueData.index + 1){
+                tableRef.innerHTML = tableRef.innerHTML + '<tr class="tr-active"><td>' + i + '</td><td>' + video.title + '</td><td>' + video.channel + '</td></tr>';
+            } else {
+                tableRef.innerHTML = tableRef.innerHTML + '<tr><td>' + i + '</td><td>' + video.title + '</td><td>' + video.channel + '</td></tr>';
+            }
+            
             i++;
         }
-        upNextTitle.innerText = videos[0].title;
-        upNextImage.src = getThumbnailSrc(videos[0]);
+        upNextTitle.innerText = videos[queueData.index + 1].title;
+        upNextImage.src = getThumbnailSrc(videos[queueData.index + 1]);
     }
 
-    queueUpdateStatus(queueData);
+    if (videos.length > 0){
+        frontendChangeSkipButtons(undefined, true);
+        if (queueData.index > 0) {
+            frontendChangeSkipButtons(true, undefined);
+        } else {
+            frontendChangeSkipButtons(false, undefined);
+        }
+    } else if (videos.length == 0){
+        frontendChangeSkipButtons(false, false);
+    }
+
+    // queueUpdateStatus(queueData);
 });
 
 function getThumbnailSrc(video) {
@@ -217,10 +238,12 @@ socket.on("serverQueueStatus", function (status) {
 });
 
 function queueUpdateStatus(status) {
-    if (status.shuffle) {
-        checkQueueChuffle.checked = true;
+    // alert(status);
+    // alert(JSON.stringify(status))
+    if (status.shuffle == true) {
+        checkQueueShuffle.checked = true;
     } else {
-        checkQueueChuffle.checked = false;
+        checkQueueShuffle.checked = false;
     }
 }
 
@@ -232,6 +255,23 @@ function queueUpdateStatus(status) {
 socket.on('initFinished', function () {
     frontendChangeMainSpinner(0);
 });
+
+function frontendChangeSkipButtons(previous, next) {
+    let frontendElementPrev = document.getElementById("prev");
+    let frontendElementNext = document.getElementById("skip");
+    //connected boolean
+    if (previous == true) {
+        frontendElementPrev.classList.remove("disabled");
+    } else if (previous == false) {
+        frontendElementPrev.classList.add("disabled");
+    }
+    if (next == true) {
+        frontendElementNext.classList.remove("disabled");
+    } else if (next == false) {
+        frontendElementNext.classList.add("disabled");
+    }
+    return;
+}
 
 function frontendChangeConnectionIdentifier(connected) {
     let frontendElementConnectedStatus = document.getElementById("statusConnection");

@@ -86,7 +86,48 @@ describe('Queue tests', function () {
     it('Add single video, get video from queue', function () {
         let queue = new classes.Queue();
         queue.addVideo(video);
-        assert.equal(queue.getNextVideo(), video);
+        assert.equal(queue.popVideo(), video);
+    });
+});
+
+// Queue tests
+describe('NewQueue tests', function () {
+    let video = new classes.Video("p47fEXGabaY");
+    it('Add single video, expect correct video object and queue length', function () {
+        let queue = new classes.NewQueue();
+        queue.addVideo(video);
+        assert.equal(queue.length, 1);
+        assert.deepEqual(queue.nextVideo(), video);
+        assert.equal(queue.length, 0);
+    });
+    it('Add single video from ID, expect correct video ID and queue length', function () {
+        let queue = new classes.NewQueue();
+        queue.addVideoFromID(video.id);
+        assert.equal(queue.length, 1);
+        assert.equal(queue.nextVideo().id, video.id);
+        assert.equal(queue.length, 0);
+    });
+    it('Add two videos from CSV test queue length, ID and pop from queue', function () {
+        let queue = new classes.NewQueue();
+        queue.addVideosFromURLs("https://youtu.be/xi3c-9qzrPY?list=RDMMEK_LN3XEcnw,https://youtu.be/ez1Kv8hiQGU?list=RDMMEK_LN3XEcnw");
+        assert.equal(queue.length, 2);
+        assert.equal(queue.nextVideo().id, "xi3c-9qzrPY");
+        assert.equal(queue.length, 1);
+        assert.equal(queue.nextVideo().id, "ez1Kv8hiQGU");
+        assert.equal(queue.length, 0);
+    });
+    it('Add one video from CSV, expect nothing added', function () {
+        let queue = new classes.NewQueue();
+        queue.addVideosFromURLs("https://youtu.be/xi3c-9qzrPY?list=RDMMEK_LN3XEcnw");
+        assert.equal(queue.length, 0);
+        assert.throws(queue.nextVideo, undefined);
+        assert.equal(queue.length, 0);
+    });
+
+    it('Add single video, get video from queue', function () {
+        let queue = new classes.NewQueue();
+        queue.addVideo(video);
+        assert.deepEqual(queue.nextVideo(), video);
     });
 });
 
