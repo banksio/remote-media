@@ -6,7 +6,6 @@ var firstScriptTag = document.getElementsByTagName('script')[0];
 firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
 var player, iframe, vid, state;
-var vid = 'pE49WK-oNjU';
 var $ = document.querySelector.bind(document);
 
 var firstVideo = true;

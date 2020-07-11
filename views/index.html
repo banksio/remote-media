@@ -29,11 +29,10 @@
 
 <body>
 
-    <!--Testing-->
-    <!--pointer-events:none;-->
+    <!-- Main player -->
     <div id="player" style="position:absolute;top:0;left:0;width:100%;height:100%;"></div>
 
-
+    <!-- Sidebar -->
     <div style="overflow: hidden;">
         <div id="seekControlPanel" class="side-control-right d-flex flex-column text-light hidecontrol-right">
             <div class="controlPanelButton d-flex flex-column" onclick="requestTimestampFromServer();">
@@ -47,6 +46,7 @@
         </div>
     </div>
 
+    <!-- Screensaver when no video -->
     <div id="screensaver" class="fadeOutDiv">
         <svg id="screensaver-logo" version="1.1" viewBox="0 0 59.957 20.292" xmlns="http://www.w3.org/2000/svg">
             <g transform="translate(-34.47 -35.746)" stroke-width=".26458">
@@ -86,9 +86,6 @@
         <span id="notificationText" class="text-light">Playing new video...</span>
     </div>
 
-
-
-
     <!-- Nickname Modal Prompt -->
     <div class="Container">
         <div class="modal fade" id="nameModal" role="dialog">
@@ -115,6 +112,9 @@
         </div>
     </div>
 
+    <!--Custom JS -->
+    <script src="/reciever.js"></script>
+    <script src="/player.js"></script>
     <script src="/dvd.js"></script>
 
 

@@ -20,7 +20,7 @@ console.log("Waiting for server...");
 
 function muteVid() {
     console.log("Not an admin panel.");
-}
+};
 
 socket.on("serverConnectionManagement", function (data) {
     console.log("Site" + data);
@@ -34,7 +34,7 @@ socket.on("serverConnectionManagement", function (data) {
             break;
         default:
             console.log("Unknown site command.");
-    }
+    };
 });
 
 socket.on("serverTTSSpeak", function (data) {
