@@ -109,7 +109,7 @@ describe('NewQueue tests', function () {
     });
     it('Add two videos from CSV test queue length, ID and pop from queue', function () {
         let queue = new classes.NewQueue();
-        queue.addVideosFromURLs("https://youtu.be/xi3c-9qzrPY?list=RDMMEK_LN3XEcnw,https://youtu.be/ez1Kv8hiQGU?list=RDMMEK_LN3XEcnw");
+        queue.addVideosFromCSV("https://youtu.be/xi3c-9qzrPY?list=RDMMEK_LN3XEcnw,https://youtu.be/ez1Kv8hiQGU?list=RDMMEK_LN3XEcnw");
         assert.equal(queue.length, 2);
         assert.equal(queue.nextVideo().id, "xi3c-9qzrPY");
         assert.equal(queue.length, 1);
@@ -118,7 +118,7 @@ describe('NewQueue tests', function () {
     });
     it('Add one video from CSV, expect nothing added', function () {
         let queue = new classes.NewQueue();
-        queue.addVideosFromURLs("https://youtu.be/xi3c-9qzrPY?list=RDMMEK_LN3XEcnw");
+        queue.addVideosFromCSV("https://youtu.be/xi3c-9qzrPY?list=RDMMEK_LN3XEcnw");
         assert.equal(queue.length, 0);
         assert.throws(queue.nextVideo, undefined);
         assert.equal(queue.length, 0);

@@ -287,7 +287,7 @@ class NewQueue {
     addVideo(video) {
         // Add the video to the array and update the length
         this._videos.push(video);
-        this._lengthUnplayed++;
+        this._lengthUnplayed += 1;
 
         if (this._videosShuffled.length == 0) {
             this._videosShuffled.push(video);
@@ -321,6 +321,17 @@ class NewQueue {
         }
         // Once all the videos are added, shuffle if needs be
 
+    }
+
+    addVideosFromCSV(csv) {
+        // // Split the comma-separated list
+        var urlArray = csv.split(',');
+        // console.log("LENGTH" + urlArray.length);
+        if (urlArray.length == 1) {
+            // If there's only one url in the list then don't add anything
+            return;
+        }
+        this.addVideosFromURLs(urlArray);
     }
 
     addVideosCombo(inputData){
