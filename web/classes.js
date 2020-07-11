@@ -51,6 +51,15 @@ class Room {
     get currentVideo(){
         return this._currentVideo;
     }
+
+    getAllClientNames(){
+        let ClientNames = [];
+        for (var i in this.clients) {
+            ClientNames.push(this.clients[i].name);
+            console.log("Client: " + this.clients[i].name);
+        }
+        return ClientNames;
+    }
 }
 
 class Login {
