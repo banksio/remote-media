@@ -8,6 +8,7 @@ const ytlist = require('youtube-playlist');
 var server = require('./web/classes');
 var rmUtils = require('./rmUtilities');
 const { Video } = require('./web/classes');
+const { Server } = require('http');
 
 // Constants 
 const port = 3694;
@@ -395,7 +396,8 @@ function broadcastTimestamp(timestamp) {
 // Set a new video playing on the server
 function preloadNewVideoInRoom(videoObj, room) {
     broadcastPreloadVideo(videoObj);
-    room.currentVideo = videoObj;
+    room.currentVideo = new server.ServerVideo();
+    Object.assign(room.currentVideo, videoObj);
     room.currentVideo.cbStateDelay = checkVideoStartDelay;
     room.currentVideo.state = 5;
     room.currentVideo.whenFinished(function() {

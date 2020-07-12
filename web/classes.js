@@ -469,12 +469,22 @@ class Video {
         this.title = title;
         this.channel = channel;
         this._duration = duration;
+    }
+
+    setIDFromURL(url) {
+        this.id = getIDFromURL(url);
+    }
+}
+
+class ServerVideo extends Video {
+    constructor(){
+        super();
+
         this._state = 5;
         this.startingTime = 0;
         this.elapsedTime = 0;
         this._pausedSince = 0;
         this._pausedTime = 0;
-
     }
 
     cyclicReplacer(key, value) {
@@ -483,10 +493,6 @@ class Video {
         else if (key == "_cbWhenFinished") return undefined;
         else if (key == "_cbWhenFinishedTimeout") return undefined;
         else return value;
-    }
-
-    setIDFromURL(url) {
-        this.id = getIDFromURL(url);
     }
 
     // Get the elapsed time of the video relative to the starting time
@@ -601,6 +607,16 @@ class Video {
     }
 }
 
+module.exports = {
+    "Room": Room,
+    "Queue": Queue,
+    "NewQueue": NewQueue,
+    "Login": Login,
+    "State": State,
+    "Video": Video,
+    "ServerVideo": ServerVideo
+};
+
 function getIDFromURL(url) {
     let id;
 
@@ -639,12 +655,3 @@ function makeid(length) {
     }
     return result;
 }
-
-module.exports = {
-    "Room": Room,
-    "Queue": Queue,
-    "NewQueue": NewQueue,
-    "Login": Login,
-    "State": State,
-    "Video": Video,
-};
