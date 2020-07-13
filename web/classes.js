@@ -480,11 +480,11 @@ class ServerVideo extends Video {
     constructor(){
         super();
 
-        this._state = 5;
-        this.startingTime = 0;
-        this.elapsedTime = 0;
-        this._pausedSince = 0;
-        this._pausedTime = 0;
+        this._state = 5;  // The state of the video (matches the official YouTube API's states)
+        this.startingTime = 0;  // The timestamp at which the video started
+        this.elapsedTime = 0;  // The duration the video's been playing
+        this._pausedSince = 0;  // The timestamp of when it was paused
+        this._pausedTime = 0;  // The duration it's been paused
     }
 
     cyclicReplacer(key, value) {
@@ -498,6 +498,7 @@ class ServerVideo extends Video {
     // Get the elapsed time of the video relative to the starting time
     getElapsedTime(currentTime = new Date().getTime()) {
         // this.elapsedTime = Math.round((currentTime - this.startingTime) / 1000);
+        // TODO BUG: Server returns timestamp ahead of real timestamp when timer has been paused, corrects itself once timer is resumed
         if (this._pausedSince != 0) {
 
         }
@@ -533,8 +534,49 @@ class ServerVideo extends Video {
         console.log("[classes.js][ServerVideo] The video has been resumed. It was paused for " + this._pausedTime);
     }
 
+
+
     whenFinished(cbWhenFinished) {
         this._cbWhenFinished = cbWhenFinished;
+        return;
+    }
+
+    // Function to set the video playing
+    playVideo(){
+        if (this._state >= 2 && this._state <= 3){  // If the video was previously paused
+            this.resumeTimer();  // This can only be run if the video was previously paused
+        } else if (this._state == 5) {
+            this.startingTime = new Date().getTime();
+        }
+
+        let oof0 = this.title;
+            
+        console.log(oof0 + " DEBUGGGGGGGGGGGG Cleared any existing timestamp");
+        clearTimeout(this._cbWhenFinishedTimeout);
+        this.oof1 = (this._duration - (this.elapsedTime * 1000));
+        this.oof2 = new Date().getTime();
+        console.log(oof0 + " DEBUGGGGGGGGGGGG Set timeout to " + (this._duration - (this.elapsedTime * 1000)));
+        this._cbWhenFinishedTimeout = setTimeout((id) => {
+            console.log(oof0 + " THE VIDEO HAS FINISHED");
+            console.log(oof0 + " OFFFFFFFFFFFFFFFFFFFFFFFFFOOOFFFFFFFFFFFFFFFFFFFFF" + ((new Date().getTime()) - this.oof2));
+            console.log(oof0 + " " + this.oof1);
+            return this._cbWhenFinished();
+        }, (this._duration - (this.elapsedTime * 1000)), oof0);
+
+
+
+        this.state = 1;
+    }
+
+    // Function to pause the video
+    pauseVideo(buffer){
+        console.log("SERVER VIDEO HAS PAUSED");
+        this.pauseTimer();
+        if (buffer){
+            this.state = 3;
+        } else {
+            this.state = 2;
+        }
         return;
     }
 
@@ -563,18 +605,18 @@ class ServerVideo extends Video {
         // console.log(this.startingTime);
         // console.log(this._state);
         // console.log(this._pausedSince);
-        if (this.startingTime != 0) {  // If the video has elapsed time
-            if (this.state != 1) {  // If the video is paused for buffering
-                this.pauseTimer();
-            } else if (this.state == 1) {  // If the video is playing
-                if (this._pausedSince != 0) {  // And it was previously paused
-                    this.resumeTimer();
-                }
-            }
-        } else if (this.state == 1) {
-            this.startingTime = new Date().getTime();
+        // if (this.startingTime != 0) {  // If the video has elapsed time
+        //     if (this.state != 1) {  // If the video is paused for buffering
+        //         this.pauseTimer();
+        //     } else if (this.state == 1) {  // If the video is playing
+        //         if (this._pausedSince != 0) {  // And it was previously paused
+        //             this.resumeTimer();
+        //         }
+        //     }
+        // } else if (this.state == 1) {
+        //     this.startingTime = new Date().getTime();
 
-        }
+        // }
         if (this.cbStateDelay) {
             this._stateDelayInterval = setTimeout(() => {
                 if (this.state != 1) {
@@ -583,26 +625,14 @@ class ServerVideo extends Video {
             }, 2000);
             // clearInterval(1);
         }
-        if (this.state == 1) {
-            let oof0 = this.title;
-            
-            console.log(oof0 + " DEBUGGGGGGGGGGGG Cleared any existing timestamp");
-            clearTimeout(this._cbWhenFinished);
-            this.oof1 = (this._duration - (this.elapsedTime * 1000));
-            this.oof2 = new Date().getTime();
-            console.log(oof0 + " DEBUGGGGGGGGGGGG Set timeout to " + (this._duration - (this.elapsedTime * 1000)));
-            this._cbWhenFinishedTimeout = setTimeout((id) => {
-                console.log(oof0 + " THE VIDEO HAS FINISHED");
-                console.log(oof0 + " OFFFFFFFFFFFFFFFFFFFFFFFFFOOOFFFFFFFFFFFFFFFFFFFFF" + ((new Date().getTime()) - this.oof2));
-                console.log(oof0 + " " + this.oof1);
-                return this._cbWhenFinished();
-            }, (this._duration - (this.elapsedTime * 1000)), oof0);
-
-
+        if (this._cbStateChange) {
+            return this._cbStateChange(this.state);
         }
-        if (this.cbPlaying) {
-            return this.cbPlaying();
-        }
+        return;
+    }
+
+    onStateChange(cbStateChange){
+        this._cbStateChange = cbStateChange;
         return;
     }
 }
@@ -642,7 +672,9 @@ function getIDFromURL(url) {
 
         });
     }
-    // console.log(id);
+    if (id == undefined){
+        throw Error;
+    }
     return id;
 }
 

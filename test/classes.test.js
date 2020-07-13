@@ -26,15 +26,15 @@ describe('Video object URL parsing test', function () {
         assert.equal(video.id, "xi3c-9qzrPY");
     });
     it('Invalid video URL, should return undefined', function () {
-        video.setIDFromURL("https://www.youtube.com/playlist?list=PLJlPsYbof_C4JOCj7JVotCm8HGZewIFoG");
-        assert.equal(video.id, undefined);
+        assert.throws(function (){video.setIDFromURL("https://www.youtube.com/playlist?list=PLJlPsYbof_C4JOCj7JVotCm8HGZewIFoG");});
+        // assert.throws(video.id, undefined);
     });
 });
 
 // Test video object timekeeping
 describe('Video object timekeeping test', function () {
     this.timeout(15000);
-    let video = new classes.Video();
+    let video = new classes.ServerVideo();
     it('Time after 5 seconds',function (done) {
         let elapsedTime = 5000;
         video.startingTime = new Date().getTime();
