@@ -130,7 +130,8 @@ class State {
     updateState(state) {
         this.previousState = this.state;
         this.state = state;
-        return this._cbStateChangeToClient();
+        if (this._cbStateChangeToClient) return this._cbStateChangeToClient();
+        return;
     }
 
     updatePreloading(preloading) {
