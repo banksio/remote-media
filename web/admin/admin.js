@@ -206,8 +206,14 @@ socket.on("serverQueueVideos", function (queueData) {
             
             i++;
         }
-        upNextTitle.innerText = videos[queueData.index + 1].title;
-        upNextImage.src = getThumbnailSrc(videos[queueData.index + 1]);
+        try {
+            // TODO: Handle the unavailability of a next video
+            upNextTitle.innerText = videos[queueData.index + 1].title;
+            upNextImage.src = getThumbnailSrc(videos[queueData.index + 1]);
+        } catch (error) {
+            
+        }
+            
     }
 
     if (videos.length > 0){

@@ -18,6 +18,6 @@
         "no-empty":"warn",
         "no-useless-escape":"off",
         "no-setter-return": "off",
-        "no-undef":"off"
+        "no-unreachable": "warn"
     }
 }

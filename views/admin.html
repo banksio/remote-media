@@ -17,7 +17,8 @@
         integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
 
     <!-- Bootstrap core CSS -->
-    <link rel="stylesheet" href="/stylesheets/bootstrap.css" integrity="Ol2O/HwcbwjWwkxzdkrX+MpASsYiZGQYRUIB+U2aZ28=" crossorigin="anonymous">
+    <link rel="stylesheet" href="/stylesheets/bootstrap.css" integrity="Ol2O/HwcbwjWwkxzdkrX+MpASsYiZGQYRUIB+U2aZ28="
+        crossorigin="anonymous">
 
     <!-- Custom CSS -->
     <link rel="stylesheet" media="screen" href="/admin/adminStyles.css" />
@@ -51,7 +52,7 @@
         <div class="notifBanner d-flex align-items-center">
             <div id="spinnerConnection" class="spinner-border text-warning mr-2" role="status" aria-hidden="true"></div>
             <span id="statusConnection" class="text-warning">Reconnecting...</span>
-            </div>
+        </div>
         </div>
         <!-- </div> -->
     </nav>
@@ -99,7 +100,9 @@
 
                 <div class="row">
                     <div class="col-8">
-                        <strong><p class="videoTitle mb-1">Next up:</p></strong>
+                        <strong>
+                            <p class="videoTitle mb-1">Next up:</p>
+                        </strong>
                         <p id="videoTitleNext" class="videoTitleNext">Ariana Grande - break up with your girlfriend, i'm
                             bored (Official Video)
                         </p>
@@ -114,8 +117,7 @@
                 <button class="btn btn-warning" onclick="reloadClients();"><i class="fas fa-sync-alt"></i>
                     Reload
                     All</button>
-                <button class="btn btn-danger" onclick="disconnectClients();"><i
-                        class="fas fa-sign-out-alt"></i>
+                <button class="btn btn-danger" onclick="disconnectClients();"><i class="fas fa-sign-out-alt"></i>
                     Disconnect All</button>
                 <br>
                 <br>
@@ -138,36 +140,42 @@
             <div class="col-lg-7">
                 <ul class="nav nav-tabs mb-2" id="adminTab" role="tablist">
                     <li class="nav-item" role="presentation">
-                      <a class="nav-link active" id="queue-tab" data-toggle="tab" href="#queue" role="tab" aria-controls="queue" aria-selected="true">Queue</a>
+                        <a class="nav-link active" id="queue-tab" data-toggle="tab" href="#queue" role="tab"
+                            aria-controls="queue" aria-selected="true">Queue</a>
                     </li>
                     <li class="nav-item" role="presentation">
-                      <a class="nav-link" id="quickpush-tab" data-toggle="tab" href="#quickpush" role="tab" aria-controls="quickpush" aria-selected="false">Quick Push</a>
+                        <a class="nav-link" id="quickpush-tab" data-toggle="tab" href="#quickpush" role="tab"
+                            aria-controls="quickpush" aria-selected="false">Quick Push</a>
                     </li>
                 </ul>
                 <div class="tab-content" id="adminTabContent">
                     <div class="tab-pane fade show active" id="queue" role="tabpanel" aria-labelledby="queue-tab">
                         <div class="input-group">
-                            <input class="form-control disabled" id="targetAppend" placeholder="YouTube URL(s), separated by commas" />
+                            <input class="form-control disabled" id="targetAppend"
+                                placeholder="YouTube URL(s), separated by commas" />
                             <div class="input-group-append">
-                                <button class="btn btn-primary" onclick="sendAppend(document.getElementById('targetAppend').value);"><i
+                                <button class="btn btn-primary"
+                                    onclick="sendAppend(document.getElementById('targetAppend').value);"><i
                                         class="fas fa-plus"></i></button>
                             </div>
                         </div>
-        
+
                         <br>
-                        
+
                         <!-- <button id="btnPlaylistShuffle" onclick="toggleShuffle(this.ariaPressed);" type="button" class="btn btn-warning" aria-pressed="false"><i class="fas fa-random"></i> Shuffle</button> -->
-                        
+
                         <div class="d-flex flex-row-reverse">
-                            <button class="btn btn-danger btn-sm" id="emptyPlaylist"><i class="fas fa-times"></i> Empty Playlist</button>
+                            <button class="btn btn-danger btn-sm" id="emptyPlaylist"><i class="fas fa-times"></i> Empty
+                                Playlist</button>
                             <div class="form-check form-check-inline my-auto">
-                                <input class="form-check-input" type="checkbox" onchange="toggleShuffle(this.checked);" checked="true" id="shuffleCheck">
+                                <input class="form-check-input" type="checkbox" onchange="toggleShuffle(this.checked);"
+                                    checked="true" id="shuffleCheck">
                                 <label class="form-check-label" for="shuffleCheck">
-                                  Shuffle
+                                    Shuffle
                                 </label>
                             </div>
                         </div>
-                        
+
                         <br>
                         <br>
                         <table class="table table-sm" id="playlist-table">
@@ -184,19 +192,19 @@
                                 </tr>
                             </tbody>
                         </table>
-                        
+
                     </div>
                     <div class="tab-pane fade" id="quickpush" role="tabpanel" aria-labelledby="quickpush-tab">
                         <div class="input-group">
-                            <input class="form-control" id="target" placeholder="YouTube URL"/>
-        
+                            <input class="form-control" id="target" placeholder="YouTube URL" />
+
                             <div class="input-group-append">
                                 <button class="btn btn-primary" onclick="send();">Play Now</button>
                             </div>
                         </div>
                     </div>
                 </div>
-                
+
             </div>
         </div>
     </main>
@@ -220,7 +228,7 @@
     <script src="/admin/admin.js"></script>
     <!-- <script src="../player.js"></script> -->
 
-    <script src="/js/jquery.slim.min.js"integrity="sha256-4+XzXVhsDmqanXGHaHvgh1gMQKX40OUvDEBTu8JcmNs="></script>
+    <script src="/js/jquery.slim.min.js" integrity="sha256-4+XzXVhsDmqanXGHaHvgh1gMQKX40OUvDEBTu8JcmNs="></script>
     <script src="/js/bootstrap.bundle.min.js" integrity="sha256-Xt8pc4G0CdcRvI0nZ2lRpZ4VHng0EoUDMlGcBSQ9HiQ="></script>
 
     <!-- SCRIPT FOR SLIDER -->

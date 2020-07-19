@@ -64,7 +64,7 @@ socket.on('serverPlayerControl', function (data) {
             break;
         case "play":
             player.playVideo();
-            frontendShowNotificationBanner("Playing", false);
+            // frontendShowNotificationBanner("Playing", false);
             break;
         case "mute":
             player.mute();
@@ -92,7 +92,7 @@ socket.on("serverVideoTimestamp", function (timestamp) {
     skipToTimestamp(timestamp);
 });
 
-function skipToTimestamp(timestamp){
+function skipToTimestamp(timestamp) {
     player.playVideo();
     player.seekTo(timestamp);
 }
@@ -111,15 +111,15 @@ function preloadVideo(id) {
     console.log("Preloading..." + id);
     // Set preloading true, send to 
     preloading = true;
-    socket.binary(false).emit("recieverPlayerStatus", { "state": state, "preloading": true });
     vid = id;
+    sendStatusToServer(state, true, vid, vid)
     player.mute();
     player.loadVideoById(vid);
 }
 
 // When the player's state changes
 function onPlayerStateChange(event) {
-    newState = event.data;
+    let newState = event.data;
     console.log(newState);
     if (preloading) {  // If we're preloading
         document.title = "Remote Media";
@@ -146,13 +146,23 @@ function onPlayerStateChange(event) {
                 // Update the tab title with the current Video ID
                 document.title = player.getVideoData().title + " - Remote Media";
                 stopScreensaver();
-                // break; // Fall through to next case
+            // break; // Fall through to next case
             case 2:
                 compareWithServerTimestamp();
         }
     }
-    socket.binary(false).emit("playerinfo", { currentTime: player.getCurrentTime(), socketID: socket.id, state: newState });
-    socket.binary(false).emit("recieverPlayerStatus", { "state": newState, "preloading": preloading, "firstVideo": firstVideo });
+    sendStatusToServer(newState, preloading, firstVideo, vid);
+}
+
+function sendStatusToServer(state, preloading, firstVideo, currentVideoID) {
+    socket.binary(false).emit("recieverPlayerStatus", {
+        "videoID": currentVideoID,
+        data: {
+            "state": state,
+            "preloading": preloading,
+            "firstVideo": firstVideo
+        }
+    });
 }
 
 function preloadFinisher() {
@@ -162,15 +172,16 @@ function preloadFinisher() {
     player.unMute();  // Unmute the video ready for playing
     preloading = false;
     console.log("Preloading done.");
-    socket.binary(false).emit("recieverPlayerStatus", { "state": state, "preloading": false });
+    // socket.binary(false).emit("recieverPlayerStatus", { "state": state, "preloading": false });
+    socket.binary(false).emit("recieverPlayerPreloadingFinished", vid);
 }
 
-function compareWithServerTimestamp(){
+function compareWithServerTimestamp() {
     console.log("checking TS");
     // Ask the server for the current timestamp
     socket.emit('recieverTimestampRequest', (timestamp) => { // args are sent in order to acknowledgement function
         // If they're more than 2 seconds apart, show the menu
-        if (compareTimestamps(player.getCurrentTime(), timestamp)){
+        if (compareTimestamps(player.getCurrentTime(), timestamp)) {
             frontendShowSideControlPanel(true);
         } else {
             frontendShowSideControlPanel(false);
@@ -178,12 +189,12 @@ function compareWithServerTimestamp(){
     });
 }
 
-function compareTimestamps(client, server){
+function compareTimestamps(client, server) {
     console.log("CLIENT " + client);
     console.log("SERVER " + server);
-    if (client > server + 2){
+    if (client > server + 2) {
         return true;
-    } else if (client < server - 2){
+    } else if (client < server - 2) {
         return true;
     }
     return false;

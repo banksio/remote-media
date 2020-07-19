@@ -11,6 +11,7 @@ class Room {
         // Only add a new client if it has a valid id
         if (client.id != undefined) {
             this.clients[client.id] = client;
+            this.clients[client.id].stateChangeCallback = this.stateChangeOfClient.bind(this);
         } else {
             throw "invalidClient";
         }
@@ -60,6 +61,16 @@ class Room {
         }
         return ClientNames;
     }
+
+    stateChangeOfClient(){
+        console.log("[classes.js][Room] A client's state in the room has changed.");
+        if (this._cbAnyClientStateChange) return this._cbAnyClientStateChange(this);
+        return
+    }
+
+    AnyClientStateChange(cb) {
+        this._cbAnyClientStateChange = cb;
+    }
 }
 
 class Login {
@@ -68,6 +79,8 @@ class Login {
         this._name = name;
         this.status = new State();
         this._pingHistory = [];
+
+        this.status.stateChangeCallback = this.stateChangeCallbackToRoom.bind(this);
     }
 
     set ping(ping) {
@@ -95,19 +108,29 @@ class Login {
     set name(name){
         this._name = name;
     }
+
+    set stateChangeCallback(cb){
+        this._cbStateChangeToRoom = cb;
+    }
+
+    stateChangeCallbackToRoom(){
+        return this._cbStateChangeToRoom();
+    }
 }
 
 class State {
     constructor(state = "Admin", preloading = false) {
         this.state = state;
+        this.previousState = state;
         this.preloading = preloading;
         this.requiresTimestamp = false;
         this.playerLoading = true;
     }
 
     updateState(state) {
+        this.previousState = this.state;
         this.state = state;
-        // return this.cbStateChange();
+        return this._cbStateChangeToClient();
     }
 
     updatePreloading(preloading) {
@@ -116,14 +139,18 @@ class State {
     }
 
     updateStatus(newStatus) {
-        this.state = newStatus.state;
-        this.preloading = newStatus.preloading;
+        this.updateState(newStatus.state);
+        this.updatePreloading(newStatus.preloading);
         // return this.cbStateChange();
         // this.timestamp = newStatus.timestamp;
     }
 
     friendlyState() {
         // Return the string of the current state name
+    }
+
+    set stateChangeCallback(cb){
+        this._cbStateChangeToClient = cb;
     }
 
 }
@@ -464,15 +491,16 @@ function shuffle(array) {
   }
 
 class Video {
-    constructor(id = undefined, title = undefined, channel = undefined, duration = undefined) {
+    constructor(id = undefined, title = undefined, channel = "Unknown", duration = undefined) {
         this.id = id;
-        this.title = title;
+        this.title = title ? title : id;
         this.channel = channel;
         this._duration = duration;
     }
 
     setIDFromURL(url) {
         this.id = getIDFromURL(url);
+        this.title = this.title ? this.title : this.id;
     }
 }
 
@@ -492,6 +520,7 @@ class ServerVideo extends Video {
         else if (key == "_stateDelayInterval") return undefined;
         else if (key == "_cbWhenFinished") return undefined;
         else if (key == "_cbWhenFinishedTimeout") return undefined;
+        else if (key == "cbStateDelayRoomRef") return undefined;
         else return value;
     }
 
@@ -580,6 +609,11 @@ class ServerVideo extends Video {
         return;
     }
 
+    onPlayDelay(cb){
+        this.cbStateDelay = cb;
+        // this.cbStateDelayRoomRef = room;
+    }
+
     set duration(time) {
         this._duration = time * 1000;
         return;
@@ -637,6 +671,13 @@ class ServerVideo extends Video {
     }
 }
 
+class RecieverTransport {
+    constructor(videoID, data) {
+        this.videoID = videoID
+        this.data = data
+    }
+}
+
 module.exports = {
     "Room": Room,
     "Queue": Queue,
@@ -644,7 +685,8 @@ module.exports = {
     "Login": Login,
     "State": State,
     "Video": Video,
-    "ServerVideo": ServerVideo
+    "ServerVideo": ServerVideo,
+    "RecieverTransport": RecieverTransport
 };
 
 function getIDFromURL(url) {

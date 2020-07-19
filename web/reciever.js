@@ -47,11 +47,15 @@ socket.on('volumeRecv', function (data) {
 });
 
 socket.on("serverBufferingClients", function (buffering) {
+    if (buffering.length == 0) {
+        return frontendShowNotificationBanner("Playing now", false);
+    }
     let names = "Waiting for ";
     buffering.forEach(client => {
         names += (client._name + ", ");
     });
-    frontendShowNotificationBanner(names, true);
+        frontendShowNotificationBanner(names, true);
+
 });
 
 // socket.on('pingTime', () => {
