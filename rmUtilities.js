@@ -9,6 +9,12 @@ function setNicknameInRoom(client, nickname, room) {
     }   
 }
 
+// Ensure the client is on the same video as the room
+function validateClientVideo(videoID, room) {
+    return videoID != room.currentVideo.id;
+}
+
 module.exports = {
-    "setNicknameInRoom": setNicknameInRoom
+    "setNicknameInRoom": setNicknameInRoom,
+    "validateClientVideo": validateClientVideo
 };
