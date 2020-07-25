@@ -18,14 +18,14 @@ function Disconnect(socket, room, client) {
 module.exports.Disconnect = Disconnect;
 
 
-function AdminConnectionManagement(io, room, control) {
+function AdminConnectionManagement(room, control) {
     logging.withTime("Connection management request recieved");
     if (control == "reload") {
-        io.binary(false).emit("serverConnectionManagement", "reload");
+        room.io.binary(false).emit("serverConnectionManagement", "reload");
         logging.withTime("[CliMgnt] Reloading all clients...");
     }
     else {
-        io.binary(false).emit("serverConnectionManagement", "discon");
+        room.io.binary(false).emit("serverConnectionManagement", "discon");
         logging.withTime("[CliMgnt] Disconnecting all clients...");
     }
 }
@@ -70,8 +70,8 @@ function AdminPlayerControl(socket, room, data) {
 module.exports.AdminPlayerControl = AdminPlayerControl;
 
 
-function AdminTTSRequest(io, data) {
-    io.binary(false).emit("serverTTSSpeak", data.value);
+function AdminTTSRequest(room, data) {
+    room.io.binary(false).emit("serverTTSSpeak", data.value);
 }
 module.exports.AdminTTSRequest = AdminTTSRequest;
 
@@ -266,7 +266,7 @@ function RecieverPreloadingFinished(socket, room, client, videoID) {
 
         // If the server is already playing a video
     }
-    else if (transmit.sendTimestampIfClientRequires(client, room, socket) == 0) {
+    else if (sendTimestampIfClientRequires(client, room, socket) == 0) {
         return 0;
     }
     return 0;

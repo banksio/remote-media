@@ -29,15 +29,13 @@ var web = expApp.listen(port);
 
 
 //get socketio to listen to the webserver's connection
-var io = socketio.listen(web, { log: false });
-
 //Create a callback function to deal with each connection.
 //The callback contains code to setup what happens whenever a named message is received
 function startServer() {
     //create blank logins array
-    var defaultRoom = new server.Room(io);
+    var defaultRoom = new server.Room(socketio.listen(web, { log: false }));
 
-    io.on('connection', function (socket) {
+    defaultRoom.io.on('connection', function (socket) {
         // A new connection from a client
 
         // Create a new Login object with the new socket's ID and add to the room
@@ -48,7 +46,7 @@ function startServer() {
         transmit.sendQueue(defaultRoom);
         transmit.broadcastClients(defaultRoom);
         transmit.sendQueueStatus(defaultRoom);
-        if (defaultRoom.currentVideo.state == 1) transmit.sendNowPlaying(defaultRoom.currentVideo);
+        if (defaultRoom.currentVideo.state == 1) transmit.sendNowPlaying(defaultRoom ,defaultRoom.currentVideo);
         socket.binary(false).emit('initFinished');
 
         logging.withTime(chalk.green("[CliMgnt] New Client " + currentClient.id));
@@ -101,7 +99,7 @@ function startServer() {
 
         // Text to speech
         socket.on("adminTTSRequest", function (data) {
-            handlers.AdminTTSRequest(io, data);
+            handlers.AdminTTSRequest(defaultRoom, data);
         });
 
         // Control the recievers video players
@@ -116,7 +114,7 @@ function startServer() {
 
         // Manage the client's connections
         socket.on("adminConnectionManagement", function (control) {
-            handlers.AdminConnectionManagement(io, defaultRoom, control);
+            handlers.AdminConnectionManagement(defaultRoom, control);
         });
 
         // Remove client when they disconnect
