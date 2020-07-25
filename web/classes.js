@@ -1,10 +1,11 @@
 const { TouchBarScrubber } = require("electron");
 
 class Room {
-    constructor() {
+    constructor(io) {
         this.queue = new NewQueue();
         this.clients = {};
         this._currentVideo = new Video();
+        this.io = io;
     }
 
     addClient(client) {
