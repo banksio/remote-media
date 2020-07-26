@@ -169,7 +169,7 @@ describe('Login object tests', function () {
         assert(login.id, id);
     });
     it('Test constructor, expect name to be set', function () {
-        let login = new classes.Login("test", "nameTest");
+        let login = new classes.Login("test", undefined, "nameTest");
         assert(login.name, "nameTest");
     });
     it('Test constructor, expect State object to be created', function () {
