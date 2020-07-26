@@ -4,7 +4,7 @@ class Room {
     constructor(io) {
         this.queue = new NewQueue();
         this.clients = {};
-        this._currentVideo = new Video();
+        this._currentVideo = new ServerVideo();
         this.io = io;
     }
 
@@ -80,6 +80,7 @@ class Login {
         this._name = name;
         this.status = new State();
         this._pingHistory = [];
+        this.socket = 
 
         this.status.stateChangeCallback = this.stateChangeCallbackToRoom.bind(this);
     }
@@ -157,15 +158,15 @@ class State {
 
 }
 
-class RoomState extends State {
-    constructor() {
-        super(-2, false);
-    }
+// class RoomState extends State {
+//     constructor() {
+//         super(-2, false);
+//     }
 
-    setCurrentVideo(video) {
-        this.currentVideo = video;
-    }
-}
+//     setCurrentVideo(video) {
+//         this.currentVideo = video;
+//     }
+// }
 
 class Queue {
     constructor(shuffle = false) {
