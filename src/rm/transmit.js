@@ -2,8 +2,8 @@ const logging = require('../../logging');
 const chalk = require('chalk');
 
 // Send timestamp to a client
-function sendIndividualTimestamp(socket, timestamp) {
-    socket.binary(false).emit("serverVideoTimestamp", timestamp);
+function sendIndividualTimestamp(client, timestamp) {
+    client.socket.binary(false).emit("serverVideoTimestamp", timestamp);
 }
 
 // Send timestamp to all clients
@@ -71,10 +71,10 @@ function broadcastClients(room) {
     room.io.binary(false).emit("serverClients", clients);
 }
 
-function sendCurrentVideoToClient(socket, room, client) {
+function sendCurrentVideoToClient(room, client) {
     if (room.currentVideo.state != 0) {
         // There is a video playing, so the client will need to preload it and then go to the timestamp
-        preloadVideoIndividualClient(room.currentVideo, socket);
+        preloadVideoIndividualClient(client, room.currentVideo);
         // This client needs a timestamp ASAP, this should be picked up by the status checking function
         client.status.requiresTimestamp = true;
         return 0;
@@ -83,10 +83,10 @@ function sendCurrentVideoToClient(socket, room, client) {
     }
 }
 
-function preloadVideoIndividualClient(videoObj, socket) {
+function preloadVideoIndividualClient(client, videoObj) {
     let newID = { "value": videoObj.id };
-    logging.withTime("New Video ID sent to client " + socket.id + ": " + newID.value);
-    socket.binary(false).emit("serverNewVideo", newID);
+    logging.withTime("New Video ID sent to client " + client.socket.id + ": " + newID.value);
+    client.socket.binary(false).emit("serverNewVideo", newID);
     return;
 }
 

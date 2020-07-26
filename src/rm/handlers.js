@@ -4,7 +4,7 @@ const rmUtilities = require('../../rmUtilities');
 const logging = require('../../logging');
 const transmit = require('./transmit');
 
-function Disconnect(socket, room, client) {
+function Disconnect(room, client) {
     console.log("[CliMgnt] " + logging.prettyPrintClientID(client) + " has disconnected.");
     room.removeClient(client);
     transmit.broadcastClients(room);
@@ -32,7 +32,7 @@ function AdminConnectionManagement(room, control) {
 module.exports.AdminConnectionManagement = AdminConnectionManagement;
 
 
-function AdminQueueControl(socket, room, data) {
+function AdminQueueControl(room, data) {
     switch (data) {
         case "prev":
             playPrevInQueue(room);
@@ -58,7 +58,7 @@ function AdminQueueControl(socket, room, data) {
 module.exports.AdminQueueControl = AdminQueueControl;
 
 
-function AdminPlayerControl(socket, room, data) {
+function AdminPlayerControl(room, data) {
     if (data == "pause") {
         room.currentVideo.pauseVideo(false);
     }
@@ -76,7 +76,7 @@ function AdminTTSRequest(room, data) {
 module.exports.AdminTTSRequest = AdminTTSRequest;
 
 
-function AdminQueueAppend(socket, room, data) {
+function AdminQueueAppend(room, data) {
     room.queue.addVideosCombo(data.value);
     transmit.sendQueue(room);
     // playNextInQueue(defaultRoom);
@@ -85,7 +85,7 @@ function AdminQueueAppend(socket, room, data) {
 module.exports.AdminQueueAppend = AdminQueueAppend;
 
 
-function AdminNewVideo(socket, room, data) {
+function AdminNewVideo(room, data) {
     var inputData = data.value;
     var urlArray = inputData.split(',');
     // If there's only one URL
@@ -99,9 +99,9 @@ function AdminNewVideo(socket, room, data) {
 module.exports.AdminNewVideo = AdminNewVideo;
 
 
-function RecieverPlayerStatus(socket, room, client, data) {
+function RecieverPlayerStatus(room, client, data) {
     // If the socket's not initialised, skip it
-    if (socket.id == undefined) {
+    if (client.socket.id == undefined) {
         return;
     }
 
@@ -192,7 +192,7 @@ function RecieverPlayerStatus(socket, room, client, data) {
 module.exports.RecieverPlayerStatus = RecieverPlayerStatus;
 
 
-function RecieverVideoDetails(socket, room, client, videoDetails) {
+function RecieverVideoDetails(room, client, videoDetails) {
     if (videoDetails.id != room.currentVideo.id) {
         logging.withTime("[ServerVideo] Recieved invalid video details from " + logging.prettyPrintClientID(client));
         return;
@@ -207,35 +207,35 @@ function RecieverVideoDetails(socket, room, client, videoDetails) {
 module.exports.RecieverVideoDetails = RecieverVideoDetails;
 
 
-function RecieverTimestampSyncRequest(socket, room, timestamp) {
+function RecieverTimestampSyncRequest(room, timestamp) {
     room.currentVideo.timestamp = timestamp;
     transmit.broadcastTimestamp(room, timestamp);
 }
 module.exports.RecieverTimestampSyncRequest = RecieverTimestampSyncRequest;
 
 
-function RecieverTimestampRequest(socket, room, client, callback) {
+function RecieverTimestampRequest(room, client, callback) {
     console.log("[CliMgnt] " + logging.prettyPrintClientID(client) + " has requested a timestamp.");
     callback(room.currentVideo.getElapsedTime());
 }
 module.exports.RecieverTimestampRequest = RecieverTimestampRequest;
 
 
-function RecieverPlayerReady(socket, room, client) {
+function RecieverPlayerReady(room, client) {
     logging.withTime("[CliMgnt] " + logging.prettyPrintClientID(client) + " is ready. ");
     // Update the state in our server
     client.status.playerLoading = false;
     client.status.state = -1;
     // Is there currently a video playing on the server?
     // If there is, we should send it to the newly created client.
-    transmit.sendCurrentVideoToClient(socket, room, client);
+    transmit.sendCurrentVideoToClient(client.socket, room, client);
     return 0;
 
 }
 module.exports.RecieverPlayerReady = RecieverPlayerReady;
 
 
-function RecieverNickname(socket, room, client, nick, fn) {
+function RecieverNickname(room, client, nick, fn) {
     // TODO: Check for any other clients with the same nickname and return the error
     // Set the nickname
     // Instead of this, use new function from rmUtils
@@ -250,7 +250,7 @@ function RecieverNickname(socket, room, client, nick, fn) {
 module.exports.RecieverNickname = RecieverNickname;
 
 
-function RecieverPreloadingFinished(socket, room, client, videoID) {
+function RecieverPreloadingFinished(room, client, videoID) {
     // Ignore if it's the wrong video
     if (rmUtilities.validateClientVideo(videoID, room)) {
         logging.withTime(chalk.yellow("[ClientVideo] " + logging.prettyPrintClientID(client) + " has finished preloading, but is on the wrong video."));
@@ -266,7 +266,7 @@ function RecieverPreloadingFinished(socket, room, client, videoID) {
 
         // If the server is already playing a video
     }
-    else if (sendTimestampIfClientRequires(client, room, socket) == 0) {
+    else if (sendTimestampIfClientRequires(client, room) == 0) {
         return 0;
     }
     return 0;
@@ -383,14 +383,14 @@ function StateChangeHandler(room) {
 
 
 
-function sendTimestampIfClientRequires(client, room, socket) {
+function sendTimestampIfClientRequires(client, room) {
     if (room.currentVideo.state != 0 && client.status.requiresTimestamp) {
         // We'll send the client a timestamp so it can sync with the server
         client.status.requiresTimestamp = false;
         logging.withTime("[ClientVideo] " + logging.prettyPrintClientID(client) + " requires a timestamp. Sending one to it now.");
         console.log("[CliMgnt] " + logging.prettyPrintClientID(client) + " has been sent a timestamp.");
         try {
-            transmit.sendIndividualTimestamp(socket, room.currentVideo.getElapsedTime());
+            transmit.sendIndividualTimestamp(client, room.currentVideo.getElapsedTime());
         } catch (error) {
             console.error(error);
         }

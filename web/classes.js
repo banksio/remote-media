@@ -75,12 +75,12 @@ class Room {
 }
 
 class Login {
-    constructor(id, name = undefined) {
+    constructor(id, socket, name = undefined) {
         this.id = id;
         this._name = name;
         this.status = new State();
         this._pingHistory = [];
-        this.socket = 
+        this.socket = socket;
 
         this.status.stateChangeCallback = this.stateChangeCallbackToRoom.bind(this);
     }
