@@ -1,0 +1,1 @@
+const handlers = require('../src/rm/handlers');

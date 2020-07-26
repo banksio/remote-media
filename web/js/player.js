@@ -23,6 +23,28 @@ function onYouTubeIframeAPIReady() {
             'onStateChange': onPlayerStateChange
         }
     });
+
+    var lastTime = -1;
+    var interval = 1000;
+
+    var checkPlayerTime = function () {
+        if (lastTime != -1) {
+            if (player.getPlayerState() == YT.PlayerState.PLAYING) {
+                var t = player.getCurrentTime();
+
+                //console.log(Math.abs(t - lastTime -1));
+
+                ///expecting 1 second interval , with 500 ms margin
+                if (Math.abs(t - lastTime - 1) > 0.5) {
+                    // there was a seek occuring
+                    console.log("seek"); /// fire your event here !
+                }
+            }
+        }
+        lastTime = player.getCurrentTime();
+        setTimeout(checkPlayerTime, interval); /// repeat function call in 1 second
+    }
+    setTimeout(checkPlayerTime, interval); /// initial call delayed 
 }
 
 //The API will call this function when the video player is ready.

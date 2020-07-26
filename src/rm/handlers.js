@@ -1,5 +1,5 @@
 const chalk = require('chalk');
-var server = require('../../web/classes');
+var server = require('../../web/js/classes');
 const rmUtilities = require('../../rmUtilities');
 const logging = require('../../logging');
 const transmit = require('./transmit');
@@ -228,7 +228,7 @@ function RecieverPlayerReady(room, client) {
     client.status.state = -1;
     // Is there currently a video playing on the server?
     // If there is, we should send it to the newly created client.
-    transmit.sendCurrentVideoToClient(client.socket, room, client);
+    transmit.sendCurrentVideoToClient(room, client);
     return 0;
 
 }

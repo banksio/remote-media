@@ -1,0 +1,1 @@
+const transmit = require('../src/rm/transmit');

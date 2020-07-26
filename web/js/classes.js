@@ -588,12 +588,15 @@ class ServerVideo extends Video {
         this.oof1 = (this._duration - (this.elapsedTime * 1000));
         this.oof2 = new Date().getTime();
         console.log(oof0 + " DEBUGGGGGGGGGGGG Set timeout to " + (this._duration - (this.elapsedTime * 1000)));
-        this._cbWhenFinishedTimeout = setTimeout((id) => {
-            console.log(oof0 + " THE VIDEO HAS FINISHED");
-            console.log(oof0 + " OFFFFFFFFFFFFFFFFFFFFFFFFFOOOFFFFFFFFFFFFFFFFFFFFF" + ((new Date().getTime()) - this.oof2));
-            console.log(oof0 + " " + this.oof1);
-            return this._cbWhenFinished();
-        }, (this._duration - (this.elapsedTime * 1000)), oof0);
+        if (this._cbWhenFinished){
+            this._cbWhenFinishedTimeout = setTimeout((id) => {
+                console.log(oof0 + " THE VIDEO HAS FINISHED");
+                console.log(oof0 + " OFFFFFFFFFFFFFFFFFFFFFFFFFOOOFFFFFFFFFFFFFFFFFFFFF" + ((new Date().getTime()) - this.oof2));
+                console.log(oof0 + " " + this.oof1);
+                return this._cbWhenFinished();
+            }, (this._duration - (this.elapsedTime * 1000)), oof0);
+        }
+
 
 
 

@@ -1,7 +1,7 @@
 const assert = require('assert');
 
 // Classes
-var classes = require('../web/classes');
+var classes = require('../web/js/classes');
 var rmUtils = require('../rmUtilities');
 
 describe('Room client management tests', function () {

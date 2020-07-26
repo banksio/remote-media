@@ -1,7 +1,7 @@
 const assert = require('assert');
 
 // Classes
-var classes = require('../web/classes');
+var classes = require('../web/js/classes');
 
 // Test video object ID parsing
 describe('Video object URL parsing test', function () {

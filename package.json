@@ -1,6 +1,6 @@
 {
   "name": "remote-media",
-  "version": "1.0.0-alpha.4",
+  "version": "1.0.0-alpha.5.dev",
   "description": "A small app to control other client's media remotely.",
   "main": "server.js",
   "scripts": {
@@ -15,6 +15,7 @@
     "app-root-path": "^3.0.0",
     "bootstrap": "^4.5.0",
     "chalk": "^4.1.0",
+    "ejs": "^3.1.3",
     "express": "^4.17.1",
     "jquery": "^3.5.1",
     "socket.io": "^2.3.0",
