@@ -1,7 +1,7 @@
 const chalk = require('chalk');
 var server = require('../../web/js/classes');
 const rmUtilities = require('../../rmUtilities');
-const logging = require('../../logging');
+const logging = require('./logging');
 const transmit = require('./transmit');
 
 function Disconnect(room, client) {

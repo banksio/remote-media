@@ -1,4 +1,4 @@
-const logging = require('../../logging');
+const logging = require('./logging');
 const chalk = require('chalk');
 
 // Send timestamp to a client

@@ -26,7 +26,8 @@
     "eslint": "^7.4.0",
     "mocha": "^8.0.1",
     "mocha-junit-reporter": "^2.0.0",
-    "nyc": "^15.1.0"
+    "nyc": "^15.1.0",
+    "sinon": "^9.0.2"
   },
   "repository": {
     "type": "git",
