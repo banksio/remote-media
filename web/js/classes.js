@@ -1,5 +1,3 @@
-const { TouchBarScrubber } = require("electron");
-
 class Room {
     constructor(io) {
         this.queue = new NewQueue();
@@ -58,7 +56,7 @@ class Room {
         let ClientNames = [];
         for (var i in this.clients) {
             ClientNames.push(this.clients[i].name);
-            console.log("Client: " + this.clients[i].name);
+            // console.log("Client: " + this.clients[i].name);
         }
         return ClientNames;
     }
@@ -168,73 +166,73 @@ class State {
 //     }
 // }
 
-class Queue {
-    constructor(shuffle = false) {
-        this.videos = [];
-        this.length = 0;
-        this.shuffle = shuffle;
-        this.name = "";
-    }
+// class Queue {
+//     constructor(shuffle = false) {
+//         this.videos = [];
+//         this.length = 0;
+//         this.shuffle = shuffle;
+//         this.name = "";
+//     }
 
-    addVideo(video) {
-        // Add the video to the array and update the length
-        this.videos.push(video);
-        this.length = this.videos.length;
-    }
+//     addVideo(video) {
+//         // Add the video to the array and update the length
+//         this.videos.push(video);
+//         this.length = this.videos.length;
+//     }
 
-    addVideoFromID(id) {
-        // Generate a new video object and call addVideo
-        var newVideo = new Video(id);
-        this.addVideo(newVideo);
-    }
+//     addVideoFromID(id) {
+//         // Generate a new video object and call addVideo
+//         var newVideo = new Video(id);
+//         this.addVideo(newVideo);
+//     }
 
-    addVideosFromURLs(urls) {
-        // Split the comma-separated list
-        var urlArray = urls.split(',');
-        // console.log("LENGTH" + urlArray.length);
-        if (urlArray.length == 1) {
-            // If there's only one url in the list then don't add anything
-            return;
-        }
-        // Add the id from each url in turn
-        for (var url of urlArray) {
-            var id = getIDFromURL(url);
-            if (id != undefined) {
-                this.addVideoFromID(id);
-                // consoleLogWithTime(id);
-            }
-        }
-    }
+//     addVideosFromURLs(urls) {
+//         // Split the comma-separated list
+//         var urlArray = urls.split(',');
+//         // console.log("LENGTH" + urlArray.length);
+//         if (urlArray.length == 1) {
+//             // If there's only one url in the list then don't add anything
+//             return;
+//         }
+//         // Add the id from each url in turn
+//         for (var url of urlArray) {
+//             var id = getIDFromURL(url);
+//             if (id != undefined) {
+//                 this.addVideoFromID(id);
+//                 // consoleLogWithTime(id);
+//             }
+//         }
+//     }
 
-    popVideo() {
-        // Ensure there are actually videos to pop
-        if (this.videos.length <= 0) {
-            return undefined;
-        }
-        // Are we shuffling?
-        if (this.shuffle) {
-            // We're shuffling, so get a random video
-            var nextIndex = Math.floor(Math.random() * this.videos.length);  // Random from the queue
-            console.log("[classes.js][ServerQueue] Queue is of length " + this.length);
-            console.log("[classes.js][ServerQueue] The next queue video index is " + nextIndex);
-            var nextVideo = this.videos[nextIndex];  // Get next video object
-            this.videos.splice(nextIndex, 1);  // Remove from queue
-            this.length = this.videos.length;  // Update queue length
-            return nextVideo;
-        } else {
-            // Not shuffling, just get the next video
-            let nextVideo = this.videos.shift();
-            this.length = this.videos.length;  // Update queue length
-            return nextVideo;
-        }
-    }
+//     popVideo() {
+//         // Ensure there are actually videos to pop
+//         if (this.videos.length <= 0) {
+//             return undefined;
+//         }
+//         // Are we shuffling?
+//         if (this.shuffle) {
+//             // We're shuffling, so get a random video
+//             var nextIndex = Math.floor(Math.random() * this.videos.length);  // Random from the queue
+//             console.log("[classes.js][ServerQueue] Queue is of length " + this.length);
+//             console.log("[classes.js][ServerQueue] The next queue video index is " + nextIndex);
+//             var nextVideo = this.videos[nextIndex];  // Get next video object
+//             this.videos.splice(nextIndex, 1);  // Remove from queue
+//             this.length = this.videos.length;  // Update queue length
+//             return nextVideo;
+//         } else {
+//             // Not shuffling, just get the next video
+//             let nextVideo = this.videos.shift();
+//             this.length = this.videos.length;  // Update queue length
+//             return nextVideo;
+//         }
+//     }
 
-    empty() {
-        // Reset video list, index and length
-        this.videos = [];
-        this.length = 0;
-    }
-}
+//     empty() {
+//         // Reset video list, index and length
+//         this.videos = [];
+//         this.length = 0;
+//     }
+// }
 
 class NewQueue {
 
@@ -686,7 +684,7 @@ class RecieverTransport {
 
 module.exports = {
     "Room": Room,
-    "Queue": Queue,
+    // "Queue": Queue,
     "NewQueue": NewQueue,
     "Login": Login,
     "State": State,

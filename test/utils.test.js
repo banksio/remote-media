@@ -1,0 +1,55 @@
+const assert = require('assert');
+
+// Classes
+var classes = require('../web/js/classes');
+var rmUtils = require('../src/rm/utils');
+const { server } = require('sinon');
+const utils = require('../src/rm/utils');
+
+describe('Utiltiies: Nickname validation tests', function () {
+    it('Should throw as client already exists with same nickname', function () {
+        let room = new classes.Room();
+        let loginID = "test";
+        let loginID2 = "anotherTest";
+        let login = new classes.Login(loginID);
+        let login2 = new classes.Login(loginID2);
+        login.name = "Nick";
+        room.addClient(login);
+        room.addClient(login2);
+        assert.throws(() => { rmUtils.setNicknameInRoom(login2, "Nick", room) }, Error);
+    });
+
+    it('Should not throw as client already exists with same nickname', function () {
+        let room = new classes.Room();
+        let loginID = "test";
+        let loginID2 = "anotherTest";
+        let login = new classes.Login(loginID);
+        let login2 = new classes.Login(loginID2);
+        login.name = "Nickname";
+        room.addClient(login);
+        room.addClient(login2);
+        rmUtils.setNicknameInRoom(login2, "Nick", room);
+        assert.equal(login2.name, "Nick");
+    });
+});
+
+describe('Utiltiies: Video validation tests', function () {
+    it('Should return true as the two video IDs are the same', function () {
+        let videoIDClient = "testID";
+        let videoIDServer = "testID";
+        let room = new classes.Room();
+        let clientVideo = new classes.Video(videoIDClient);
+        let serverVideo = new classes.Video(videoIDServer);
+        room.currentVideo = serverVideo;
+        assert.ok(utils.validateClientVideo(clientVideo.id, room));
+    });
+    it('Should return false as the two video IDs differ', function () {
+        let videoIDClient = "testID";
+        let videoIDServer = "differentTestID";
+        let room = new classes.Room();
+        let clientVideo = new classes.Video(videoIDClient);
+        let serverVideo = new classes.Video(videoIDServer);
+        room.currentVideo = serverVideo;
+        assert.ok(!utils.validateClientVideo(clientVideo.id, room));
+    });
+});

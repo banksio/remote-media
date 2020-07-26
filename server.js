@@ -8,7 +8,7 @@ const ejs = require('ejs')
 
 // Classes
 const server = require('./web/js/classes');
-const rmUtils = require('./rmUtilities');
+const rmUtils = require('./src/rm/utils');
 const logging = require('./src/rm/logging');
 const handlers = require("./src/rm/handlers");
 const transmit = require('./src/rm/transmit');

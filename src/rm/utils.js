@@ -1,4 +1,4 @@
-var server = require('./web/js/classes');
+var server = require('../../web/js/classes');
 
 
 function setNicknameInRoom(client, nickname, room) {
@@ -11,7 +11,7 @@ function setNicknameInRoom(client, nickname, room) {
 
 // Ensure the client is on the same video as the room
 function validateClientVideo(videoID, room) {
-    return videoID != room.currentVideo.id;
+    return videoID == room.currentVideo.id;
 }
 
 module.exports = {

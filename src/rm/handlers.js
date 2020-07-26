@@ -1,6 +1,6 @@
 const chalk = require('chalk');
 var server = require('../../web/js/classes');
-const rmUtilities = require('../../rmUtilities');
+const rmUtilities = require('./utils');
 const logging = require('./logging');
 const transmit = require('./transmit');
 
@@ -252,7 +252,7 @@ module.exports.RecieverNickname = RecieverNickname;
 
 function RecieverPreloadingFinished(room, client, videoID) {
     // Ignore if it's the wrong video
-    if (rmUtilities.validateClientVideo(videoID, room)) {
+    if (!rmUtilities.validateClientVideo(videoID, room)) {
         logging.withTime(chalk.yellow("[ClientVideo] " + logging.prettyPrintClientID(client) + " has finished preloading, but is on the wrong video."));
         return 1; // Code 1: wrong video
     }
