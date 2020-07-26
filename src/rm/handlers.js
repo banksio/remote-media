@@ -4,8 +4,28 @@ const rmUtilities = require('./utils');
 const logging = require('./logging');
 const transmit = require('./transmit');
 
+function newClient(room, socket) {
+    room.addClient(new server.Login(socket.id, socket, socket.id));
+    let newClient = room.clients[socket.id];
+
+    // Send all data to new clients and admin panels
+    sendAllData(room, newClient, socket);
+    transmit.broadcastClients(room);
+
+    logging.withTime(chalk.cyan("[CliMgnt] New Client " + newClient.id));
+    return newClient;
+}
+module.exports.newClient = newClient;
+
+function sendAllData(room, client) {
+    transmit.sendQueue(room, client);
+    transmit.sendQueueStatus(room, client);
+    if (room.currentVideo.state == 1) transmit.sendNowPlaying(room, client, room.currentVideo);
+    client.socket.binary(false).emit('initFinished');
+}
+
 function Disconnect(room, client) {
-    console.log("[CliMgnt] " + logging.prettyPrintClientID(client) + " has disconnected.");
+    console.log(chalk.cyan("[CliMgnt] " + logging.prettyPrintClientID(client) + " has disconnected."));
     room.removeClient(client);
     transmit.broadcastClients(room);
     // Play the video if the server is waiting to start a video
@@ -47,13 +67,13 @@ function AdminQueueControl(room, data) {
         case "toggleShuffle":
             queueShuffleToggle(room);
             logging.withTime("[ServerQueue] Shuffle: " + room.queue.shuffle);
-            transmit.sendQueueStatus(room);
-            transmit.sendQueue(room);
+            transmit.broadcastQueueStatus(room);
+            transmit.broadcastQueue(room);
             return;
         default:
             break;
     }
-    transmit.sendQueue(room);
+    transmit.broadcastQueue(room);
 }
 module.exports.AdminQueueControl = AdminQueueControl;
 
@@ -78,7 +98,7 @@ module.exports.AdminTTSRequest = AdminTTSRequest;
 
 function AdminQueueAppend(room, data) {
     room.queue.addVideosCombo(data.value);
-    transmit.sendQueue(room);
+    transmit.broadcastQueue(room);
     // playNextInQueue(defaultRoom);
     return;
 }
@@ -202,7 +222,7 @@ function RecieverVideoDetails(room, client, videoDetails) {
     room.currentVideo.channel = videoDetails.channel;
     room.currentVideo.duration = videoDetails.duration;
     logging.withTime("The video duration is " + videoDetails.duration);
-    transmit.sendNowPlaying(room, room.currentVideo);
+    transmit.broadcastNowPlaying(room, room.currentVideo);
 }
 module.exports.RecieverVideoDetails = RecieverVideoDetails;
 
@@ -222,15 +242,12 @@ module.exports.RecieverTimestampRequest = RecieverTimestampRequest;
 
 
 function RecieverPlayerReady(room, client) {
-    logging.withTime("[CliMgnt] " + logging.prettyPrintClientID(client) + " is ready. ");
+    logging.withTime(chalk.cyan("[CliMgnt] " + logging.prettyPrintClientID(client) + " is ready. "));
     // Update the state in our server
     client.status.playerLoading = false;
     client.status.state = -1;
-    // Is there currently a video playing on the server?
-    // If there is, we should send it to the newly created client.
-    transmit.sendCurrentVideoToClient(room, client);
-    return 0;
-
+    // If there's a video playing, send it
+    transmit.sendCurrentVideoIfPlaying(room, client);
 }
 module.exports.RecieverPlayerReady = RecieverPlayerReady;
 
@@ -284,7 +301,7 @@ function playNextInQueue(room) {
     let nextVideo = room.queue.nextVideo();
     if (nextVideo != undefined) {
         preloadNewVideoInRoom(nextVideo, room);
-        transmit.sendQueue(room);
+        transmit.broadcastQueue(room);
     }
     return;
 }
@@ -294,7 +311,7 @@ function playPrevInQueue(room) {
     let nextVideo = room.queue.previousVideo();
     if (nextVideo != undefined) {
         preloadNewVideoInRoom(nextVideo, room);
-        transmit.sendQueue(room);
+        transmit.broadcastQueue(room);
     }
     return;
 }

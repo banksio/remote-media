@@ -19,7 +19,7 @@ function broadcastPreloadVideo(room, videoObj) {
     return;
 }
 
-function sendQueue(room) {
+function sendQueue(room, client) {
     // Send the whole queue
     let queue = {
         videos: room.queue.videos,
@@ -27,11 +27,29 @@ function sendQueue(room) {
         index: room.queue._currentIndex
     };
     // console.log(queue);
-   room.io.binary(false).emit("serverQueueVideos", queue);
+    client.socket.binary(false).emit("serverQueueVideos", queue);
+}
+
+function broadcastQueue(room) {
+    // Send the whole queue
+    let queue = {
+        videos: room.queue.videos,
+        length: room.queue.length,
+        index: room.queue._currentIndex
+    };
+    // console.log(queue);
+    room.io.binary(false).emit("serverQueueVideos", queue);
 }
 
 
-function sendQueueStatus(room) {
+function sendQueueStatus(room, client) {
+    // Send the queue but remove the videos array, no need to send that
+    let queueStatus = { shuffle: room.queue.shuffle };
+    // queueStatus.videos = undefined;
+    client.socket.binary(false).emit("serverQueueStatus", queueStatus);
+}
+
+function broadcastQueueStatus(room) {
     // Send the queue but remove the videos array, no need to send that
     let queueStatus = { shuffle: room.queue.shuffle };
     // queueStatus.videos = undefined;
@@ -39,7 +57,15 @@ function sendQueueStatus(room) {
 }
 
 
-function sendNowPlaying(room, video) {
+function sendNowPlaying(room, client, video) {
+    // Update elapsed time
+    // video.getElapsedTime(new Date().getTime());  // UPDATE no longer used
+    // Send the current video object to all clients (and admin panels)
+    // console.log(video);
+    client.socket.binary(false).emit("serverCurrentVideo", JSON.stringify(video, video.cyclicReplacer));
+}
+
+function broadcastNowPlaying(room, video) {
     // Update elapsed time
     // video.getElapsedTime(new Date().getTime());  // UPDATE no longer used
     // Send the current video object to all clients (and admin panels)
@@ -67,11 +93,13 @@ function broadcastBufferingIfClientNowReady(room, status) {
 }
 
 function broadcastClients(room) {
-    let clients = room.clients;
+    let clients = room.clientsWithoutCircularReferences();
     room.io.binary(false).emit("serverClients", clients);
 }
 
-function sendCurrentVideoToClient(room, client) {
+function sendCurrentVideoIfPlaying(room, client) {
+    // Is there currently a video playing on the server?
+    // If there is, we should send it to the client.
     if (room.currentVideo.state != 0) {
         // There is a video playing, so the client will need to preload it and then go to the timestamp
         preloadVideoIndividualClient(client, room.currentVideo);
@@ -98,8 +126,11 @@ module.exports = {
     broadcastBufferingIfClientNowReady: broadcastBufferingIfClientNowReady,
     sendNowPlaying: sendNowPlaying,
     sendQueue: sendQueue,
+    broadcastQueue: broadcastQueue,
+    broadcastQueueStatus: broadcastQueueStatus,
     broadcastPreloadVideo: broadcastPreloadVideo,
     broadcastClients: broadcastClients,
+    broadcastNowPlaying: broadcastNowPlaying,
     sendQueueStatus: sendQueueStatus,
-    sendCurrentVideoToClient: sendCurrentVideoToClient
+    sendCurrentVideoIfPlaying: sendCurrentVideoIfPlaying
 }

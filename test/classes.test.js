@@ -50,45 +50,45 @@ describe('Video object timekeeping test', function () {
 });
 
 // Queue tests
-describe('Queue tests', function () {
-    let video = new classes.Video("p47fEXGabaY");
-    it('Add single video, expect correct video object and queue length', function () {
-        let queue = new classes.Queue();
-        queue.addVideo(video);
-        assert.equal(queue.length, 1);
-        assert.equal(queue.popVideo(), video);
-        assert.equal(queue.length, 0);
-    });
-    it('Add single video from ID, expect correct video ID and queue length', function () {
-        let queue = new classes.Queue();
-        queue.addVideoFromID(video.id);
-        assert.equal(queue.length, 1);
-        assert.equal(queue.popVideo().id, video.id);
-        assert.equal(queue.length, 0);
-    });
-    it('Add two videos from CSV test queue length, ID and pop from queue', function () {
-        let queue = new classes.Queue();
-        queue.addVideosFromURLs("https://youtu.be/xi3c-9qzrPY?list=RDMMEK_LN3XEcnw,https://youtu.be/ez1Kv8hiQGU?list=RDMMEK_LN3XEcnw");
-        assert.equal(queue.length, 2);
-        assert.equal(queue.popVideo().id, "xi3c-9qzrPY");
-        assert.equal(queue.length, 1);
-        assert.equal(queue.popVideo().id, "ez1Kv8hiQGU");
-        assert.equal(queue.length, 0);
-    });
-    it('Add one video from CSV, expect nothing added', function () {
-        let queue = new classes.Queue();
-        queue.addVideosFromURLs("https://youtu.be/xi3c-9qzrPY?list=RDMMEK_LN3XEcnw");
-        assert.equal(queue.length, 0);
-        assert.equal(queue.popVideo(), undefined);
-        assert.equal(queue.length, 0);
-    });
+// describe('Queue tests', function () {
+//     let video = new classes.Video("p47fEXGabaY");
+//     it('Add single video, expect correct video object and queue length', function () {
+//         let queue = new classes.Queue();
+//         queue.addVideo(video);
+//         assert.equal(queue.length, 1);
+//         assert.equal(queue.popVideo(), video);
+//         assert.equal(queue.length, 0);
+//     });
+//     it('Add single video from ID, expect correct video ID and queue length', function () {
+//         let queue = new classes.Queue();
+//         queue.addVideoFromID(video.id);
+//         assert.equal(queue.length, 1);
+//         assert.equal(queue.popVideo().id, video.id);
+//         assert.equal(queue.length, 0);
+//     });
+//     it('Add two videos from CSV test queue length, ID and pop from queue', function () {
+//         let queue = new classes.Queue();
+//         queue.addVideosFromURLs("https://youtu.be/xi3c-9qzrPY?list=RDMMEK_LN3XEcnw,https://youtu.be/ez1Kv8hiQGU?list=RDMMEK_LN3XEcnw");
+//         assert.equal(queue.length, 2);
+//         assert.equal(queue.popVideo().id, "xi3c-9qzrPY");
+//         assert.equal(queue.length, 1);
+//         assert.equal(queue.popVideo().id, "ez1Kv8hiQGU");
+//         assert.equal(queue.length, 0);
+//     });
+//     it('Add one video from CSV, expect nothing added', function () {
+//         let queue = new classes.Queue();
+//         queue.addVideosFromURLs("https://youtu.be/xi3c-9qzrPY?list=RDMMEK_LN3XEcnw");
+//         assert.equal(queue.length, 0);
+//         assert.equal(queue.popVideo(), undefined);
+//         assert.equal(queue.length, 0);
+//     });
 
-    it('Add single video, get video from queue', function () {
-        let queue = new classes.Queue();
-        queue.addVideo(video);
-        assert.equal(queue.popVideo(), video);
-    });
-});
+//     it('Add single video, get video from queue', function () {
+//         let queue = new classes.Queue();
+//         queue.addVideo(video);
+//         assert.equal(queue.popVideo(), video);
+//     });
+// });
 
 // Queue tests
 describe('NewQueue tests', function () {
@@ -182,7 +182,7 @@ describe('Login object tests', function () {
 describe('Room object tests', function () {
     it('Test constructor, expect new Queue object', function () {
         let room = new classes.Room();
-        assert(room.queue, new classes.Queue());
+        assert(room.queue, new classes.NewQueue());
     });
     it('Test constructor, expect new Video object', function () {
         let room = new classes.Room();

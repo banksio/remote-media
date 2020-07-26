@@ -3,7 +3,6 @@ const assert = require('assert');
 // Classes
 var classes = require('../web/js/classes');
 var rmUtils = require('../src/rm/utils');
-const { server } = require('sinon');
 const utils = require('../src/rm/utils');
 
 describe('Utiltiies: Nickname validation tests', function () {

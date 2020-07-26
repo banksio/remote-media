@@ -6,6 +6,16 @@ class Room {
         this.io = io;
     }
 
+    cyclicReplacer(key, value) {
+        if (key == "io") return undefined;
+        else if (key == "socket") return undefined;
+        else return value;
+    }
+
+    clientsWithoutCircularReferences(){
+        return JSON.parse(JSON.stringify(this.clients, this.cyclicReplacer))
+    }
+
     addClient(client) {
         // Only add a new client if it has a valid id
         if (client.id != undefined) {

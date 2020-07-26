@@ -45,17 +45,7 @@ function startServer() {
         // A new connection from a client
 
         // Create a new Login object with the new socket's ID and add to the room
-        defaultRoom.addClient(new server.Login(socket.id, socket, socket.id));
-        var currentClient = defaultRoom.clients[socket.id];
-
-        // Send all data to new clients and admin panels
-        transmit.sendQueue(defaultRoom);
-        transmit.broadcastClients(defaultRoom);
-        transmit.sendQueueStatus(defaultRoom);
-        if (defaultRoom.currentVideo.state == 1) transmit.sendNowPlaying(defaultRoom, defaultRoom.currentVideo);
-        socket.binary(false).emit('initFinished');
-
-        logging.withTime(chalk.green("[CliMgnt] New Client " + currentClient.id));
+        var currentClient = handlers.newClient(defaultRoom, socket);
 
         // The reciever's player has loaded
         socket.on("recieverPlayerReady", function () {
