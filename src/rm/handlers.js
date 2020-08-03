@@ -9,7 +9,7 @@ function newClient(room, socket) {
     let newClient = room.clients[socket.id];
 
     // Send all data to new clients and admin panels
-    sendAllData(room, newClient, socket);
+    this.sendAllData(room, newClient, socket);
     transmit.broadcastClients(room);
 
     logging.withTime(chalk.cyan("[CliMgnt] New Client " + newClient.id));
@@ -23,6 +23,7 @@ function sendAllData(room, client) {
     if (room.currentVideo.state == 1) transmit.sendNowPlaying(room, client, room.currentVideo);
     client.socket.binary(false).emit('initFinished');
 }
+module.exports.sendAllData = sendAllData;
 
 function Disconnect(room, client) {
     console.log(chalk.cyan("[CliMgnt] " + logging.prettyPrintClientID(client) + " has disconnected."));
