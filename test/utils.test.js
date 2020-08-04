@@ -28,7 +28,16 @@ describe('Utiltiies: Nickname validation tests', function () {
         room.addClient(login);
         room.addClient(login2);
         rmUtils.setNicknameInRoom(login2, "Nick", room);
-        assert.equal(login2.name, "Nick");
+        assert.strictEqual(login2.name, "Nick");
+    });
+
+    it('Should replace html tags with gt and lt html codes', function () {
+        let room = new classes.Room();
+        let loginID = "test";
+        let login = new classes.Login(loginID);
+        room.addClient(login);
+        rmUtils.setNicknameInRoom(login, "<h1>Injectable</h1>", room);
+        assert.strictEqual(login.name, "&lt;h1&gt;Injectable&lt;/h1&gt;");
     });
 });
 

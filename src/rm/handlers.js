@@ -3,6 +3,7 @@ var server = require('../../web/js/classes');
 const rmUtilities = require('./utils');
 const logging = require('./logging');
 const transmit = require('./transmit');
+const utils = require('./utils');
 
 function newClient(room, socket) {
     room.addClient(new server.Login(socket.id, socket, socket.id));
@@ -254,11 +255,19 @@ module.exports.RecieverPlayerReady = RecieverPlayerReady;
 
 
 function RecieverNickname(room, client, nick, fn) {
-    // TODO: Check for any other clients with the same nickname and return the error
     // Set the nickname
-    // Instead of this, use new function from rmUtils
+     
     console.log(nick);
-    client.name = nick;
+    try {
+        utils.setNicknameInRoom(client, nick, room);
+    } catch (error) {
+        if (error.message === "Duplicate Nickname Error") {
+            console.error(error);
+            fn(error.message);
+            return;
+        }
+    }
+    
     // Upadte clients for admin panels
     transmit.broadcastClients(room);
     logging.withTime("[CliNick] " + logging.prettyPrintClientID(client) + " has set their nickname.");
