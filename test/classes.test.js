@@ -1,5 +1,7 @@
 const assert = require('assert');
 
+const testHelpers = require('../src/test/setupFunctions');
+
 // Classes
 var classes = require('../web/js/classes');
 
@@ -26,7 +28,7 @@ describe('Video object URL parsing test', function () {
         assert.equal(video.id, "xi3c-9qzrPY");
     });
     it('Invalid video URL, should return undefined', function () {
-        assert.throws(function (){video.setIDFromURL("https://www.youtube.com/playlist?list=PLJlPsYbof_C4JOCj7JVotCm8HGZewIFoG");});
+        assert.throws(function () { video.setIDFromURL("https://www.youtube.com/playlist?list=PLJlPsYbof_C4JOCj7JVotCm8HGZewIFoG"); });
         // assert.throws(video.id, undefined);
     });
 });
@@ -35,13 +37,13 @@ describe('Video object URL parsing test', function () {
 describe('Video object timekeeping test', function () {
     this.timeout(15000);
     let video = new classes.ServerVideo();
-    it('Time after 5 seconds',function (done) {
+    it('Time after 5 seconds', function (done) {
         let elapsedTime = 5000;
         video.startingTime = new Date().getTime();
         let timestamp = video.getElapsedTime(new Date(Date.now() + elapsedTime).getTime());
         done(assert.ok((4.980 < timestamp && timestamp < 5.020), video.getElapsedTime(new Date(Date.now() + elapsedTime).getTime())));
     });
-    it('Time after 10 seconds',function (done) {
+    it('Time after 10 seconds', function (done) {
         let elapsedTime = 10000;
         video.startingTime = new Date().getTime();
         let timestamp = video.getElapsedTime(new Date(Date.now() + elapsedTime).getTime());
@@ -179,36 +181,55 @@ describe('Login object tests', function () {
 });
 
 // Room object tests
-describe('Room object tests', function () {
-    it('Test constructor, expect new Queue object', function () {
+describe('Room object', function () {
+    it('Should create new Queue object', function () {
         let room = new classes.Room();
         assert(room.queue, new classes.NewQueue());
     });
-    it('Test constructor, expect new Video object', function () {
+    it('Should create new video object', function () {
         let room = new classes.Room();
         assert(room.currentVideo, new classes.Video());
     });
-    it('Test addition of single client with valid ID, expect client to be added', function () {
+    it('Should add client to room, valid client id', function () {
         let room = new classes.Room();
         let loginID = "test";
         let login = new classes.Login(loginID);
         room.addClient(login);
         assert(room.clients[loginID], login);
     });
-    it('Test addition of single client without valid ID, expect client to be rejected', function () {
+    it('Should throw invalidClient, invalid client id', function () {
         let room = new classes.Room();
         let login = new classes.Login();
         try {
             room.addClient(login); // this should fail
             assert.fail('invalidClient not thrown'); // this throws an AssertionError
-          } catch (e) { // this catches all errors, those thrown by the function under test
-                        // and those thrown by assert.fail
+        } catch (e) { // this catches all errors, those thrown by the function under test
+            // and those thrown by assert.fail
             if (e instanceof assert.AssertionError) {
-              // bubble up the assertion error
-              throw e;
+                // bubble up the assertion error
+                throw e;
             }
             assert.equal(e, "invalidClient");
-          }
+        }
+    });
+
+    it('Should return clients object without cyclic references', function () {
+        let room = testHelpers.roomWithTwoClients();
+        let actual = room.clientsWithoutCircularReferences();
+
+        delete room.clients.fakeID1.socket;
+        delete room.clients.fakeID2.socket;
+
+        let expected = JSON.parse(JSON.stringify(room.clients));
+
+        assert.deepStrictEqual(actual, expected)
+    });
+
+    it('Should return clients in room without circular references', function () {
+        let room = testHelpers.roomWithTwoClients();
+        let expected = JSON.parse(JSON.stringify(room.clients, room.cyclicReplacer))
+        let actual = room.clientsWithoutCircularReferences();
+        assert.deepStrictEqual(actual, expected);
     });
 });
 

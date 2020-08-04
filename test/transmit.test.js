@@ -4,6 +4,7 @@ const sinon = require('sinon');
 const express = require('express');
 
 const testHelpers = require('../src/test/setupFunctions');
+const customAssert = require('../src/test/assertion');
 const handlers = require('../src/rm/handlers');
 const transmit = require('../src/rm/transmit');
 const classes = require('../web/js/classes');
@@ -44,6 +45,8 @@ describe("transmit.js tests", function () {
     after(async () => {
 
     })
+
+    // Client array
 
     it("Should broadcast the client array", function (done) {
         var client1 = io.connect("http://localhost:3000", ioOptions);
@@ -92,5 +95,49 @@ describe("transmit.js tests", function () {
                 done();
             }
         }
+    })
+
+    it("Should send the timestamp to client", function (done) {
+        var client1 = io.connect("http://localhost:3000", ioOptions);
+        var room = testHelpers.roomWithTwoClients(socketIOServer);
+        let timestamp = new Date().getTime()
+
+        client1.once("serverVideoTimestamp", function (data){
+            assert.strictEqual(data, timestamp)
+            done();
+        })
+
+        room.io.on("connection", (socket) => {
+            let clientInRoom = new classes.Login(socket.id, socket, "client1");
+
+            transmit.sendIndividualTimestamp(clientInRoom, timestamp);
+        })        
+    })
+
+    it("Should send the timestamp to all clients", function (done) {
+        var client1 = io.connect("http://localhost:3000", ioOptions);
+        var client2 = io.connect("http://localhost:3000", ioOptions);
+        var room = testHelpers.roomWithTwoClients(socketIOServer);
+        let timestamp = new Date().getTime()
+        var results = new customAssert.AssertMultiple(2, timestamp, () => {
+            done();
+        });
+        var socketCount = new customAssert.SocketCounter(2, () => {
+            transmit.broadcastTimestamp(room, timestamp);
+        });
+
+        client1.once("serverVideoTimestamp", function (actual){
+            results.strictEqual(actual)
+        })
+
+        client2.once("serverVideoTimestamp", function (actual){
+            results.strictEqual(actual)
+        })
+
+        room.io.on("connection", (socket) => {
+            let clientInRoom = new classes.Login(socket.id, socket, "client1");
+
+            socketCount.incrementCount();
+        })        
     })
 });
