@@ -26,7 +26,7 @@ function sendQueue(room, client) {
         length: room.queue.length,
         index: room.queue._currentIndex
     };
-    // console.log(queue);
+
     client.socket.binary(false).emit("serverQueueVideos", queue);
 }
 
