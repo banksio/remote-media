@@ -1,11 +1,7 @@
 const assert = require('assert');
-const sinon = require('sinon');
-
-const express = require('express');
 
 const testHelpers = require('../src/test/setupFunctions');
 const customAssert = require('../src/test/assertion');
-const handlers = require('../src/rm/handlers');
 const transmit = require('../src/rm/transmit');
 const classes = require('../web/js/classes');
 const mock = require('../src/test/socketMock');
@@ -20,15 +16,9 @@ const ioOptions = {
 };
 
 describe("transmit.js tests", function () {
-    var sender;
-    var receiver;
-    var client;
-    var server;
-    var expServer;
     var socketIOServer;
 
     beforeEach(function (done) {
-        let expApp = express();
         socketIOServer = mock.start(() => {
             done();
         })
@@ -59,7 +49,7 @@ describe("transmit.js tests", function () {
             done();
         })
 
-        room.io.on("connection", (data) => {
+        room.io.on("connection", () => {
             transmit.broadcastClients(room);
         })
     })
@@ -84,7 +74,7 @@ describe("transmit.js tests", function () {
             checkDone();
         })
 
-        room.io.on("connection", (data) => {
+        room.io.on("connection", () => {
             clientCount += 1;
             if (clientCount >= 2) {
                 transmit.broadcastClients(room);
@@ -148,9 +138,7 @@ describe("transmit.js tests", function () {
             }
         })
 
-        room.io.on("connection", (socket) => {
-            let clientInRoom = new classes.Login(socket.id, socket, "client1");
-
+        room.io.on("connection", () => {
             socketCount.incrementCount();
         })
     })
@@ -185,7 +173,7 @@ describe("transmit.js tests", function () {
             }
         })
 
-        room.io.on("connection", (socket) => {
+        room.io.on("connection", () => {
             socketCount.incrementCount();
         })
     })
@@ -251,7 +239,7 @@ describe("transmit.js tests", function () {
             }
         })
 
-        room.io.on("connection", (socket) => {
+        room.io.on("connection", () => {
             socketCount.incrementCount();
         })
     })
@@ -313,7 +301,7 @@ describe("transmit.js tests", function () {
             }
         })
 
-        room.io.on("connection", (socket) => {
+        room.io.on("connection", () => {
             socketCount.incrementCount();
         })
     })
@@ -369,17 +357,16 @@ describe("transmit.js tests", function () {
             }
         })
 
-        room.io.on("connection", (socket) => {
+        room.io.on("connection", () => {
             socketCount.incrementCount();
         })
     })
 
     // Player control
-    it("Should broadcast the player control video to all clients", function (done) {
+    it("Should broadcast the player control command to all clients", function (done) {
         var client1 = io.connect("http://localhost:3000", ioOptions);
         var client2 = io.connect("http://localhost:3000", ioOptions);
         var room = testHelpers.roomWithTwoClients(socketIOServer);
-        let video = new Video("testID", "testTitle", "testChannel", "testDuration");
 
         let expected = "play";
 
@@ -402,7 +389,7 @@ describe("transmit.js tests", function () {
             }
         })
 
-        room.io.on("connection", (socket) => {
+        room.io.on("connection", () => {
             socketCount.incrementCount();
         })
     })
@@ -412,7 +399,7 @@ describe("transmit.js tests", function () {
         var client1 = io.connect("http://localhost:3000", ioOptions);
         var client2 = io.connect("http://localhost:3000", ioOptions);
         var room = testHelpers.roomWithTwoClients(socketIOServer);
-        // let video = new Video("testID", "testTitle", "testChannel", "testDuration");
+
         var clientInRoom1 = new classes.Login("testID1", undefined, "testName1");
         var clientInRoom2 = new classes.Login("testID2", undefined, "testName2");
 
@@ -441,7 +428,7 @@ describe("transmit.js tests", function () {
             }
         })
 
-        room.io.on("connection", (socket) => {
+        room.io.on("connection", () => {
             socketCount.incrementCount();
         })
     })
@@ -451,7 +438,7 @@ describe("transmit.js tests", function () {
         var client1 = io.connect("http://localhost:3000", ioOptions);
         var client2 = io.connect("http://localhost:3000", ioOptions);
         var room = testHelpers.roomWithTwoClients(socketIOServer);
-        // let video = new Video("testID", "testTitle", "testChannel", "testDuration");
+
         var clientInRoom1 = new classes.Login("testID1", undefined, "testName1");
         var clientInRoom2 = new classes.Login("testID2", undefined, "testName2");
         var state1 = new classes.State(3)
@@ -482,7 +469,7 @@ describe("transmit.js tests", function () {
             }
         })
 
-        room.io.on("connection", (socket) => {
+        room.io.on("connection", () => {
             socketCount.incrementCount();
         })
     })
@@ -491,7 +478,7 @@ describe("transmit.js tests", function () {
         var client1 = io.connect("http://localhost:3000", ioOptions);
         var client2 = io.connect("http://localhost:3000", ioOptions);
         var room = testHelpers.roomWithTwoClients(socketIOServer);
-        // let video = new Video("testID", "testTitle", "testChannel", "testDuration");
+
         var clientInRoom1 = new classes.Login("testID1", undefined, "testName1");
         var clientInRoom2 = new classes.Login("testID2", undefined, "testName2");
         var state1 = new classes.State(1)
@@ -503,18 +490,18 @@ describe("transmit.js tests", function () {
         room.clients.testID2.status.updateState(3);
         let expected = JSON.parse(JSON.stringify(room.getBuffering()));
 
-        var results = new customAssert.AssertMultiple(2, expected, () => { done(assert.fail()); });
+        new customAssert.AssertMultiple(2, expected, () => { done(assert.fail()); });
         var socketCount = new customAssert.SocketCounter(2, () => { transmit.broadcastBufferingIfClientNowReady(room, state1); });
 
-        client1.once("serverBufferingClients", function (actual) {
+        client1.once("serverBufferingClients", function () {
             done(assert.fail());
         })
 
-        client2.once("serverBufferingClients", function (actual) {
+        client2.once("serverBufferingClients", function () {
             done(assert.fail());
         })
 
-        room.io.on("connection", (socket) => {
+        room.io.on("connection", () => {
             socketCount.incrementCount();
         })
 
@@ -525,7 +512,7 @@ describe("transmit.js tests", function () {
         var client1 = io.connect("http://localhost:3000", ioOptions);
         var client2 = io.connect("http://localhost:3000", ioOptions);
         var room = testHelpers.roomWithTwoClients(socketIOServer);
-        // let video = new Video("testID", "testTitle", "testChannel", "testDuration");
+
         var clientInRoom1 = new classes.Login("testID1", undefined, "testName1");
         var clientInRoom2 = new classes.Login("testID2", undefined, "testName2");
         var state1 = new classes.State(1)
@@ -537,18 +524,18 @@ describe("transmit.js tests", function () {
         room.clients.testID2.status.updateState(3);
         let expected = JSON.parse(JSON.stringify(room.getBuffering()));
 
-        var results = new customAssert.AssertMultiple(2, expected, () => { done(assert.fail()); });
+        new customAssert.AssertMultiple(2, expected, () => { done(assert.fail()); });
         var socketCount = new customAssert.SocketCounter(2, () => { transmit.broadcastBufferingIfClientNowReady(room, state1); });
 
-        client1.once("serverBufferingClients", function (actual) {
+        client1.once("serverBufferingClients", function () {
             done(assert.fail());
         })
 
-        client2.once("serverBufferingClients", function (actual) {
+        client2.once("serverBufferingClients", function () {
             done(assert.fail());
         })
 
-        room.io.on("connection", (socket) => {
+        room.io.on("connection", () => {
             socketCount.incrementCount();
         })
 
@@ -559,7 +546,7 @@ describe("transmit.js tests", function () {
         var client1 = io.connect("http://localhost:3000", ioOptions);
         var client2 = io.connect("http://localhost:3000", ioOptions);
         var room = testHelpers.roomWithTwoClients(socketIOServer);
-        // let video = new Video("testID", "testTitle", "testChannel", "testDuration");
+
         var clientInRoom1 = new classes.Login("testID1", undefined, "testName1");
         var clientInRoom2 = new classes.Login("testID2", undefined, "testName2");
         var state1 = new classes.State(3)
@@ -571,18 +558,18 @@ describe("transmit.js tests", function () {
         room.clients.testID2.status.updateState(3);
         let expected = JSON.parse(JSON.stringify(room.getBuffering()));
 
-        var results = new customAssert.AssertMultiple(2, expected, () => { done(assert.fail()); });
+        new customAssert.AssertMultiple(2, expected, () => { done(assert.fail()); });
         var socketCount = new customAssert.SocketCounter(2, () => { transmit.broadcastBufferingIfClientNowReady(room, state1); });
 
-        client1.once("serverBufferingClients", function (actual) {
+        client1.once("serverBufferingClients", function () {
             done(assert.fail());
         })
 
-        client2.once("serverBufferingClients", function (actual) {
+        client2.once("serverBufferingClients", function () {
             done(assert.fail());
         })
 
-        room.io.on("connection", (socket) => {
+        room.io.on("connection", () => {
             socketCount.incrementCount();
         })
 
@@ -593,7 +580,7 @@ describe("transmit.js tests", function () {
         var client1 = io.connect("http://localhost:3000", ioOptions);
         var client2 = io.connect("http://localhost:3000", ioOptions);
         var room = testHelpers.roomWithTwoClients(socketIOServer);
-        // let video = new Video("testID", "testTitle", "testChannel", "testDuration");
+
         var clientInRoom1 = new classes.Login("testID1", undefined, "testName1");
         var clientInRoom2 = new classes.Login("testID2", undefined, "testName2");
         var state1 = new classes.State(3)
@@ -604,18 +591,18 @@ describe("transmit.js tests", function () {
         room.clients.testID2.status.updateState(3);
         let expected = JSON.parse(JSON.stringify(room.getBuffering()));
 
-        var results = new customAssert.AssertMultiple(2, expected, () => { done(assert.fail()); });
+        new customAssert.AssertMultiple(2, expected, () => { done(assert.fail()); });
         var socketCount = new customAssert.SocketCounter(2, () => { transmit.broadcastBufferingIfClientNowReady(room, state1); });
 
-        client1.once("serverBufferingClients", function (actual) {
+        client1.once("serverBufferingClients", function () {
             done(assert.fail());
         })
 
-        client2.once("serverBufferingClients", function (actual) {
+        client2.once("serverBufferingClients", function () {
             done(assert.fail());
         })
 
-        room.io.on("connection", (socket) => {
+        room.io.on("connection", () => {
             socketCount.incrementCount();
         })
 
@@ -623,41 +610,41 @@ describe("transmit.js tests", function () {
     })
 
     // All clients
-    // it("Should broadcast all the clients to all clients", function (done) {
-    //     var client1 = io.connect("http://localhost:3000", ioOptions);
-    //     var client2 = io.connect("http://localhost:3000", ioOptions);
-    //     var room = testHelpers.roomWithTwoClients(socketIOServer);
-    //     // let video = new Video("testID", "testTitle", "testChannel", "testDuration");
-    //     var clientInRoom1 = new classes.Login("testID1", undefined, "testName1");
-    //     var clientInRoom2 = new classes.Login("testID2", undefined, "testName2");
+    it("Should broadcast all the clients to all clients", function (done) {
+        var client1 = io.connect("http://localhost:3000", ioOptions);
+        var client2 = io.connect("http://localhost:3000", ioOptions);
+        var room = testHelpers.roomWithTwoClients(socketIOServer);
 
-    //     room.addClient(clientInRoom1);
-    //     room.addClient(clientInRoom2);
-    //     let expected = JSON.parse(JSON.stringify(room.clientsWithoutCircularReferences()));
+        var clientInRoom1 = new classes.Login("testID1", undefined, "testName1");
+        var clientInRoom2 = new classes.Login("testID2", undefined, "testName2");
 
-    //     var results = new customAssert.AssertMultiple(2, expected, () => { done(); });
-    //     var socketCount = new customAssert.SocketCounter(2, () => { transmit.broadcastClients(room, expected); });
+        room.addClient(clientInRoom1);
+        room.addClient(clientInRoom2);
+        let expected = JSON.parse(JSON.stringify(room.clientsWithoutCircularReferences()));
 
-    //     client1.once("serverClients", function (actual) {
-    //         try {
-    //             results.deepStrictEqual(actual)
-    //         } catch (error) {
-    //             return done(error);
-    //         }
-    //     })
+        var results = new customAssert.AssertMultiple(2, expected, () => { done(); });
+        var socketCount = new customAssert.SocketCounter(2, () => { transmit.broadcastClients(room, expected); });
 
-    //     client2.once("serverClients", function (actual) {
-    //         try {
-    //             results.deepStrictEqual(actual)
-    //         } catch (error) {
-    //             return done(error);
-    //         }
-    //     })
+        client1.once("serverClients", function (actual) {
+            try {
+                results.deepStrictEqual(actual)
+            } catch (error) {
+                return done(error);
+            }
+        })
 
-    //     room.io.on("connection", (socket) => {
-    //         socketCount.incrementCount();
-    //     })
-    // })
+        client2.once("serverClients", function (actual) {
+            try {
+                results.deepStrictEqual(actual)
+            } catch (error) {
+                return done(error);
+            }
+        })
+
+        room.io.on("connection", () => {
+            socketCount.incrementCount();
+        })
+    })
 
     // Currently playing video (only sent if playing)
     it("Should send the currently playing video to client", function (done) {
@@ -717,8 +704,7 @@ describe("transmit.js tests", function () {
         })
         var client1 = io.connect("http://localhost:3000", ioOptions);
 
-        client1.once("serverNewVideo", function (actual) {
-            clearTimeout(passTimeout);
+        client1.once("serverNewVideo", function () {
             done(assert.fail());
         })
 
