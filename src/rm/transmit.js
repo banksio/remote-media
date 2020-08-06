@@ -73,7 +73,7 @@ function broadcastNowPlaying(room, video) {
     room.io.binary(false).emit("serverCurrentVideo", JSON.stringify(video, video.cyclicReplacer));
 }
 
-function sendPlayerControl(room, control) {
+function broadcastPlayerControl(room, control) {
     room.io.binary(false).emit("serverPlayerControl", control);
 }
 
@@ -122,7 +122,7 @@ module.exports = {
     sendIndividualTimestamp: sendIndividualTimestamp,
     broadcastTimestamp: broadcastTimestamp,
     broadcastBufferingClients: broadcastBufferingClients,
-    sendPlayerControl: sendPlayerControl,
+    broadcastPlayerControl: broadcastPlayerControl,
     broadcastBufferingIfClientNowReady: broadcastBufferingIfClientNowReady,
     sendNowPlaying: sendNowPlaying,
     sendQueue: sendQueue,

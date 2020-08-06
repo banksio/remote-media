@@ -18,6 +18,7 @@ describe('Logging function tests', function () {
         // call the function that needs to be tested
         logging.withTime(valueOfLogTest);
 
+        // TODO: This will sometimes fail due to the system time changing in-between statements
         // assert that it logged the correct value
         assert(spy.calledWith(valueOfLogReturn));
 

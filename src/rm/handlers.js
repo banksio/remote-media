@@ -442,14 +442,14 @@ function preloadNewVideoInRoom(videoObj, room) {
         console.log("[ServerVideo] State " + state);
         switch (state) {
             case 1:
-                transmit.sendPlayerControl(room, "play");
+                transmit.broadcastPlayerControl(room, "play");
 
                 break;
             case 2:
 
             // break; Fall through
             case 3:
-                transmit.sendPlayerControl(room, "pause");
+                transmit.broadcastPlayerControl(room, "pause");
                 break;
             case 5:
 
