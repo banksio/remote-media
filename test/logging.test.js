@@ -16,7 +16,7 @@ describe('Logging function tests', function () {
         let valueOfLogReturn = "[" + day + "/" + month + "/" + year + "]" + "[" + ('0' + now.getHours()).slice(-2) + ":" + ('0' + now.getMinutes()).slice(-2) + ":" + ('0' + now.getSeconds()).slice(-2) + "] " + valueOfLogTest;
 
         // call the function that needs to be tested
-        logging.withTime(valueOfLogTest);
+        logging.withTime(valueOfLogTest, now);
 
         // TODO: This will sometimes fail due to the system time changing in-between statements
         // assert that it logged the correct value
