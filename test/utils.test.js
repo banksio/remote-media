@@ -5,7 +5,7 @@ var classes = require('../web/js/classes');
 var rmUtils = require('../src/rm/utils');
 const utils = require('../src/rm/utils');
 
-describe('Utiltiies: Nickname validation tests', function () {
+describe('Utilties: Nickname validation tests', function () {
     it('Should throw as client already exists with same nickname', function () {
         let room = new classes.Room();
         let loginID = "test";
@@ -41,7 +41,7 @@ describe('Utiltiies: Nickname validation tests', function () {
     });
 });
 
-describe('Utiltiies: Video validation tests', function () {
+describe('Utilties: Video validation tests', function () {
     it('Should return true as the two video IDs are the same', function () {
         let videoIDClient = "testID";
         let videoIDServer = "testID";

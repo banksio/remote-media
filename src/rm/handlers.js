@@ -2,92 +2,54 @@ const chalk = require('chalk');
 var server = require('../../web/js/classes');
 const rmUtilities = require('./utils');
 const logging = require('./logging');
-const transmit = require('./transmit');
+const transmit = require('./socketTransmit');
 const utils = require('./utils');
+const { event } = require("../../web/js/event")
 
-function newClient(room, socket) {
-    room.addClient(new server.Login(socket.id, socket, socket.id));
-    let newClient = room.clients[socket.id];
-
-    // Send all data to new clients and admin panels
-    this.sendAllData(room, newClient, socket);
-    transmit.broadcastClients(room);
-
-    logging.withTime(chalk.cyan("[CliMgnt] New Client " + newClient.id));
-    return newClient;
+function clientConnect(room, socket) {
+    // Call the newClient event to add a new client
+    return room.events.newClient(socket)
 }
-module.exports.newClient = newClient;
+module.exports.clientConnect = clientConnect;
 
-function sendAllData(room, client) {
-    transmit.sendQueue(room, client);
-    transmit.sendQueueStatus(room, client);
-    if (room.currentVideo.state == 1) transmit.sendNowPlaying(room, client, room.currentVideo);
-    client.socket.binary(false).emit('initFinished');
+
+function clientDisconnect(room, client) {
+    // Call the newClient event to remove the client
+    room.events.disconnectClient(client)
+    return;
 }
-module.exports.sendAllData = sendAllData;
-
-function Disconnect(room, client) {
-    console.log(chalk.cyan("[CliMgnt] " + logging.prettyPrintClientID(client) + " has disconnected."));
-    room.removeClient(client);
-    transmit.broadcastClients(room);
-    // Play the video if the server is waiting to start a video
-    if (playIfPreloadingFinished(room) == 0) {
-        return; // Don't continue with this function
-
-        // If the server is already playing a video
-    }
-}
-module.exports.Disconnect = Disconnect;
+module.exports.clientDisconnect = clientDisconnect;
 
 
+// Not a room event
 function AdminConnectionManagement(room, control) {
-    logging.withTime("Connection management request recieved");
-    if (control == "reload") {
-        room.io.binary(false).emit("serverConnectionManagement", "reload");
-        logging.withTime("[CliMgnt] Reloading all clients...");
-    }
-    else {
-        room.io.binary(false).emit("serverConnectionManagement", "discon");
-        logging.withTime("[CliMgnt] Disconnecting all clients...");
+    logging.withTime("Connection management request recieved.");
+    switch (control) {
+        case "reload":
+            transmit.broadcastConnectionManagement(room, "reload");
+            logging.withTime("[CliMgnt] Reloading all clients...");
+            break;
+        case "discon":
+            transmit.broadcastConnectionManagement(room, "discon");
+            logging.withTime("[CliMgnt] Disconnecting all clients...");
+            break;
+        default:
+            break;
     }
 }
 module.exports.AdminConnectionManagement = AdminConnectionManagement;
 
 
 function AdminQueueControl(room, data) {
-    switch (data) {
-        case "prev":
-            playPrevInQueue(room);
-            break;
-        case "skip":
-            playNextInQueue(room);
-            break;
-        case "empty":
-            logging.withTime("[ServerQueue] Emptying playlist");
-            room.queue.empty();
-            break;
-        case "toggleShuffle":
-            queueShuffleToggle(room);
-            logging.withTime("[ServerQueue] Shuffle: " + room.queue.shuffle);
-            transmit.broadcastQueueStatus(room);
-            transmit.broadcastQueue(room);
-            return;
-        default:
-            break;
-    }
-    transmit.broadcastQueue(room);
+    // Call the queueControl event to modify the queue
+    room.events.queueControl(data);
 }
 module.exports.AdminQueueControl = AdminQueueControl;
 
 
 function AdminPlayerControl(room, data) {
-    if (data == "pause") {
-        room.currentVideo.pauseVideo(false);
-    }
-    else if (data == "play") {
-        room.currentVideo.playVideo();
-    }
-    logging.withTime("[VideoControl] Video Control: " + data);
+    // Call the videoControl event to change the state of the video
+    room.events.videoControl(data);
 }
 module.exports.AdminPlayerControl = AdminPlayerControl;
 
@@ -99,206 +61,82 @@ module.exports.AdminTTSRequest = AdminTTSRequest;
 
 
 function AdminQueueAppend(room, data) {
-    room.queue.addVideosCombo(data.value);
-    transmit.broadcastQueue(room);
-    // playNextInQueue(defaultRoom);
+    // Call queueAppend event to add videos to queue
+    room.events.queueAppend(data.value);
     return;
 }
 module.exports.AdminQueueAppend = AdminQueueAppend;
 
 
 function AdminNewVideo(room, data) {
-    var inputData = data.value;
-    var urlArray = inputData.split(',');
-    // If there's only one URL
-    if (urlArray.length == 1) {
-        let newVideo = new server.Video();
-        newVideo.setIDFromURL(urlArray[0]);
-        preloadNewVideoInRoom(newVideo, room);
-    }
+    // Call the new video event to set a new video in the room
+    room.events.newVideo(data.value);
     return;
 }
 module.exports.AdminNewVideo = AdminNewVideo;
 
 
-function RecieverPlayerStatus(room, client, data) {
-    // If the socket's not initialised, skip it
-    if (client.socket.id == undefined) {
-        return;
-    }
-
-    // If the client's on the wrong video, ignore this interaction
-    if (data.videoID != room.currentVideo.id) {
-        logging.withTime(chalk.yellow("[Reciever Status] Recieved status from " + logging.prettyPrintClientID(client) + " but wrong video."));
-    }
-
-    // Don't crash out if we can't get the current timestamp
-    try {
-        logging.withTime("[Server Video] The current video timestamp is " + room.currentVideo.getElapsedTime());
-    }
-    catch (error) {
-        console.error(error);
-    }
-
-    // Get the current state and use for logic
-    let previousStatusState = client.status.state;
-
-    console.log(JSON.stringify(data));
-    // Save the state and the preloading state, send to clients
-    let state = data.data.state;
-
-    let preloading = data.data.preloading;
-
-    client.status.updateState(state);
-    client.status.updatePreloading(preloading);
-
-    transmit.broadcastClients(room);
-    logging.withTime("[CliStatus] " + logging.prettyPrintClientID(client) + " has new status:" + " status: " + state + " preloading:" + preloading);
-
-    // If the client is preloading
-    if (preloading == true) {
-        return; // Don't continue with this function
-    }
-
-    // There'll be no state yet if the client hasn't yet recieved a video
-    // if (state == undefined) {
-    //     // Update the preloading status of the currentClient variable
-    //     // currentClient.status.updatePreloading(preloading);
-    //     // if (preloading) {
-    //     //     anyPreloading = true;
-    //     // }
-    //     // logging.consoleLogWithTime(data)
-    //     logging.consoleLogWithTime(defaultRoom.clients);
-    //     // If everyone's preloaded, wait a millisecond then set the variable (not sure why the wait is here)
-    //     return;
-    // }
-    // If there is a defined state,
-    // Update the status of the current client
-    // currentClient.status.updateStatus(status);
-    // If the client buffers and no one's preloading,
-    // if (status.state == 3 && defaultRoom.allPreloaded()) {
-    //     // Add the socket to the array and pause all the clients
-    //     buffering.push(socket.id);
-    //     // sendPlayerControl("pause");
-    //     defaultRoom.currentVideo.pauseVideo(true);
-    //     // defaultRoom.currentVideo.state = 3;
-    //     logging.consoleLogWithTime("[BufferMgnt] " + logging.prettyPrintClientID(currentClient) + " is buffering. The video has been paused.");
-    // // If client is playing
-    // } else if (status.state == 1) {
-    //     // If anyone was previously listed as buffering
-    //     if (buffering.length > 0) {
-    //         // Remove this client from the buffering array, they're ready
-    //         logging.consoleLogWithTime("[BufferMgnt] " + logging.prettyPrintClientID(currentClient) + " has stopped buffering.");
-    //         buffering.splice(buffering.indexOf(socket.id), 1);
-    //         // If that means no one is buffering now, resume everyone
-    //         if (buffering.length == 0) {
-    //             logging.consoleLogWithTime("[BufferMgnt] No one is buffering, resuming the video.");
-    //             // sendPlayerControl("play");  // Play all the recievers
-    //             defaultRoom.currentVideo.playVideo();
-    //             // defaultRoom.currentVideo.state = 1;  // Tell the server the video's now playing again
-    //         }
-    //     }
-    // }
-    // if (previousStatusState == 3 && status.state != 3){
-    //     broadcastBufferingClients(defaultRoom);
-    // }
-    // If the server has a video playing, client has finished playing and the queue is not empty
-    // Status == 1 prevents the server getting confused when multiple clients respond
-    // if (defaultRoom.currentVideo.state == 1 && status.state == 0 && defaultRoom.queue.length > 0) {
-    //     logging.consoleLogWithTime("[ServerQueue] " + logging.prettyPrintClientID(currentClient) + " has finished. Playing the next video.");
-    //     playNextInQueue(defaultRoom);
-    // }
-    transmit.broadcastBufferingIfClientNowReady(room, client.status);
-    // TODO: Buffer pausing
+function ReceiverPlayerStatus(room, client, data) {
+    // Call the receiver player status room event
+    room.events.receiverPlayerStatus(data, client);
 }
-module.exports.RecieverPlayerStatus = RecieverPlayerStatus;
+module.exports.ReceiverPlayerStatus = ReceiverPlayerStatus;
 
 
-function RecieverVideoDetails(room, client, videoDetails) {
-    if (videoDetails.id != room.currentVideo.id) {
-        logging.withTime("[ServerVideo] Recieved invalid video details from " + logging.prettyPrintClientID(client));
-        return;
-    }
-    logging.withTime("[ServerVideo] Recieved video details from " + logging.prettyPrintClientID(client));
-    room.currentVideo.title = videoDetails.title;
-    room.currentVideo.channel = videoDetails.channel;
-    room.currentVideo.duration = videoDetails.duration;
-    logging.withTime("The video duration is " + videoDetails.duration);
-    transmit.broadcastNowPlaying(room, room.currentVideo);
+function ReceiverVideoDetails(room, client, videoDetails) {
+    // Call the video details event to assign the details of the video to the server
+    room.events.receiverVideoDetails(videoDetails, client);
 }
-module.exports.RecieverVideoDetails = RecieverVideoDetails;
+module.exports.ReceiverVideoDetails = ReceiverVideoDetails;
 
 
-function RecieverTimestampSyncRequest(room, timestamp) {
-    room.currentVideo.timestamp = timestamp;
-    transmit.broadcastTimestamp(room, timestamp);
+function ReceiverTimestampSyncRequest(room, timestamp) {
+    // Call the newTimestamp event to set the video timestamp
+    room.events.newTimestamp(timestamp);
 }
-module.exports.RecieverTimestampSyncRequest = RecieverTimestampSyncRequest;
+module.exports.ReceiverTimestampSyncRequest = ReceiverTimestampSyncRequest;
 
-
-function RecieverTimestampRequest(room, client, callback) {
+// Not a room event
+function ReceiverTimestampRequest(room, client, callback) {
     console.log("[CliMgnt] " + logging.prettyPrintClientID(client) + " has requested a timestamp.");
     callback(room.currentVideo.getElapsedTime());
 }
-module.exports.RecieverTimestampRequest = RecieverTimestampRequest;
+module.exports.ReceiverTimestampRequest = ReceiverTimestampRequest;
 
 
-function RecieverPlayerReady(room, client) {
-    logging.withTime(chalk.cyan("[CliMgnt] " + logging.prettyPrintClientID(client) + " is ready. "));
-    // Update the state in our server
-    client.status.playerLoading = false;
-    client.status.state = -1;
-    // If there's a video playing, send it
-    transmit.sendCurrentVideoIfPlaying(room, client);
+function ReceiverPlayerReady(room, client) {
+    // Call the receiver ready event to send the current video if there's one playing
+    room.events.receiverReady(client);
 }
-module.exports.RecieverPlayerReady = RecieverPlayerReady;
+module.exports.ReceiverPlayerReady = ReceiverPlayerReady;
 
 
-function RecieverNickname(room, client, nick, fn) {
-    // Set the nickname
-     
-    console.log(nick);
-    try {
-        utils.setNicknameInRoom(client, nick, room);
-    } catch (error) {
-        if (error.message === "Duplicate Nickname Error") {
-            console.error(error);
-            fn(error.message);
-            return;
-        }
-    }
-    
-    // Upadte clients for admin panels
-    transmit.broadcastClients(room);
-    logging.withTime("[CliNick] " + logging.prettyPrintClientID(client) + " has set their nickname.");
-    // Empty response is success, tells reciever to continue
-    fn();
+function ReceiverNickname(room, client, nick, callback) {
+    // Empty response is success, tells receiver to continue
+    callback(room.events.receiverNickname(nick, client));
 }
-module.exports.RecieverNickname = RecieverNickname;
+module.exports.ReceiverNickname = ReceiverNickname;
 
 
-function RecieverPreloadingFinished(room, client, videoID) {
-    // Ignore if it's the wrong video
-    if (!rmUtilities.validateClientVideo(videoID, room)) {
-        logging.withTime(chalk.yellow("[ClientVideo] " + logging.prettyPrintClientID(client) + " has finished preloading, but is on the wrong video."));
-        return 1; // Code 1: wrong video
-    }
-
-    client.status.updatePreloading(false);
-    logging.withTime("[ClientVideo] " + logging.prettyPrintClientID(client) + " has finished preloading.");
-
-    // Play the video if the server is waiting to start a video and this was the last client we were waiting for
-    if (playIfPreloadingFinished(room) == 0) {
-        return 0; // Don't continue with this function
-
-        // If the server is already playing a video
-    }
-    else if (sendTimestampIfClientRequires(client, room) == 0) {
-        return 0;
-    }
-    return 0;
+function ReceiverPreloadingFinished(room, client, videoID) {
+    // Call the receiver preloading finished event
+    room.events.receiverPreloadingFinished(videoID, client);
 }
-module.exports.RecieverPreloadingFinished = RecieverPreloadingFinished;
+module.exports.ReceiverPreloadingFinished = ReceiverPreloadingFinished;
+
+function onRoomEvent(eventObj, room) {
+    // Pass event and data to transmit
+    // Could have "onEvents" handler too, for multiple events
+    transmit.broadcastEventObject(room.io, eventObj);
+}
+module.exports.onRoomEvent = onRoomEvent;
+
+function onClientEvent(eventObj, room, client) {
+    // Pass event and data to transmit
+    // Could have "onEvents" handler too, for multiple events
+    transmit.sendEventObject(room.io, client.id, eventObj);
+}
+module.exports.onClientEvent = onClientEvent;
 
 function queueShuffleToggle(room) {
     let queue = room.queue;
@@ -349,7 +187,7 @@ function playIfPreloadingFinished(room) {
                 logging.withTime("[Preload] Video details not recieved, cannot play video.");
                 return 2;  // Error
             }
-            // Set all the recievers playing
+            // Set all the receivers playing
             // sendPlayerControl("play");
             logging.withTime("[Preload] Everyone has finished preloading, playing the video " + room.allPreloaded());
             // Set the server's video instance playing
@@ -387,7 +225,7 @@ function pauseClientsIfBuffering(status, client, room) {
         //     // If that means no one is buffering now, resume everyone
         //     if (buffering.length == 0) {
         //         logging.consoleLogWithTime("[BufferMgnt] No one is buffering, resuming the video.");
-        //         // sendPlayerControl("play");  // Play all the recievers
+        //         // sendPlayerControl("play");  // Play all the receivers
         //         room.currentVideo.playVideo();
         //         // defaultRoom.currentVideo.state = 1;  // Tell the server the video's now playing again
         //     }
@@ -429,8 +267,6 @@ function sendTimestampIfClientRequires(client, room) {
 }
 
 
-
-
 // Set a new video playing on the server
 function preloadNewVideoInRoom(videoObj, room) {
     transmit.broadcastPreloadVideo(room, videoObj);
@@ -465,3 +301,13 @@ function preloadNewVideoInRoom(videoObj, room) {
         playNextInQueue(room);
     });
 }
+
+module.exports.preloadNewVideoInRoom = preloadNewVideoInRoom;
+
+// function sendAllData(room, client) {
+//     transmit.sendQueue(room, client);
+//     transmit.sendQueueStatus(room, client);
+//     if (room.currentVideo.state == 1) transmit.sendNowPlaying(room, client, room.currentVideo);
+//     client.socket.binary(false).emit('initFinished');
+// }
+// module.exports.sendAllData = sendAllData;

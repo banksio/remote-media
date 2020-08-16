@@ -1,9 +1,343 @@
+const chalk = require('chalk');
+const logging = require('../../src/rm/logging');
+const { event } = require("./event");
+const utils = require('../../src/rm/utils');
+
 class Room {
     constructor(io) {
         this.queue = new NewQueue();
         this.clients = {};
         this._currentVideo = new ServerVideo();
         this.io = io;
+
+        this.transportConstructs = {
+            clients: () => {
+                let data = {
+                    "event": "serverClients",
+                    "data": this.clientsWithoutCircularReferences()
+                }
+                return data;
+            },
+            bufferingClients: () => {
+                let data = {
+                    "event": "serverBufferingClients",
+                    "data": this.getBuffering()
+                }
+                return data;
+            },
+            queue: () => {
+                let queue = {
+                    videos: this.queue.videos,
+                    length: this.queue.length,
+                    index: this.queue._currentIndex
+                };
+
+                let data = {
+                    "event": "serverQueueVideos",
+                    "data": queue
+                }
+                return data;
+            },
+            queueStatus: () => {
+                let queueStatus = { shuffle: this.queue.shuffle };
+
+                let data = {
+                    "event": "serverQueueStatus",
+                    "data": queueStatus
+                }
+                return data;
+            },
+            newVideo: (videoObj) => {
+                let newID = { "value": videoObj.id };
+                let data = {
+                    "event": "serverNewVideo",
+                    "data": newID
+                }
+                return data;
+            },
+            currentVideo: () => {
+                let data = {
+                    "event": "serverCurrentVideo",
+                    "data": JSON.stringify(this.currentVideo, this.currentVideo.cyclicReplacer)
+                }
+                return data;
+            }
+        }
+
+        this.events = {
+            newClient: (socket) => {
+                let newClient = this.addClient(new Login(socket.id, socket, socket.id));
+                logging.withTime(chalk.cyan("[CliMgnt] New Client " + newClient.id));
+
+                var newClientResponse = new event();
+                let queue = this.transportConstructs.queue();
+                let queueStatus = this.transportConstructs.queueStatus();
+                let video = this.transportConstructs.currentVideo();
+                let clients = this.transportConstructs.clients();
+                newClientResponse.addBroadcastEventFromConstruct(clients);
+                newClientResponse.addSendEventFromConstruct(queue);
+                newClientResponse.addSendEventFromConstruct(queueStatus);
+
+                if (this.currentVideo.state == 1) {
+                    newClientResponse.addSendEventFromConstruct(video);
+                }
+
+                newClientResponse.addSendEvent("initFinished", "1");
+                this._cbEvent(newClientResponse, this);
+                this._cbClientEvent(newClientResponse, this, newClient);
+                return newClient;
+            },
+            disconnectClient: (client) => {
+                // Log removal
+                console.log(chalk.cyan("[CliMgnt] " + logging.prettyPrintClientID(client) + " has disconnected."));
+                // Remove client
+                this.removeClient(client);
+                
+                var removeClientResponse = new event();
+                let clients = this.transportConstructs.clients();
+                removeClientResponse.addBroadcastEventFromConstruct(clients);
+                this._cbEvent(removeClientResponse, this);
+
+                this.playIfPreloadingFinished();
+                return;
+            },
+            queueControl: (data) => {
+                let queueStatus;
+                var queueControlResponse = new event();
+                switch (data) {
+                    case "prev":
+                        this.playPrevInQueue();
+                        break;
+                    case "skip":
+                        this.playNextInQueue();
+                        break;
+                    case "empty":
+                        logging.withTime("[ServerQueue] Emptying playlist");
+                        this.queue.empty();
+                        break;
+                    case "toggleShuffle":
+                        this.queueShuffleToggle();
+                        logging.withTime("[ServerQueue] Shuffle: " + this.queue.shuffle);
+                        queueStatus = this.transportConstructs.queueStatus();
+                        queueControlResponse.addBroadcastEventFromConstruct(queueStatus);
+                        return;
+                    default:
+                        break;
+                }
+                let queue = this.transportConstructs.queue();
+                queueControlResponse.addBroadcastEventFromConstruct(queue);
+                this._cbEvent(queueControlResponse, this);
+            },
+            queueAppend: (data) => {
+                this.queue.addVideosCombo(data);  // Add videos to queue
+
+                // Generate event for broadcasting to clients
+                let queueAppendResponse = new event();
+                let queue = this.transportConstructs.queue();
+                queueAppendResponse.addBroadcastEventFromConstruct(queue);
+                this._cbEvent(queueAppendResponse, this);
+            },
+            newVideo: (inputData) => {
+                var urlArray = inputData.split(',');
+                // If there's only one URL
+                if (urlArray.length == 1) {
+                    let newVideo = new Video();
+                    newVideo.setIDFromURL(urlArray[0]);
+                    this.preloadNewVideoInRoom(newVideo);
+                }
+            },
+            videoControl: (data) => {
+                if (data == "pause") {
+                    this.currentVideo.pauseVideo(false);
+                }
+                else if (data == "play") {
+                    this.currentVideo.playVideo();
+                }
+                logging.withTime("[VideoControl] Video Control: " + data);
+            },
+            receiverVideoDetails: (videoDetails, client) => {
+                // If the video ID is not valid then return
+                if (videoDetails.id != this.currentVideo.id) {
+                    logging.withTime("[ServerVideo] Recieved invalid video details from " + logging.prettyPrintClientID(client));
+                    return 1;
+                }
+                // Assign the video details
+                logging.withTime("[ServerVideo] Recieved video details from " + logging.prettyPrintClientID(client));
+                this.currentVideo.title = videoDetails.title;
+                this.currentVideo.channel = videoDetails.channel;
+                this.currentVideo.duration = videoDetails.duration;
+                logging.withTime("The video duration is " + videoDetails.duration);
+
+                // Trigger event callback
+                var videoDetailsEvent = new event();
+                let video = this.transportConstructs.currentVideo();
+                videoDetailsEvent.addBroadcastEventFromConstruct(video);
+                this._cbEvent(videoDetailsEvent, this);
+            },
+            newTimestamp: (ts) => {
+                // TODO: Add validation for the current video ID
+                this.currentVideo.timestamp = ts;
+                this._cbEvent(new event("serverVideoTimestamp", ts), this);
+            },
+            receiverReady: (client) => {
+                logging.withTime(chalk.cyan("[CliMgnt] " + logging.prettyPrintClientID(client) + " is ready. "));
+                // Update the state in our server
+                client.status.playerLoading = false;
+                client.status.state = -1;
+
+                // Is there currently a video playing on the server?
+                // If there is, we should send it to the client.
+                if (this.currentVideo.state != 0) {
+                    // There is a video playing, so the client will need to preload it and then go to the timestamp
+                    let newPreload = new event();
+                    let transportNewVideo = this.transportConstructs.newVideo(this.currentVideo);
+                    newPreload.addSendEventFromConstruct(transportNewVideo);
+                    this._cbClientEvent(newPreload, this, client);
+                    // This client needs a timestamp ASAP, this should be picked up by the status checking function
+                    client.status.requiresTimestamp = true;
+                    return 0;
+                } else {
+                    return 1;
+                }
+            },
+            receiverNickname: (nick, client) => {
+                // Set the nickname
+                try {
+                    utils.setNicknameInRoom(client, nick, this);
+                } catch (error) {
+                    if (error.message === "Duplicate Nickname Error") {
+                        console.error(error);
+                        return error.message;
+                    }
+                }
+                
+                // Update clients for admin panels
+                var nicknameSetResponse = new event();
+                let clients = this.transportConstructs.clients();
+                nicknameSetResponse.addBroadcastEventFromConstruct(clients);
+                this._cbEvent(nicknameSetResponse, this);
+
+                logging.withTime("[CliNick] " + logging.prettyPrintClientID(client) + " has set their nickname.");
+                return;
+            },
+            receiverPreloadingFinished: (videoID, client) => {
+                // Ignore if it's the wrong video
+                if (!utils.validateClientVideo(videoID, this)) {
+                    logging.withTime(chalk.yellow("[ClientVideo] " + logging.prettyPrintClientID(client) + " has finished preloading, but is on the wrong video."));
+                    return 1; // Code 1: wrong video
+                }
+
+                client.status.updatePreloading(false);
+                logging.withTime("[ClientVideo] " + logging.prettyPrintClientID(client) + " has finished preloading.");
+
+                // Play the video if the server is waiting to start a video and this was the last client we were waiting for
+                if (this.playIfPreloadingFinished() == 0) {
+                    return 0; // Don't continue with this function
+
+                    // If the server is already playing a video
+                }
+                else if (this.sendTimestampIfClientRequires(client, room) == 0) {
+                    return 0;
+                }
+                return 0;
+            },
+            receiverPlayerStatus: (data, client) => {
+                // If the socket's not initialised, skip it
+                if (client.socket.id == undefined) {
+                    return -1;
+                }
+
+                // If the client's on the wrong video, ignore this interaction
+                if (!utils.validateClientVideo(data.videoID, this)) {
+                    logging.withTime(chalk.yellow("[receiver Status] Recieved status from " + logging.prettyPrintClientID(client) + " but wrong video."));
+                    return 1
+                }
+
+                // Don't crash out if we can't get the current timestamp
+                try {
+                    logging.withTime("[Server Video] The current video timestamp is " + this.currentVideo.getElapsedTime());
+                }
+                catch (error) {
+                    console.error(error);
+                }
+
+                // Get the current state and use for logic
+                let previousStatusState = client.status.state;
+
+                console.log(JSON.stringify(data));
+                // Save the state and the preloading state, send to clients
+                let state = data.data.state;
+
+                let preloading = data.data.preloading;
+
+                client.status.updateState(state);
+                client.status.updatePreloading(preloading);
+                
+                // Call a clients event, broadcast to all clients
+                var clientsEvent = new event();
+                let clients = this.transportConstructs.clients();
+                clientsEvent.addBroadcastEventFromConstruct(clients);
+                this._cbEvent(clientsEvent, this);
+
+                logging.withTime("[CliStatus] " + logging.prettyPrintClientID(client) + " has new status:" + " status: " + state + " preloading:" + preloading);
+
+                // If the client is preloading
+                if (preloading == true) {
+                    return; // Don't continue with this function
+                }
+
+                // There'll be no state yet if the client hasn't yet recieved a video
+                // if (state == undefined) {
+                //     // Update the preloading status of the currentClient variable
+                //     // currentClient.status.updatePreloading(preloading);
+                //     // if (preloading) {
+                //     //     anyPreloading = true;
+                //     // }
+                //     // logging.consoleLogWithTime(data)
+                //     logging.consoleLogWithTime(defaultRoom.clients);
+                //     // If everyone's preloaded, wait a millisecond then set the variable (not sure why the wait is here)
+                //     return;
+                // }
+                // If there is a defined state,
+                // Update the status of the current client
+                // currentClient.status.updateStatus(status);
+                // If the client buffers and no one's preloading,
+                // if (status.state == 3 && defaultRoom.allPreloaded()) {
+                //     // Add the socket to the array and pause all the clients
+                //     buffering.push(socket.id);
+                //     // sendPlayerControl("pause");
+                //     defaultRoom.currentVideo.pauseVideo(true);
+                //     // defaultRoom.currentVideo.state = 3;
+                //     logging.consoleLogWithTime("[BufferMgnt] " + logging.prettyPrintClientID(currentClient) + " is buffering. The video has been paused.");
+                // // If client is playing
+                // } else if (status.state == 1) {
+                //     // If anyone was previously listed as buffering
+                //     if (buffering.length > 0) {
+                //         // Remove this client from the buffering array, they're ready
+                //         logging.consoleLogWithTime("[BufferMgnt] " + logging.prettyPrintClientID(currentClient) + " has stopped buffering.");
+                //         buffering.splice(buffering.indexOf(socket.id), 1);
+                //         // If that means no one is buffering now, resume everyone
+                //         if (buffering.length == 0) {
+                //             logging.consoleLogWithTime("[BufferMgnt] No one is buffering, resuming the video.");
+                //             // sendPlayerControl("play");  // Play all the receivers
+                //             defaultRoom.currentVideo.playVideo();
+                //             // defaultRoom.currentVideo.state = 1;  // Tell the server the video's now playing again
+                //         }
+                //     }
+                // }
+                // if (previousStatusState == 3 && status.state != 3){
+                //     broadcastBufferingClients(defaultRoom);
+                // }
+                // If the server has a video playing, client has finished playing and the queue is not empty
+                // Status == 1 prevents the server getting confused when multiple clients respond
+                // if (defaultRoom.currentVideo.state == 1 && status.state == 0 && defaultRoom.queue.length > 0) {
+                //     logging.consoleLogWithTime("[ServerQueue] " + logging.prettyPrintClientID(currentClient) + " has finished. Playing the next video.");
+                //     playNextInQueue(defaultRoom);
+                // }
+                this.broadcastBufferingIfClientNowReady(client.status);
+                // TODO: Buffer pausing
+            }
+        }
     }
 
     cyclicReplacer(key, value) {
@@ -12,7 +346,7 @@ class Room {
         else return value;
     }
 
-    clientsWithoutCircularReferences(){
+    clientsWithoutCircularReferences() {
         return JSON.parse(JSON.stringify(this.clients, this.cyclicReplacer))
     }
 
@@ -21,6 +355,7 @@ class Room {
         if (client.id != undefined) {
             this.clients[client.id] = client;
             this.clients[client.id].stateChangeCallback = this.stateChangeOfClient.bind(this);
+            return this.clients[client.id];
         } else {
             throw "invalidClient";
         }
@@ -53,16 +388,135 @@ class Room {
         delete this.clients[client.id];
     }
 
-    set currentVideo(video){
+    set currentVideo(video) {
         clearTimeout(this.currentVideo._cbWhenFinishedTimeout);
         this._currentVideo = video;
     }
 
-    get currentVideo(){
+    get currentVideo() {
         return this._currentVideo;
     }
 
-    getAllClientNames(){
+    playIfPreloadingFinished() {
+        // If there's a video cued
+        if (this.currentVideo.state == 5) {
+            // If everyone's preloaded, play the video
+            if (this.allPreloaded()) {
+                if (this.currentVideo.duration == 0) {
+                    logging.withTime("[Preload] Video details not recieved, cannot play video.");
+                    return 2;  // Error
+                }
+                // Set all the receivers playing
+                // sendPlayerControl("play");
+                logging.withTime("[Preload] Everyone has finished preloading, playing the video. allPreloaded: " + this.allPreloaded());
+                // Set the server's video instance playing
+                this.currentVideo.playVideo();
+                // room.currentVideo.state = 1;
+                // room.currentVideo.startingTime = new Date().getTime();
+            }
+        // No video cued
+        } else {
+            return 1;  // We're not trying to start a video, so don't continue with this function
+        }
+        return 0;  // We have started the video, all is good
+    }
+
+    // Set a new video playing on the server
+    preloadNewVideoInRoom(videoObj) {
+        // transmit.broadcastPreloadVideo(this, videoObj);
+        let newPreload = new event();
+        let transportNewVideo = this.transportConstructs.newVideo(videoObj)
+        newPreload.addBroadcastEventFromConstruct(transportNewVideo);
+        this._cbEvent(newPreload, this);
+
+        this.currentVideo = new ServerVideo();
+        Object.assign(this.currentVideo, videoObj);
+        this.currentVideo.onPlayDelay(() => {
+            console.log("DLEEYAY");
+        });
+        this.currentVideo.state = 5;
+        this.currentVideo.onStateChange((state) => {
+            console.log("[ServerVideo] State " + state);
+            switch (state) {
+                case 1:
+                    this._cbEvent(new event("serverPlayerControl", "play"), this);
+                    break;
+                case 2:
+
+                // break; Fall through
+                case 3:
+                    this._cbEvent(new event("serverPlayerControl", "pause"), this);
+                    break;
+                case 5:
+
+                    break;
+                default:
+                    break;
+            }
+        })
+        this.currentVideo.whenFinished(function () {
+            // Video has finished.
+
+            logging.withTime("[ServerVideo] The video has finished. Elapsed time: " + this.currentVideo.getElapsedTime());
+            // TODO: Test that this works
+            this.playNextInQueue();
+        });
+    }
+
+    sendTimestampIfClientRequires(client) {
+        if (this.currentVideo.state != 0 && client.status.requiresTimestamp) {
+            // We'll send the client a timestamp so it can sync with the server
+            client.status.requiresTimestamp = false;
+            logging.withTime("[ClientVideo] " + logging.prettyPrintClientID(client) + " requires a timestamp. Sending one to it now.");
+            console.log("[CliMgnt] " + logging.prettyPrintClientID(client) + " has been sent a timestamp.");
+            try {
+                let timestampForClient = new event();
+                timestampForClient.addSendEvent("serverVideoTimestamp", this.currentVideo.getElapsedTime());
+                this._cbClientEvent(timestampForClient, this, client);
+            } catch (error) {
+                console.error(error);
+            }
+        } else {
+            return 1;  // The client doesn't need a timestamp
+        }
+        return 0;  // Don't continue with this function
+    }
+
+    broadcastBufferingIfClientNowReady(status) {
+        // If the client is no longer 
+        if (status.state < 3 && status.previousState >= 3) {
+            let bufferingClients = new event();
+            let bufferingClientsConstruct = this.transportConstructs.bufferingClients()
+            bufferingClients.addBroadcastEventFromConstruct(bufferingClientsConstruct);
+            this._cbEvent(bufferingClients, this);
+        }
+    }
+
+    queueShuffleToggle() {
+        let queue = this.queue;
+        queue.shuffle = !queue.shuffle;
+        return queue.shuffle;
+    }
+    
+    
+    playNextInQueue() {
+        let nextVideo = this.queue.nextVideo();
+        if (nextVideo != undefined) {
+            this.preloadNewVideoInRoom(nextVideo);
+        }
+        return;
+    }
+    
+    
+    playPrevInQueue() {
+        let nextVideo = this.queue.previousVideo();
+        if (nextVideo != undefined) {
+            this.preloadNewVideoInRoom(nextVideo);
+        }
+        return;
+    }
+
+    getAllClientNames() {
         let ClientNames = [];
         for (var i in this.clients) {
             ClientNames.push(this.clients[i].name);
@@ -71,7 +525,7 @@ class Room {
         return ClientNames;
     }
 
-    stateChangeOfClient(){
+    stateChangeOfClient() {
         console.log("[classes.js][Room] A client's state in the room has changed.");
         if (this._cbAnyClientStateChange) return this._cbAnyClientStateChange(this);
         return
@@ -79,6 +533,16 @@ class Room {
 
     AnyClientStateChange(cb) {
         this._cbAnyClientStateChange = cb;
+    }
+
+    onRoomEvent(cb){
+        console.log("set room cb")
+        this._cbEvent = cb.bind(this);
+    }
+
+    onClientEvent(cb){
+        console.log("set Client CB")
+        this._cbClientEvent = cb.bind(this);
     }
 }
 
@@ -115,15 +579,15 @@ class Login {
         return this._name;
     }
 
-    set name(name){
+    set name(name) {
         this._name = name;
     }
 
-    set stateChangeCallback(cb){
+    set stateChangeCallback(cb) {
         this._cbStateChangeToRoom = cb;
     }
 
-    stateChangeCallbackToRoom(){
+    stateChangeCallbackToRoom() {
         return this._cbStateChangeToRoom();
     }
 }
@@ -160,7 +624,7 @@ class State {
         // Return the string of the current state name
     }
 
-    set stateChangeCallback(cb){
+    set stateChangeCallback(cb) {
         this._cbStateChangeToClient = cb;
     }
 
@@ -280,16 +744,16 @@ class NewQueue {
     //     return this._nextIndex;
     // }
 
-    get length(){
+    get length() {
         return this._lengthUnplayed;
     }
 
-    set shuffle(newShuffleValue){
+    set shuffle(newShuffleValue) {
         console.log("OOF SHUFFLE " + newShuffleValue);
         let oldShuffle = this._shuffle;
         this._shuffle = newShuffleValue;
         // If shuffle has been switched off
-        if (oldShuffle == true && this._shuffle == false){
+        if (oldShuffle == true && this._shuffle == false) {
             // We need to find the current video in the regular array and set the current index to that
             // Find the index of the current video in the regular array
             this._currentIndex = this._videos.indexOf(this._videosShuffled[this._currentIndex]);
@@ -298,8 +762,8 @@ class NewQueue {
             this._lengthPlayed = this._videos.length - this._lengthUnplayed;
             // Set the next nextIndex if there are videos left after the current one
             if (this._lengthUnplayed != 0) this._nextIndex = this._currentIndex + 1;
-        // If shuffle has been switched on
-        } else /*if (this.oldShuffle == false && newShuffleValue == true)*/{
+            // If shuffle has been switched on
+        } else /*if (this.oldShuffle == false && newShuffleValue == true)*/ {
             this._generateShuffled();
             // console.log("OFOFOFOFOFOFOFOFOFOFOFOHHHHH" + this._videos);
             // We need to find the current video in the shuffled array and set the current index to that
@@ -313,11 +777,11 @@ class NewQueue {
         }
     }
 
-    get shuffle(){
+    get shuffle() {
         return this._shuffle;
     }
 
-    get videos(){
+    get videos() {
         if (this._shuffle == true) return this._videosShuffled;
         else return this._videos;
     }
@@ -372,9 +836,9 @@ class NewQueue {
         this.addVideosFromURLs(urlArray);
     }
 
-    addVideosCombo(inputData){
+    addVideosCombo(inputData) {
         // If we've got a playlist JSON on our hands
-        if (inputData.substring(0, 8) == "RMPLYLST"){
+        if (inputData.substring(0, 8) == "RMPLYLST") {
             let playlistJSON = JSON.parse(inputData.substring(8));
             for (let [url, details] of Object.entries(playlistJSON)) {
                 let newVideo = new Video(undefined, details.title, details.channel);
@@ -382,7 +846,7 @@ class NewQueue {
                 this.addVideo(newVideo);
             }
             return;
-        // If not, it'll probably be a CSV or single video
+            // If not, it'll probably be a CSV or single video
         } else {
             // Split the CSV
             var urlArray = inputData.split(',');
@@ -391,34 +855,34 @@ class NewQueue {
                 let newVideo = new Video();
                 newVideo.setIDFromURL(urlArray[0]);
                 this.addVideo(newVideo);
-            // If there's multiple URLs, pass the CSV to the handling function
-            } else if (urlArray.length >= 1){
+                // If there's multiple URLs, pass the CSV to the handling function
+            } else if (urlArray.length >= 1) {
                 this.addVideosFromURLs(urlArray);
             }
         }
         return;
     }
 
-    peekNextVideo(){
-        if (this._shuffle == false){  // If we're not shuffling
+    peekNextVideo() {
+        if (this._shuffle == false) {  // If we're not shuffling
             return this._videos[this._nextIndex];
         } else if (this._shuffle == true) {  // If we're shuffling
             return this._videosShuffled[this._nextIndex];
         }
     }
 
-    nextVideo(){
+    nextVideo() {
         // Ensure there are videos left to queue
-        if (this._lengthUnplayed == 0){
+        if (this._lengthUnplayed == 0) {
             console.error("No videos left.");
             return undefined;
             throw Error;
         }
-        if (this._shuffle == false){  // If we're not shuffling
-            this._currentVideo = new Video(this._videos[this._nextIndex].id,this._videos[this._nextIndex].title,this._videos[this._nextIndex].channel);
+        if (this._shuffle == false) {  // If we're not shuffling
+            this._currentVideo = new Video(this._videos[this._nextIndex].id, this._videos[this._nextIndex].title, this._videos[this._nextIndex].channel);
             // this._currentVideo = JSON.parse(JSON.stringify(this._videos[this._nextIndex]));  // Current video is the next video
         } else if (this._shuffle == true) {  // If we're shuffling
-            this._currentVideo = new Video(this._videosShuffled[this._nextIndex].id,this._videosShuffled[this._nextIndex].title,this._videosShuffled[this._nextIndex].channel)
+            this._currentVideo = new Video(this._videosShuffled[this._nextIndex].id, this._videosShuffled[this._nextIndex].title, this._videosShuffled[this._nextIndex].channel)
             // this._currentVideo = JSON.parse(JSON.stringify(this._videosShuffled[this._nextIndex]));
         }
         this._currentIndex = this._nextIndex;  // Current index is the next index
@@ -429,28 +893,28 @@ class NewQueue {
         return this._currentVideo;
     }
 
-    peekPreviousVideo(){
-        if (this._shuffle == false){  // If we're not shuffling
-            return new Video(this._videos[this._currentIndex-1].id,this._videos[this._currentIndex-1].title,this._videos[this._currentIndex-1].channel);
-        // this._currentVideo = JSON.parse(JSON.stringify(this._videos[this._nextIndex]));  // Current video is the next video
+    peekPreviousVideo() {
+        if (this._shuffle == false) {  // If we're not shuffling
+            return new Video(this._videos[this._currentIndex - 1].id, this._videos[this._currentIndex - 1].title, this._videos[this._currentIndex - 1].channel);
+            // this._currentVideo = JSON.parse(JSON.stringify(this._videos[this._nextIndex]));  // Current video is the next video
         } else if (this._shuffle == true) {  // If we're shuffling
-            return new Video(this._videosShuffled[this._currentIndex-1].id,this._videosShuffled[this._currentIndex-1].title,this._videosShuffled[this._currentIndex-1].channel)
+            return new Video(this._videosShuffled[this._currentIndex - 1].id, this._videosShuffled[this._currentIndex - 1].title, this._videosShuffled[this._currentIndex - 1].channel)
             // this._currentVideo = JSON.parse(JSON.stringify(this._videosShuffled[this._nextIndex]));
         }
     }
 
-    previousVideo(){
+    previousVideo() {
         // Ensure there are videos left to queue
-        if (this._lengthPlayed <= 1){
+        if (this._lengthPlayed <= 1) {
             console.error("No videos left.");
             return undefined;
             throw Error;
         }
-        if (this._shuffle == false){  // If we're not shuffling
-            this._currentVideo = new Video(this._videos[this._currentIndex-1].id,this._videos[this._currentIndex-1].title,this._videos[this._currentIndex-1].channel);
+        if (this._shuffle == false) {  // If we're not shuffling
+            this._currentVideo = new Video(this._videos[this._currentIndex - 1].id, this._videos[this._currentIndex - 1].title, this._videos[this._currentIndex - 1].channel);
             // this._currentVideo = JSON.parse(JSON.stringify(this._videos[this._nextIndex]));  // Current video is the next video
         } else if (this._shuffle == true) {  // If we're shuffling
-            this._currentVideo = new Video(this._videosShuffled[this._currentIndex-1].id,this._videosShuffled[this._currentIndex-1].title,this._videosShuffled[this._currentIndex-1].channel)
+            this._currentVideo = new Video(this._videosShuffled[this._currentIndex - 1].id, this._videosShuffled[this._currentIndex - 1].title, this._videosShuffled[this._currentIndex - 1].channel)
             // this._currentVideo = JSON.parse(JSON.stringify(this._videosShuffled[this._nextIndex]));
         }
         this._currentIndex -= 1;  // Current index is the next index
@@ -461,7 +925,7 @@ class NewQueue {
         return this._currentVideo;
     }
 
-    empty(){
+    empty() {
         this._videos = [];
         this._videosShuffled = [];
         this._currentIndex = 0;
@@ -472,7 +936,7 @@ class NewQueue {
         this.unplayedVideos = false;
     }
 
-    _generateShuffled(){
+    _generateShuffled() {
         this._videosShuffled = this._videos.slice(this._nextIndex);
         this._videosShuffled = shuffle(this._videosShuffled);
         // console.log("                           " + this._currentIndex);
@@ -487,19 +951,19 @@ function shuffle(array) {
     // console.log("                               Length is " + currentIndex);
     // While there remain elements to shuffle...
     while (0 !== currentIndex) {
-  
-      // Pick a remaining element...
-      randomIndex = Math.floor(Math.random() * currentIndex);
-      currentIndex -= 1;
-  
-      // And swap it with the current element.
-      temporaryValue = array[currentIndex];
-      array[currentIndex] = array[randomIndex];
-      array[randomIndex] = temporaryValue;
+
+        // Pick a remaining element...
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex -= 1;
+
+        // And swap it with the current element.
+        temporaryValue = array[currentIndex];
+        array[currentIndex] = array[randomIndex];
+        array[randomIndex] = temporaryValue;
     }
     // console.log(array);
     return array;
-  }
+}
 
 class Video {
     constructor(id = undefined, title = undefined, channel = "Unknown", duration = undefined) {
@@ -516,8 +980,8 @@ class Video {
 }
 
 class ServerVideo extends Video {
-    constructor(){
-        super();
+    constructor(id = undefined, title = undefined, channel = "Unknown", duration = undefined) {
+        super(id, title, channel, duration);
 
         this._state = 5;  // The state of the video (matches the official YouTube API's states)
         this.startingTime = 0;  // The timestamp at which the video started
@@ -582,21 +1046,21 @@ class ServerVideo extends Video {
     }
 
     // Function to set the video playing
-    playVideo(){
-        if (this._state >= 2 && this._state <= 3){  // If the video was previously paused
+    playVideo() {
+        if (this._state >= 2 && this._state <= 3) {  // If the video was previously paused
             this.resumeTimer();  // This can only be run if the video was previously paused
         } else if (this._state == 5) {
             this.startingTime = new Date().getTime();
         }
 
         let oof0 = this.title;
-            
+
         console.log(oof0 + " DEBUGGGGGGGGGGGG Cleared any existing timestamp");
         clearTimeout(this._cbWhenFinishedTimeout);
         this.oof1 = (this._duration - (this.elapsedTime * 1000));
         this.oof2 = new Date().getTime();
         console.log(oof0 + " DEBUGGGGGGGGGGGG Set timeout to " + (this._duration - (this.elapsedTime * 1000)));
-        if (this._cbWhenFinished){
+        if (this._cbWhenFinished) {
             this._cbWhenFinishedTimeout = setTimeout((id) => {
                 console.log(oof0 + " THE VIDEO HAS FINISHED");
                 console.log(oof0 + " OFFFFFFFFFFFFFFFFFFFFFFFFFOOOFFFFFFFFFFFFFFFFFFFFF" + ((new Date().getTime()) - this.oof2));
@@ -605,17 +1069,14 @@ class ServerVideo extends Video {
             }, (this._duration - (this.elapsedTime * 1000)), oof0);
         }
 
-
-
-
         this.state = 1;
     }
 
     // Function to pause the video
-    pauseVideo(buffer){
+    pauseVideo(buffer) {
         console.log("SERVER VIDEO HAS PAUSED");
         this.pauseTimer();
-        if (buffer){
+        if (buffer) {
             this.state = 3;
         } else {
             this.state = 2;
@@ -623,7 +1084,7 @@ class ServerVideo extends Video {
         return;
     }
 
-    onPlayDelay(cb){
+    onPlayDelay(cb) {
         this.cbStateDelay = cb;
         // this.cbStateDelayRoomRef = room;
     }
@@ -679,13 +1140,13 @@ class ServerVideo extends Video {
         return;
     }
 
-    onStateChange(cbStateChange){
+    onStateChange(cbStateChange) {
         this._cbStateChange = cbStateChange;
         return;
     }
 }
 
-class RecieverTransport {
+class ReceiverTransport {
     constructor(videoID, data) {
         this.videoID = videoID
         this.data = data
@@ -700,7 +1161,7 @@ module.exports = {
     "State": State,
     "Video": Video,
     "ServerVideo": ServerVideo,
-    "RecieverTransport": RecieverTransport
+    "ReceiverTransport": ReceiverTransport
 };
 
 function getIDFromURL(url) {
@@ -728,7 +1189,7 @@ function getIDFromURL(url) {
 
         });
     }
-    if (id == undefined){
+    if (id == undefined) {
         throw Error;
     }
     return id;

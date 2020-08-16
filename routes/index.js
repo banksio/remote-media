@@ -6,7 +6,7 @@ var pjson = require('../package.json');
 console.log(pjson.version);
 
 
-/* GET room reciever */
+/* GET room receiver */
 // router.get('/:room', function(req, res, next) {
 router.get('/', function(req, res, next) {
   res.render('index', { appversion: pjson.version })

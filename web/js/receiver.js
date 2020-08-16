@@ -14,7 +14,7 @@ socket.on('disconnect', () => {
 });
 
 // let name = prompt("Enter a name: ");
-// socket.binary(false).emit("recieverConnected", name);
+// socket.binary(false).emit("receiverConnected", name);
 
 console.log("Waiting for server...");
 
@@ -73,7 +73,7 @@ function frontendChangeBanner(notificationObject) {
 }
 
 function pushTimestampToServer(timestamp) {
-    socket.emit("recieverTimestampSyncRequest", timestamp);
+    socket.emit("receiverTimestampSyncRequest", timestamp);
 }
 
 setInterval(() => {

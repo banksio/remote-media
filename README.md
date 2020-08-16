@@ -21,7 +21,7 @@ Coming soon:
 3. Run `npm start`.
 4. Connect to the web interface on port 3694.
 
-The default page is the "reciever", and the admin panel is used to control the media playing on the recievers. The admin page is located at `/admin`.
+The default page is the "receiver", and the admin panel is used to control the media playing on the receivers. The admin page is located at `/admin`.
 
 **If it doesn't work, please [submit a bug](https://github.com/banksio/KeyboardDisplay/issues).**
 

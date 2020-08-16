@@ -4,6 +4,8 @@ const testHelpers = require('../src/test/setupFunctions');
 
 // Classes
 var classes = require('../web/js/classes');
+const { queue } = require('jquery');
+const { Video, ServerVideo } = require('../web/js/classes');
 
 // Test video object ID parsing
 describe('Video object URL parsing test', function () {
@@ -235,7 +237,7 @@ describe('Room object', function () {
 
 // Room object tests
 describe('Room status checking tests', function () {
-    it('allPreloading should return true', function () {
+    it('Should return true', function () {
         let room = new classes.Room();
         let loginID = "test";
         let loginID2 = "anotherTest";
@@ -245,7 +247,7 @@ describe('Room status checking tests', function () {
         room.addClient(login2);
         assert.ok(room.allPreloaded());
     });
-    it('allPreloading should return false', function () {
+    it('Should return false', function () {
         let room = new classes.Room();
         let loginID = "test";
         let loginID2 = "anotherTest";
@@ -256,7 +258,7 @@ describe('Room status checking tests', function () {
         room.addClient(login2);
         assert.equal(room.allPreloaded(), false);
     });
-    it('allPreloading should return false', function () {
+    it('Should return false', function () {
         let room = new classes.Room();
         let loginID = "test";
         let loginID2 = "anotherTest";
@@ -268,7 +270,7 @@ describe('Room status checking tests', function () {
         room.clients[loginID2].status.updatePreloading(true);
         assert.equal(room.allPreloaded(), false);
     });
-    it('removeClient should remove a client', function () {
+    it('Should remove a client', function () {
         let room = new classes.Room();
         let loginID = "test";
         let loginID2 = "anotherTest";
@@ -283,7 +285,7 @@ describe('Room status checking tests', function () {
 
 // Room object tests
 describe('Room client management tests', function () {
-    it('Array should be ["Name1"]', function () {
+    it('Should return ["Name1"]', function () {
         let room = new classes.Room();
         let loginID = "test";
         let login = new classes.Login(loginID);
@@ -292,7 +294,7 @@ describe('Room client management tests', function () {
         let nameArray = room.getAllClientNames();
         assert.deepEqual(nameArray, ["Name1"]);
     });
-    it('Array should be ["First", "21562"]', function () {
+    it('Should return ["First", "21562"]', function () {
         let room = new classes.Room();
         let loginID = "test";
         let loginID2 = "anotherTest";
@@ -305,7 +307,7 @@ describe('Room client management tests', function () {
         let nameArray = room.getAllClientNames();
         assert.deepEqual(nameArray, ["First", "21562"]);
     });
-    it('Array should be ["6172", "Crashed"]', function () {
+    it('Should return ["6172", "Crashed"]', function () {
         let room = new classes.Room();
         let loginID = "test";
         let loginID2 = "anotherTest";
@@ -317,5 +319,60 @@ describe('Room client management tests', function () {
         room.addClient(login2);
         let nameArray = room.getAllClientNames();
         assert.deepEqual(nameArray, ["6172", "Crashed"]);
+    });
+});
+
+// Room transport tests
+describe('Room transport tests', function () {
+    it('Should return correct queue JSON', function () {
+        let room = testHelpers.roomWithTwoClients();
+        room.queue.addVideosFromCSV("https://youtu.be/xi3c-9qzrPY?list=RDMMEK_LN3XEcnw,https://youtu.be/ez1Kv8hiQGU?list=RDMMEK_LN3XEcnw");
+        
+        let queueTransportConstruct = room.transportConstructs.queue();
+        let expected = {
+            "videos": room.queue.videos,
+            "length": 2,
+            "index": 0
+        }
+        
+        assert.deepStrictEqual(queueTransportConstruct.data, expected);
+    });
+
+    it('Should return correct queue status JSON', function () {
+        let room = testHelpers.roomWithTwoClients();
+        room.queue.addVideosFromCSV("https://youtu.be/xi3c-9qzrPY?list=RDMMEK_LN3XEcnw,https://youtu.be/ez1Kv8hiQGU?list=RDMMEK_LN3XEcnw");
+        
+        let queueStatusTransportConstruct = room.transportConstructs.queueStatus();
+        let expected = {
+            "shuffle": room.queue.shuffle
+        }
+        
+        assert.deepStrictEqual(queueStatusTransportConstruct.data, expected);
+    });
+
+    it('Should return current video in room', function () {
+        let room = testHelpers.roomWithTwoClients();
+        room.currentVideo = new ServerVideo("testID", "testTitle", "testChannel", "testDuration");
+        
+        let videoTransportConstruct = room.transportConstructs.currentVideo();
+        let expected = JSON.stringify(room.currentVideo, room.currentVideo.cyclicReplacer);
+        
+        assert.deepStrictEqual(videoTransportConstruct.data, expected);
+    });
+});
+
+describe('Room event tests', function () {
+    it('Should add a new client to the room', function () {
+        let room = testHelpers.roomWithTwoClients();
+        room.queue.addVideosFromCSV("https://youtu.be/xi3c-9qzrPY?list=RDMMEK_LN3XEcnw,https://youtu.be/ez1Kv8hiQGU?list=RDMMEK_LN3XEcnw");
+        
+        let queueTransportConstruct = room.transportConstructs.queue();
+        let expected = {
+            "videos": room.queue.videos,
+            "length": 2,
+            "index": 0
+        }
+        
+        assert.deepStrictEqual(queueTransportConstruct.data, expected);
     });
 });

@@ -3,7 +3,7 @@ const appRoot = require('app-root-path');
 
 module.exports = function (app) {
 
-    // Serve the reciever
+    // Serve the receiver
     app.get('/', function (req, res) {
         res.sendFile(path.join(appRoot.toString(), '/views/index.html'));
     });

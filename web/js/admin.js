@@ -258,7 +258,7 @@ function queueUpdateStatus(status) {
 //     fn('woot');
 // });
 
-socket.on('initFinished', function () {
+socket.on("initFinished", function () {
     frontendChangeMainSpinner(0);
 });
 

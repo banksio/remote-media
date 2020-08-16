@@ -1,6 +1,8 @@
 const logging = require('./logging');
 const chalk = require('chalk');
 
+var io;
+
 // Send timestamp to a client
 function sendIndividualTimestamp(client, timestamp) {
     client.socket.binary(false).emit("serverVideoTimestamp", timestamp);
@@ -118,19 +120,50 @@ function preloadVideoIndividualClient(client, videoObj) {
     return;
 }
 
+function broadcastConnectionManagement(room, control){
+    room.io.binary(false).emit("serverConnectionManagement", control);
+    return;
+}
+
+function broadcastEventObject(io, eventObj) {
+    for (let [event, data] of Object.entries(eventObj.broadcastEvents)) {
+        console.log(`Broadcast ${event}: ${data}`);
+        io.binary(false).emit(event, data);
+    }
+}
+
+function sendEventObject(io, clientID, eventObj) {
+    for (let [event, data] of Object.entries(eventObj.sendEvents)) {
+        console.log(`Send ${event}: ${data}`);
+        getSocketObjectFromServer(io, clientID).binary(false).emit(event, data);
+    }
+}
+
+function getSocketObjectFromServer(io, clientID) {
+    return io.of("/").connected[clientID];
+}
+
+function setIO(roomIO){
+    io = roomIO;
+}
+
 module.exports = {
-    sendIndividualTimestamp: sendIndividualTimestamp,
-    broadcastTimestamp: broadcastTimestamp,
-    broadcastBufferingClients: broadcastBufferingClients,
-    broadcastPlayerControl: broadcastPlayerControl,
-    broadcastBufferingIfClientNowReady: broadcastBufferingIfClientNowReady,
-    sendNowPlaying: sendNowPlaying,
-    sendQueue: sendQueue,
-    broadcastQueue: broadcastQueue,
-    broadcastQueueStatus: broadcastQueueStatus,
-    broadcastPreloadVideo: broadcastPreloadVideo,
-    broadcastClients: broadcastClients,
-    broadcastNowPlaying: broadcastNowPlaying,
-    sendQueueStatus: sendQueueStatus,
-    sendCurrentVideoIfPlaying: sendCurrentVideoIfPlaying
+    // sendIndividualTimestamp: sendIndividualTimestamp,
+    // broadcastTimestamp: broadcastTimestamp,
+    // broadcastBufferingClients: broadcastBufferingClients,
+    // broadcastPlayerControl: broadcastPlayerControl,
+    // broadcastBufferingIfClientNowReady: broadcastBufferingIfClientNowReady,
+    // sendNowPlaying: sendNowPlaying,
+    // sendQueue: sendQueue,
+    // broadcastQueue: broadcastQueue,
+    // broadcastQueueStatus: broadcastQueueStatus,
+    // broadcastPreloadVideo: broadcastPreloadVideo,
+    // broadcastClients: broadcastClients,
+    // broadcastNowPlaying: broadcastNowPlaying,
+    // sendQueueStatus: sendQueueStatus,
+    // sendCurrentVideoIfPlaying: sendCurrentVideoIfPlaying,
+    broadcastConnectionManagement: broadcastConnectionManagement,
+    broadcastEventObject: broadcastEventObject,
+    sendEventObject: sendEventObject,
+    getSocketObjectFromServer: getSocketObjectFromServer
 }

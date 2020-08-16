@@ -59,7 +59,7 @@ function onPlayerReady(event) {
     // muteVid();
 
     // Let the server know we're ready for some videos!
-    socket.binary(false).emit("recieverPlayerReady");
+    socket.binary(false).emit("receiverPlayerReady");
     // alert("ready");
 }
 
@@ -122,7 +122,7 @@ function skipToTimestamp(timestamp) {
 
 function requestTimestampFromServer() {
     // Ask the server for the current timestamp
-    socket.emit('recieverTimestampRequest', (timestamp) => { // args are sent in order to acknowledgement function
+    socket.emit('receiverTimestampRequest', (timestamp) => { // args are sent in order to acknowledgement function
         // If they're more than 2 seconds apart, show the menu
         skipToTimestamp(timestamp);
     });
@@ -177,7 +177,7 @@ function onPlayerStateChange(event) {
 }
 
 function sendStatusToServer(state, preloading, firstVideo, currentVideoID) {
-    socket.binary(false).emit("recieverPlayerStatus", {
+    socket.binary(false).emit("receiverPlayerStatus", {
         "videoID": currentVideoID,
         data: {
             "state": state,
@@ -194,14 +194,14 @@ function preloadFinisher() {
     player.unMute();  // Unmute the video ready for playing
     preloading = false;
     console.log("Preloading done.");
-    // socket.binary(false).emit("recieverPlayerStatus", { "state": state, "preloading": false });
-    socket.binary(false).emit("recieverPlayerPreloadingFinished", vid);
+    // socket.binary(false).emit("receiverPlayerStatus", { "state": state, "preloading": false });
+    socket.binary(false).emit("receiverPlayerPreloadingFinished", vid);
 }
 
 function compareWithServerTimestamp() {
     console.log("checking TS");
     // Ask the server for the current timestamp
-    socket.emit('recieverTimestampRequest', (timestamp) => { // args are sent in order to acknowledgement function
+    socket.emit('receiverTimestampRequest', (timestamp) => { // args are sent in order to acknowledgement function
         // If they're more than 2 seconds apart, show the menu
         if (compareTimestamps(player.getCurrentTime(), timestamp)) {
             frontendShowSideControlPanel(true);
@@ -226,7 +226,7 @@ function sendVideoDetails() {
     var videoDetails = player.getVideoData();
     var videoDuration = player.getDuration();
     console.log(videoDetails);
-    socket.binary(false).emit("recieverVideoDetails", {
+    socket.binary(false).emit("receiverVideoDetails", {
         id: videoDetails.video_id,
         title: videoDetails.title,
         channel: videoDetails.author,

@@ -17,46 +17,46 @@ module.exports.start = function startServer(expressServer, cb) {
         // A new connection from a client
 
         // Create a new Login object with the new socket's ID and add to the room
-        var currentClient = handlers.newClient(defaultRoom, socket);
+        var currentClient = handlers.clientConnect(defaultRoom, socket);
 
-        // The reciever's player has loaded
-        socket.on("recieverPlayerReady", function () {
-            handlers.RecieverPlayerReady(defaultRoom, currentClient);
+        // The receiver's player has loaded
+        socket.on("receiverPlayerReady", function () {
+            handlers.ReceiverPlayerReady(defaultRoom, currentClient);
         });
 
-        // Acknowledge the reciever's nickname and let them know if it's valid or not
+        // Acknowledge the receiver's nickname and let them know if it's valid or not
         socket.on('receiverNickname', (nick, fn) => {
-            handlers.RecieverNickname(defaultRoom, currentClient, nick, fn);
+            handlers.ReceiverNickname(defaultRoom, currentClient, nick, fn);
         });
 
         // The client has finished preloading
-        socket.on("recieverPlayerPreloadingFinished", function (videoID) {
-            handlers.RecieverPreloadingFinished(defaultRoom, currentClient, videoID);
+        socket.on("receiverPlayerPreloadingFinished", function (videoID) {
+            handlers.ReceiverPreloadingFinished(defaultRoom, currentClient, videoID);
         });
 
-        // Status of the reciever
-        socket.on("recieverPlayerStatus", function (data) {
-            handlers.RecieverPlayerStatus(defaultRoom, currentClient, data);
+        // Status of the receiver
+        socket.on("receiverPlayerStatus", function (data) {
+            handlers.ReceiverPlayerStatus(defaultRoom, currentClient, data);
         });
 
-        // Recieved video details from a reciever
-        socket.on("recieverVideoDetails", function (videoDetails) {
-            handlers.RecieverVideoDetails(defaultRoom, currentClient, videoDetails);
+        // Recieved video details from a receiver
+        socket.on("receiverVideoDetails", function (videoDetails) {
+            handlers.ReceiverVideoDetails(defaultRoom, currentClient, videoDetails);
         });
 
-        // The reciever has requested a timestamp
-        socket.on('recieverTimestampRequest', (fn) => {
-            handlers.RecieverTimestampRequest(defaultRoom, currentClient, fn);
+        // The receiver has requested a timestamp
+        socket.on('receiverTimestampRequest', (fn) => {
+            handlers.ReceiverTimestampRequest(defaultRoom, currentClient, fn);
         });
 
-        socket.on("recieverTimestampSyncRequest", (timestamp) => {
-            handlers.RecieverTimestampSyncRequest(defaultRoom, timestamp);
+        socket.on("receiverTimestampSyncRequest", (timestamp) => {
+            handlers.ReceiverTimestampSyncRequest(defaultRoom, timestamp);
         });
 
 
         // All admin panel stuff //
 
-        // Get new video and send to recievers
+        // Get new video and send to receivers
         socket.on("adminNewVideo", function (data) {
             return handlers.AdminNewVideo(defaultRoom, data);
         });
@@ -70,7 +70,7 @@ module.exports.start = function startServer(expressServer, cb) {
             handlers.AdminTTSRequest(defaultRoom, data);
         });
 
-        // Control the recievers video players
+        // Control the receivers video players
         socket.on("adminPlayerControl", function (data) {
             handlers.AdminPlayerControl(defaultRoom, data);
         });
@@ -87,7 +87,7 @@ module.exports.start = function startServer(expressServer, cb) {
 
         // Remove client when they disconnect
         socket.on('disconnect', () => {
-            handlers.Disconnect(defaultRoom, currentClient);
+            handlers.clientDisconnect(defaultRoom, currentClient);
         });
 
         // socket.on('test', function (params) {
@@ -103,7 +103,12 @@ module.exports.start = function startServer(expressServer, cb) {
         //     timeTest();
         // });
 
+
     });
+
+    defaultRoom.onRoomEvent(handlers.onRoomEvent);
+
+    defaultRoom.onClientEvent(handlers.onClientEvent);
 
     if (cb) return cb(socketIOServer);
     return socketIOServer;
