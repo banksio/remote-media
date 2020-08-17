@@ -19,18 +19,20 @@ class event {
     }
 
     addBroadcastEventFromConstruct(construct){
+        if (construct.event == undefined || construct.data == undefined) throw Error("addBroadcastEventFromConstruct requires two parameters");
         this.addBroadcastEvent(construct.event, construct.data);
     }
 
     addSendEventFromConstruct(construct){
+        if (construct.event == undefined || construct.data == undefined) throw Error("addSendEventFromConstruct requires two parameters");
         this.addSendEvent(construct.event, construct.data);
     }
 }
 
-class clientTransport extends event {
-    constructor(){
-        super()
-    }
-}
+// class clientTransport extends event {
+//     constructor(){
+//         super()
+//     }
+// }
 
 module.exports = { event }
