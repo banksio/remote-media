@@ -454,9 +454,8 @@ class Room {
                     break;
             }
         })
-        this.currentVideo.whenFinished(function () {
+        this.currentVideo.whenFinished(() => {
             // Video has finished.
-
             logging.withTime("[ServerVideo] The video has finished. Elapsed time: " + this.currentVideo.getElapsedTime());
             // TODO: Test that this works
             this.playNextInQueue();
