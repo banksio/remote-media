@@ -1,9 +1,4 @@
 const assert = require('assert');
-
-const testHelpers = require('../src/test/setupFunctions');
-
-// Classes
-var classes = require('../web/js/classes');
 const { event } = require("../web/js/event")
 
 // Test event class constructor
