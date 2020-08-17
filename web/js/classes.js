@@ -236,7 +236,7 @@ class Room {
 
                     // If the server is already playing a video
                 }
-                else if (this.sendTimestampIfClientRequires(client, room) == 0) {
+                else if (this.sendTimestampIfClientRequires(client) == 0) {
                     return 0;
                 }
                 return 0;
