@@ -158,11 +158,11 @@ class Room {
             receiverVideoDetails: (videoDetails, client) => {
                 // If the video ID is not valid then return
                 if (videoDetails.id != this.currentVideo.id) {
-                    logging.withTime("[ServerVideo] Recieved invalid video details from " + logging.prettyPrintClientID(client));
+                    logging.withTime(chalk.yellow("[ServerVideo] Recieved invalid video details from " + logging.prettyPrintClientID(client)));
                     return 1;
                 }
                 // Assign the video details
-                logging.withTime("[ServerVideo] Recieved video details from " + logging.prettyPrintClientID(client));
+                logging.withTime(chalk.blueBright("[ServerVideo] Recieved video details from " + logging.prettyPrintClientID(client)));
                 this.currentVideo.title = videoDetails.title;
                 this.currentVideo.channel = videoDetails.channel;
                 this.currentVideo.duration = videoDetails.duration;
@@ -217,7 +217,7 @@ class Room {
                 nicknameSetResponse.addBroadcastEventFromConstruct(clients);
                 this._cbEvent(nicknameSetResponse, this);
 
-                logging.withTime("[CliNick] " + logging.prettyPrintClientID(client) + " has set their nickname.");
+                logging.withTime(chalk.cyan("[CliNick] " + logging.prettyPrintClientID(client) + " has set their nickname."));
                 return;
             },
             receiverPreloadingFinished: (videoID, client) => {
@@ -228,7 +228,7 @@ class Room {
                 }
 
                 client.status.updatePreloading(false);
-                logging.withTime("[ClientVideo] " + logging.prettyPrintClientID(client) + " has finished preloading.");
+                logging.withTime(chalk.cyan("[ClientVideo] " + logging.prettyPrintClientID(client) + " has finished preloading."));
 
                 // Play the video if the server is waiting to start a video and this was the last client we were waiting for
                 if (this.playIfPreloadingFinished() == 0) {
@@ -255,7 +255,7 @@ class Room {
 
                 // Don't crash out if we can't get the current timestamp
                 try {
-                    logging.withTime("[Server Video] The current video timestamp is " + this.currentVideo.getElapsedTime());
+                    logging.withTime(chalk.blueBright("[Server Video] The current video timestamp is " + this.currentVideo.getElapsedTime()));
                 }
                 catch (error) {
                     console.error(error);
@@ -279,7 +279,7 @@ class Room {
                 clientsEvent.addBroadcastEventFromConstruct(clients);
                 this._cbEvent(clientsEvent, this);
 
-                logging.withTime("[CliStatus] " + logging.prettyPrintClientID(client) + " has new status:" + " status: " + state + " preloading:" + preloading);
+                logging.withTime(chalk.cyan("[CliStatus] " + logging.prettyPrintClientID(client) + " has new status:" + " status: " + state + " preloading:" + preloading));
 
                 // If the client is preloading
                 if (preloading == true) {
@@ -436,7 +436,7 @@ class Room {
         });
         this.currentVideo.state = 5;
         this.currentVideo.onStateChange((state) => {
-            console.log("[ServerVideo] State " + state);
+            console.log(chalk.blueBright("[ServerVideo] State " + state));
             switch (state) {
                 case 1:
                     this._cbEvent(new event("serverPlayerControl", "play"), this);
@@ -456,7 +456,7 @@ class Room {
         })
         this.currentVideo.whenFinished(() => {
             // Video has finished.
-            logging.withTime("[ServerVideo] The video has finished. Elapsed time: " + this.currentVideo.getElapsedTime());
+            logging.withTime(chalk.blueBright("[ServerVideo] The video has finished. Elapsed time: " + this.currentVideo.getElapsedTime()));
             // TODO: Test that this works
             this.playNextInQueue();
         });
@@ -466,8 +466,8 @@ class Room {
         if (this.currentVideo.state != 0 && client.status.requiresTimestamp) {
             // We'll send the client a timestamp so it can sync with the server
             client.status.requiresTimestamp = false;
-            logging.withTime("[ClientVideo] " + logging.prettyPrintClientID(client) + " requires a timestamp. Sending one to it now.");
-            console.log("[CliMgnt] " + logging.prettyPrintClientID(client) + " has been sent a timestamp.");
+            logging.withTime(chalk.cyan("[ClientVideo] " + logging.prettyPrintClientID(client) + " requires a timestamp. Sending one to it now."));
+            console.log(chalk.cyan("[CliMgnt] " + logging.prettyPrintClientID(client) + " has been sent a timestamp."));
             try {
                 let timestampForClient = new event();
                 timestampForClient.addSendEvent("serverVideoTimestamp", this.currentVideo.getElapsedTime());
@@ -525,7 +525,7 @@ class Room {
     }
 
     stateChangeOfClient() {
-        console.log("[classes.js][Room] A client's state in the room has changed.");
+        console.log(chalk.cyan("[classes.js][Room] A client's state in the room has changed."));
         if (this._cbAnyClientStateChange) return this._cbAnyClientStateChange(this);
         return
     }
@@ -1010,7 +1010,7 @@ class ServerVideo extends Video {
             return 0;
         }
         this.elapsedTime = (((currentTime - this.startingTime) - this._pausedTime) / 1000);
-        console.log("[classes.js][ServerVideo] The video's currently elapsed time is " + this.elapsedTime + " and has been paused for " + this._pausedTime / 1000);
+        console.log(chalk.blueBright("[classes.js][ServerVideo] The video's currently elapsed time is " + this.elapsedTime + " and has been paused for " + this._pausedTime / 1000));
         return this.elapsedTime;
     }
 
@@ -1022,7 +1022,7 @@ class ServerVideo extends Video {
 
     pauseTimer(time = new Date().getTime()) {
         this._pausedSince = time;  // Set the time of pausing
-        console.log("[classes.js][ServerVideo] The video has been set paused.");
+        console.log(chalk.yellowBright("[classes.js][ServerVideo] The video has been set paused."));
         // if (this._cbWhenFinishedTimeout){
         clearTimeout(this._cbWhenFinishedTimeout);
         console.log("DEBUGGGGGGGGGGGG The timeout has been cleared ");
@@ -1034,7 +1034,7 @@ class ServerVideo extends Video {
         this._pausedSince = 0;
         // Callback when the video has finished
 
-        console.log("[classes.js][ServerVideo] The video has been resumed. It was paused for " + this._pausedTime);
+        console.log(chalk.greenBright("[classes.js][ServerVideo] The video has been resumed. It was paused for " + this._pausedTime));
     }
 
 
