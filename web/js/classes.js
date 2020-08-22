@@ -120,7 +120,7 @@ class Room {
                         logging.withTime("[ServerQueue] Shuffle: " + this.queue.shuffle);
                         queueStatus = this.transportConstructs.queueStatus();
                         queueControlResponse.addBroadcastEventFromConstruct(queueStatus);
-                        return;
+                        break;
                     default:
                         break;
                 }
@@ -747,12 +747,12 @@ class NewQueue {
         return this._lengthUnplayed;
     }
 
-    set shuffle(newShuffleValue) {
-        console.log("OOF SHUFFLE " + newShuffleValue);
+    set shuffle(newShuffle) {
         let oldShuffle = this._shuffle;
-        this._shuffle = newShuffleValue;
-        // If shuffle has been switched off
-        if (oldShuffle == true && this._shuffle == false) {
+        logging.withTime("[Queue] Shuffle was " + oldShuffle)
+        this._shuffle = newShuffle;
+        logging.withTime("[Queue] Shuffle is now " + this._shuffle)
+        if (oldShuffle === true && this._shuffle === false) {  // If shuffle has been switched off
             // We need to find the current video in the regular array and set the current index to that
             // Find the index of the current video in the regular array
             this._currentIndex = this._videos.indexOf(this._videosShuffled[this._currentIndex]);
@@ -761,10 +761,8 @@ class NewQueue {
             this._lengthPlayed = this._videos.length - this._lengthUnplayed;
             // Set the next nextIndex if there are videos left after the current one
             if (this._lengthUnplayed != 0) this._nextIndex = this._currentIndex + 1;
-            // If shuffle has been switched on
-        } else /*if (this.oldShuffle == false && newShuffleValue == true)*/ {
+        } else if (oldShuffle === false && this._shuffle === true) {  // If shuffle has been switched on
             this._generateShuffled();
-            // console.log("OFOFOFOFOFOFOFOFOFOFOFOHHHHH" + this._videos);
             // We need to find the current video in the shuffled array and set the current index to that
             // Find the index of the current video in the regular array
             this._currentIndex = this._videosShuffled.indexOf(this._videos[this._currentIndex]);
