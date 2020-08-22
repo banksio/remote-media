@@ -23,7 +23,6 @@
     "youtube-playlist": "^1.0.3"
   },
   "devDependencies": {
-    "electron": "^9.0.5",
     "eslint": "^7.4.0",
     "mocha": "^8.0.1",
     "mocha-junit-reporter": "^2.0.0",
