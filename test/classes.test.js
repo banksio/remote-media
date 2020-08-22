@@ -590,6 +590,17 @@ describe('Server video timekeeping', function () {
 
         assert.strictEqual(newServerVideo.getElapsedTime(), expected / 1000);
     })
+
+    it('Should get elapsed time as 0', function (){
+        let newServerVideo = new classes.ServerVideo("testID", "testTitle");
+        let expected = 0;
+        let duration = 2500;
+        newServerVideo.duration = (duration / 1000);
+
+        this.clock.tick(expected);
+
+        assert.strictEqual(newServerVideo.getElapsedTime(), expected / 1000);
+    })
 });
 
 // Room transport tests
