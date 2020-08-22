@@ -98,41 +98,303 @@ describe('Video object timekeeping test', function () {
 // Queue tests
 describe('NewQueue tests', function () {
     let video = new classes.Video("p47fEXGabaY");
+    let video2 = new classes.Video("vWaRiD5ym74");
     it('Add single video, expect correct video object and queue length', function () {
         let queue = new classes.NewQueue();
         queue.addVideo(video);
-        assert.equal(queue.length, 1);
-        assert.deepEqual(queue.nextVideo(), video);
-        assert.equal(queue.length, 0);
+        assert.strictEqual(queue.length, 1);
+        assert.deepStrictEqual(queue.nextVideo(), video);
+        assert.strictEqual(queue.length, 0);
     });
     it('Add single video from ID, expect correct video ID and queue length', function () {
         let queue = new classes.NewQueue();
         queue.addVideoFromID(video.id);
-        assert.equal(queue.length, 1);
-        assert.equal(queue.nextVideo().id, video.id);
-        assert.equal(queue.length, 0);
+        assert.strictEqual(queue.length, 1);
+        assert.strictEqual(queue.nextVideo().id, video.id);
+        assert.strictEqual(queue.length, 0);
     });
     it('Add two videos from CSV test queue length, ID and pop from queue', function () {
         let queue = new classes.NewQueue();
         queue.addVideosFromCSV("https://youtu.be/xi3c-9qzrPY?list=RDMMEK_LN3XEcnw,https://youtu.be/ez1Kv8hiQGU?list=RDMMEK_LN3XEcnw");
-        assert.equal(queue.length, 2);
-        assert.equal(queue.nextVideo().id, "xi3c-9qzrPY");
-        assert.equal(queue.length, 1);
-        assert.equal(queue.nextVideo().id, "ez1Kv8hiQGU");
-        assert.equal(queue.length, 0);
+        assert.strictEqual(queue.length, 2);
+        assert.strictEqual(queue.nextVideo().id, "xi3c-9qzrPY");
+        assert.strictEqual(queue.length, 1);
+        assert.strictEqual(queue.nextVideo().id, "ez1Kv8hiQGU");
+        assert.strictEqual(queue.length, 0);
     });
     it('Add one video from CSV, expect nothing added', function () {
         let queue = new classes.NewQueue();
         queue.addVideosFromCSV("https://youtu.be/xi3c-9qzrPY?list=RDMMEK_LN3XEcnw");
-        assert.equal(queue.length, 0);
+        assert.strictEqual(queue.length, 0);
         assert.throws(queue.nextVideo, undefined);
-        assert.equal(queue.length, 0);
+        assert.strictEqual(queue.length, 0);
     });
 
-    it('Add single video, get video from queue', function () {
+    it('Should add playlist JSON', function () {
+        let rmPlaylistJSON = `RMPLYLST{
+            "https://www.youtube.com/watch?v=BnO3nijfYmU&list=PLJlPsYbof_C4JOCj7JVotCm8HGZewIFoG&index=2&t=0s": {
+                "title": "Robbie Williams - Rock DJ",
+                "channel": "Robbie Williams"
+            },
+            "https://www.youtube.com/watch?v=yC8SPG2LwSA&list=PLJlPsYbof_C4JOCj7JVotCm8HGZewIFoG&index=3&t=0s": {
+                "title": "Clean Bandit and Mabel - Tick Tock (feat. 24kGoldn) [Official Video]",
+                "channel": "Clean Bandit"
+            }
+        }`;
+        let queue = new classes.NewQueue();
+        queue.addVideosCombo(rmPlaylistJSON);
+        assert.strictEqual(queue.length, 2);
+        assert.strictEqual(queue.peekNextVideo().id, "BnO3nijfYmU");
+        assert.strictEqual(queue.peekNextVideo().title, "Robbie Williams - Rock DJ");
+        assert.strictEqual(queue.nextVideo().channel, "Robbie Williams");
+        assert.strictEqual(queue.peekNextVideo().id, "yC8SPG2LwSA");
+        assert.strictEqual(queue.peekNextVideo().title, "Clean Bandit and Mabel - Tick Tock (feat. 24kGoldn) [Official Video]");
+        assert.strictEqual(queue.peekNextVideo().channel, "Clean Bandit");
+    });
+
+    it('Should detect corrupt playlist JSON', function () {
+        let rmPlaylistJSON = `RMPLYLST{
+            "https://www.youtube.com/watch?v=BnO3nijfYmU&list=PLJlPsYbof_C4JOCj7JVotCm8HGZewIFoG&index=2&t=0s": {
+                "title": "Robbie Williams - Rock DJ",
+                "channel": "Robbie Williams"
+            },
+            "https://www.youtube.com/watch?v=yC8SPG2LwSA&list=PLJlPsYbof_C4JOCj7JVotCm8HGZewIFoG&index=3&t=0s": {
+                "title": "Clean Bandit and Mabel - Tick Tock (feat. 24kGoldn) [Official Video]",
+                "channel": "Clean Bandit"
+            }`;
+        let queue = new classes.NewQueue();
+        assert.throws(() => {queue.addVideosCombo(rmPlaylistJSON)});
+    });
+
+    it('Should add two videos from CSV', function () {
+        let queue = new classes.NewQueue();
+        queue.addVideosCombo("https://youtu.be/xi3c-9qzrPY?list=RDMMEK_LN3XEcnw,https://youtu.be/ez1Kv8hiQGU?list=RDMMEK_LN3XEcnw");
+        assert.strictEqual(queue.length, 2);
+        assert.strictEqual(queue.nextVideo().id, "xi3c-9qzrPY");
+        assert.strictEqual(queue.length, 1);
+        assert.strictEqual(queue.nextVideo().id, "ez1Kv8hiQGU");
+        assert.strictEqual(queue.length, 0);
+    });
+
+    it('Should add single video', function () {
+        let queue = new classes.NewQueue();
+        queue.addVideosCombo("https://www.youtube.com/watch?v=BnO3nijfYmU");
+        assert.strictEqual(queue.length, 1);
+        assert.deepStrictEqual(queue.nextVideo().id, "BnO3nijfYmU");
+        assert.strictEqual(queue.length, 0);
+    });
+
+    it('Should return next video and advance queue', function () {
         let queue = new classes.NewQueue();
         queue.addVideo(video);
-        assert.deepEqual(queue.nextVideo(), video);
+        assert.deepStrictEqual(queue.nextVideo(), video);
+        assert.strictEqual(queue.nextVideo(), undefined);
+    });
+
+    it('Should return previous video and change index', function () {
+        let queue = new classes.NewQueue();
+        queue.addVideo(video);
+        queue.addVideo(video2);
+        assert.deepStrictEqual(queue.nextVideo(), video);
+        assert.strictEqual(queue.previousVideo(), undefined);  // There should be no previous video, it's the start of the queue
+        assert.deepStrictEqual(queue.nextVideo(), video2);
+        assert.deepStrictEqual(queue.previousVideo(), video);  // There should now be a previous video
+    });
+
+    it('Should return previous video and change index when shuffling', function () {
+        let queue = new classes.NewQueue();
+        queue.addVideo(video);
+        queue.addVideo(video2);
+        queue.shuffle = true;
+
+        let shuffleVideo1 = queue.nextVideo();
+        let shuffleVideo2 = queue.nextVideo();
+
+        assert.notDeepStrictEqual(shuffleVideo1, shuffleVideo2);  // These should be different, shuffle is on
+        assert.deepStrictEqual(queue.previousVideo(), shuffleVideo1);  // There should be no previous video, it's the start of the queue
+    });
+
+    it('Should return previous video and not change index', function () {
+        let queue = new classes.NewQueue();
+        queue.addVideo(video);
+        queue.addVideo(video2);
+
+        queue.nextVideo();
+        queue.nextVideo();
+        queue.peekPreviousVideo
+
+        assert.deepStrictEqual(queue.peekPreviousVideo(), video);
+        assert.deepStrictEqual(queue.previousVideo(), video);  // There should now be a previous video
+    });
+
+    it('Should return previous video and not change index when shuffling', function () {
+        let queue = new classes.NewQueue();
+        queue.addVideo(video);
+        queue.addVideo(video2);
+        queue.shuffle = true;
+
+        let shuffleVideo1 = queue.nextVideo();
+        let shuffleVideo2 = queue.nextVideo();
+
+        assert.notDeepStrictEqual(shuffleVideo1, shuffleVideo2);  // These should be different, shuffle is on
+        assert.deepStrictEqual(queue.peekPreviousVideo(), shuffleVideo1);  // There should be no previous video, it's the start of the queue
+        assert.deepStrictEqual(queue.previousVideo(), shuffleVideo1);  // There should be no previous video, it's the start of the queue
+    });
+
+    it('Should return next video and not change index', function () {
+        let queue = new classes.NewQueue();
+        queue.addVideo(video);
+        queue.addVideo(video2);
+
+        assert.deepStrictEqual(queue.peekNextVideo(), video);
+        assert.deepStrictEqual(queue.nextVideo(), video);  // Should be the same as peek should not have changed the index
+    });
+
+    it('Should return next video and not change index when shuffling', function () {
+        let queue = new classes.NewQueue();
+        queue.addVideo(video);
+        queue.addVideo(video2);
+        queue.shuffle = true;
+
+        let shuffleVideo1 = queue.nextVideo();
+        let shuffleVideo2 = queue.nextVideo();
+        queue.previousVideo();
+
+        assert.notDeepStrictEqual(shuffleVideo1, shuffleVideo2);  // These should be different, shuffle is on
+        assert.deepStrictEqual(queue.peekNextVideo(), shuffleVideo2);
+        assert.deepStrictEqual(queue.nextVideo(), shuffleVideo2);  // Should be the same as peek should not have changed the index
+    });
+
+    it('Should have the same length when shuffled', function () {
+        let queue = new classes.NewQueue();
+        queue.addVideo(video);
+        queue.addVideo(video2);
+        let expected = 2;
+
+        assert.strictEqual(queue.videos.length, expected);
+        queue.shuffle = true;
+        assert.strictEqual(queue.videos.length, expected);
+    });
+
+    it('Should empty and reset the queue', function() {
+        let queue = new classes.NewQueue();
+        queue.addVideo(video);
+        queue.empty();
+
+        // Check both queues are empty
+        assert.strictEqual(queue.videos.length, 0);  // might not be necessary
+        queue.shuffle = false;
+        console.log(queue.videos.length);
+        assert.strictEqual(queue.videos.length, 0);
+        queue.shuffle = true;
+        assert.strictEqual(queue.videos.length, 0);
+        console.log(queue.videos.length);
+        console.log(queue.videos);
+        console.log(JSON.stringify(queue.videos));
+
+        assert.strictEqual(queue._currentIndex, 0);
+        assert.strictEqual(queue.nextVideo(), undefined);
+        assert.strictEqual(queue.previousVideo(), undefined);
+        assert.strictEqual(queue.unplayedVideos, false);
+    })
+
+    it('Should shuffle queue', function () {
+        let queue = new classes.NewQueue();
+        queue.addVideosCombo(`RMPLYLST{
+            "https://www.youtube.com/watch?v=BnO3nijfYmU&list=PLJlPsYbof_C4JOCj7JVotCm8HGZewIFoG&index=2&t=0s": {
+                "title": "Robbie Williams - Rock DJ",
+                "channel": "Robbie Williams"
+            },
+            "https://www.youtube.com/watch?v=yC8SPG2LwSA&list=PLJlPsYbof_C4JOCj7JVotCm8HGZewIFoG&index=3&t=0s": {
+                "title": "Clean Bandit and Mabel - Tick Tock (feat. 24kGoldn) [Official Video]",
+                "channel": "Clean Bandit"
+            },
+            "https://www.youtube.com/watch?v=nsDwItoNlLc&list=PLJlPsYbof_C4JOCj7JVotCm8HGZewIFoG&index=5&t=0s": {
+                "title": "Tinie Tempah ft. Jess Glynne - Not Letting Go (Official Video)",
+                "channel": "Tinie"
+            },
+            "https://www.youtube.com/watch?v=jzAv69sh_-4&list=PLJlPsYbof_C4JOCj7JVotCm8HGZewIFoG&index=6&t=0s": {
+                "title": "The Fear",
+                "channel": "Lily Allen"
+            },
+            "https://www.youtube.com/watch?v=dAVyKuS_noI&list=PLJlPsYbof_C4JOCj7JVotCm8HGZewIFoG&index=7&t=0s": {
+                "title": "MK - 2AM (Official Video) ft. Carla Monroe",
+                "channel": "MK"
+            },
+            "https://www.youtube.com/watch?v=e2IpYd6Pu3s&list=PLJlPsYbof_C4JOCj7JVotCm8HGZewIFoG&index=8&t=0s": {
+                "title": "Izzy Bizu - White Tiger (Official Video)",
+                "channel": "Izzy Bizu"
+            },
+            "https://www.youtube.com/watch?v=4PO2rFc_4NU&list=PLJlPsYbof_C4JOCj7JVotCm8HGZewIFoG&index=9&t=0s": {
+                "title": "Duke Dumont, Ebenezer - Inhale (Official Video)",
+                "channel": "Duke Dumont"
+            },
+            "https://www.youtube.com/watch?v=4fxPQUKfim4&list=PLJlPsYbof_C4JOCj7JVotCm8HGZewIFoG&index=10&t=0s": {
+                "title": "The 1975 - TOOTIMETOOTIMETOOTIME",
+                "channel": "The 1975"
+            },
+            "https://www.youtube.com/watch?v=uKqRAC-JNOM&list=PLJlPsYbof_C4JOCj7JVotCm8HGZewIFoG&index=11&t=0s": {
+                "title": "Ariana Grande - bloodline (Audio)",
+                "channel": "Ariana Grande"
+            },
+            "https://www.youtube.com/watch?v=8nBFqZppIF0&list=PLJlPsYbof_C4JOCj7JVotCm8HGZewIFoG&index=12&t=0s": {
+                "title": "Halsey - You should be sad",
+                "channel": "Halsey"
+            },
+            "https://www.youtube.com/watch?v=32ZlqCh4jV8&list=PLJlPsYbof_C4JOCj7JVotCm8HGZewIFoG&index=13&t=0s": {
+                "title": "Yello - Out Of Sight (Official Video)",
+                "channel": "YelloVEVO"
+            }
+        }`);
+        
+
+        let unshuffled = queue.videos;
+        queue.shuffle = true;
+        let shuffled = queue.videos;
+        
+        assert.notDeepStrictEqual(unshuffled, shuffled);
+    });
+
+    it('Should shuffle queue', function () {
+        let queue = new classes.NewQueue();
+
+        queue.shuffle = true;
+
+        queue.addVideosCombo(`RMPLYLST{
+            "https://www.youtube.com/watch?v=BnO3nijfYmU&list=PLJlPsYbof_C4JOCj7JVotCm8HGZewIFoG&index=2&t=0s": {
+                "title": "Robbie Williams - Rock DJ",
+                "channel": "Robbie Williams"
+            },
+            "https://www.youtube.com/watch?v=yC8SPG2LwSA&list=PLJlPsYbof_C4JOCj7JVotCm8HGZewIFoG&index=3&t=0s": {
+                "title": "Clean Bandit and Mabel - Tick Tock (feat. 24kGoldn) [Official Video]",
+                "channel": "Clean Bandit"
+            },
+            "https://www.youtube.com/watch?v=nsDwItoNlLc&list=PLJlPsYbof_C4JOCj7JVotCm8HGZewIFoG&index=5&t=0s": {
+                "title": "Tinie Tempah ft. Jess Glynne - Not Letting Go (Official Video)",
+                "channel": "Tinie"
+            },
+            "https://www.youtube.com/watch?v=jzAv69sh_-4&list=PLJlPsYbof_C4JOCj7JVotCm8HGZewIFoG&index=6&t=0s": {
+                "title": "The Fear",
+                "channel": "Lily Allen"
+            }
+        }`);
+        
+        queue.nextVideo()
+        queue.nextVideo()
+        let video = queue.nextVideo()
+
+        queue.shuffle = false;
+        
+        assert.deepStrictEqual(queue.videos[queue._currentIndex], video);
+    });
+
+    it('Should remove cyclic references', function () {
+        let queue = new classes.NewQueue();
+        queue.addVideosCombo("https://youtu.be/xi3c-9qzrPY?list=RDMMEK_LN3XEcnw,https://youtu.be/ez1Kv8hiQGU?list=RDMMEK_LN3XEcnw");
+        queue.nextVideo();
+
+        let nonCyclicQueue = JSON.parse(JSON.stringify(queue, queue.cyclicReplacer));
+        assert.strictEqual(nonCyclicQueue._currentVideo, undefined);
     });
 });
 
