@@ -385,7 +385,7 @@ describe('NewQueue tests', function () {
 
         queue.shuffle = false;
         
-        assert.deepStrictEqual(queue.videos[queue._currentIndex], video);
+        assert.deepStrictEqual(queue.videos[queue.currentIndex], video);
     });
 
     it('Should remove cyclic references', function () {

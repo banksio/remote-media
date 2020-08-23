@@ -29,7 +29,7 @@ class Room {
                 let queue = {
                     videos: this.queue.videos,
                     length: this.queue.length,
-                    index: this.queue._currentIndex
+                    index: this.queue.currentIndex
                 };
 
                 let data = {
@@ -731,9 +731,9 @@ class NewQueue {
     //     this.nextIndex = index + 1;
     // }
 
-    // get currentIndex(){
-    //     return this._currentIndex;
-    // }
+    get currentIndex(){
+        return this._currentIndex;
+    }
 
     // set nextIndex(index){
     //     this._nextIndex = index;
@@ -783,6 +783,7 @@ class NewQueue {
         else return this._videos;
     }
 
+    // TODO: Fix weirdness with duplicate videos and shuffling
     addVideo(video) {
         // Add the video to the array and update the length
         this._videos.push(video);
@@ -834,8 +835,7 @@ class NewQueue {
     }
 
     addVideosCombo(inputData) {
-        // If we've got a playlist JSON on our hands
-        if (inputData.substring(0, 8) == "RMPLYLST") {
+        if (inputData.substring(0, 8) == "RMPLYLST") {  // If we've got a playlist JSON on our hands
             let playlistJSON = JSON.parse(inputData.substring(8));
             for (let [url, details] of Object.entries(playlistJSON)) {
                 let newVideo = new Video(undefined, details.title, details.channel);
@@ -843,16 +843,14 @@ class NewQueue {
                 this.addVideo(newVideo);
             }
             return;
-            // If not, it'll probably be a CSV or single video
-        } else {
-            // Split the CSV
-            var urlArray = inputData.split(',');
+        } else {  // If not, it'll probably be a CSV or single video
+            var urlArray = inputData.split(',');  // Split (the CSV)
             // If there's only one URL, add that
+            // otherwise, pass the CSV to the handling function
             if (urlArray.length == 1) {
                 let newVideo = new Video();
                 newVideo.setIDFromURL(urlArray[0]);
                 this.addVideo(newVideo);
-                // If there's multiple URLs, pass the CSV to the handling function
             } else if (urlArray.length >= 1) {
                 this.addVideosFromURLs(urlArray);
             }
@@ -873,7 +871,7 @@ class NewQueue {
         if (this._lengthUnplayed == 0) {
             console.error("No videos left.");
             return undefined;
-            throw Error;
+            // throw Error;
         }
         if (this._shuffle == false) {  // If we're not shuffling
             this._currentVideo = new Video(this._videos[this._nextIndex].id, this._videos[this._nextIndex].title, this._videos[this._nextIndex].channel);
@@ -905,7 +903,7 @@ class NewQueue {
         if (this._lengthPlayed <= 1) {
             console.error("No videos left.");
             return undefined;
-            throw Error;
+            // throw Error;
         }
         if (this._shuffle == false) {  // If we're not shuffling
             this._currentVideo = new Video(this._videos[this._currentIndex - 1].id, this._videos[this._currentIndex - 1].title, this._videos[this._currentIndex - 1].channel);
@@ -940,7 +938,6 @@ class NewQueue {
         this._videosShuffled = [this._videos[this._currentIndex]].concat(this._videosShuffled);
         // console.log(this._videosShuffled);
     }
-
 }
 
 function shuffle(array) {
