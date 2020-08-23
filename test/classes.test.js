@@ -546,45 +546,6 @@ describe('Room status checking tests', function () {
     });
 });
 
-// Room object tests
-describe('Room client management tests', function () {
-    it('Should return ["Name1"]', function () {
-        let room = new classes.Room();
-        let loginID = "test";
-        let login = new classes.Login(loginID);
-        login.name = "Name1";
-        room.addClient(login);
-        let nameArray = room.getAllClientNames();
-        assert.deepEqual(nameArray, ["Name1"]);
-    });
-    it('Should return ["First", "21562"]', function () {
-        let room = new classes.Room();
-        let loginID = "test";
-        let loginID2 = "anotherTest";
-        let login = new classes.Login(loginID);
-        let login2 = new classes.Login(loginID2);
-        login.name = "First";
-        login2.name = "21562";
-        room.addClient(login);
-        room.addClient(login2);
-        let nameArray = room.getAllClientNames();
-        assert.deepEqual(nameArray, ["First", "21562"]);
-    });
-    it('Should return ["6172", "Crashed"]', function () {
-        let room = new classes.Room();
-        let loginID = "test";
-        let loginID2 = "anotherTest";
-        let login = new classes.Login(loginID);
-        let login2 = new classes.Login(loginID2);
-        login.name = "6172";
-        login2.name = "Crashed";
-        room.addClient(login);
-        room.addClient(login2);
-        let nameArray = room.getAllClientNames();
-        assert.deepEqual(nameArray, ["6172", "Crashed"]);
-    });
-});
-
 // Server video tests
 describe('Server video tests', function () {
     it('State change should call back', function (done){
@@ -862,6 +823,71 @@ describe('Server video timekeeping', function () {
         this.clock.tick(expected);
 
         assert.strictEqual(newServerVideo.getElapsedTime(), expected / 1000);
+    })
+});
+
+// Room object tests
+describe('Room client management tests', function () {
+    it('Should return ["Name1"]', function () {
+        let room = new classes.Room();
+        let loginID = "test";
+        let login = new classes.Login(loginID);
+        login.name = "Name1";
+        room.addClient(login);
+        let nameArray = room.getAllClientNames();
+        assert.deepEqual(nameArray, ["Name1"]);
+    });
+    it('Should return ["First", "21562"]', function () {
+        let room = new classes.Room();
+        let loginID = "test";
+        let loginID2 = "anotherTest";
+        let login = new classes.Login(loginID);
+        let login2 = new classes.Login(loginID2);
+        login.name = "First";
+        login2.name = "21562";
+        room.addClient(login);
+        room.addClient(login2);
+        let nameArray = room.getAllClientNames();
+        assert.deepEqual(nameArray, ["First", "21562"]);
+    });
+    it('Should return ["6172", "Crashed"]', function () {
+        let room = new classes.Room();
+        let loginID = "test";
+        let loginID2 = "anotherTest";
+        let login = new classes.Login(loginID);
+        let login2 = new classes.Login(loginID2);
+        login.name = "6172";
+        login2.name = "Crashed";
+        room.addClient(login);
+        room.addClient(login2);
+        let nameArray = room.getAllClientNames();
+        assert.deepEqual(nameArray, ["6172", "Crashed"]);
+    });
+    it('Should set the room event callback', function (done) {
+        let room = new classes.Room();
+        room.onRoomEvent(function () {
+            done();
+        })
+
+        room._cbEvent();
+    })
+
+    it('Should set the client event callback', function (done) {
+        let room = new classes.Room();
+        room.onClientEvent(function () {
+            done();
+        })
+
+        room._cbClientEvent();
+    })
+
+    it('Should toggle the queue shuffle state', function () {
+        let room = new classes.Room();
+        let queueShuffle = false;
+        room.queue.shuffle = queueShuffle;
+
+        assert.strictEqual(room.queueShuffleToggle(), !queueShuffle);
+        assert.strictEqual(room.queueShuffleToggle(), queueShuffle);
     })
 });
 
