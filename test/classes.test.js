@@ -1271,7 +1271,7 @@ describe('Room event tests', function () {
 
         let functionReturnCode = room.events.receiverReady(room.clients.fakeID1);
         assert.strictEqual(room.clients.fakeID1.status.state, expectedState);
-        assert.strictEqual(room.clients.fakeID1.status.expectedPlayerLoadingState, expectedPlayerLoadingState);
+        assert.strictEqual(room.clients.fakeID1.status.playerLoading, expectedPlayerLoadingState);
         assert.strictEqual(functionReturnCode, expectedReturnCode);
         done();
     });
