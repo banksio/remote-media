@@ -159,7 +159,7 @@ class Room {
             },
             receiverVideoDetails: (videoDetails, client) => {
                 // If the video ID is not valid then return
-                if (videoDetails.id != this.currentVideo.id) {
+                if (!utils.validateClientVideo(videoDetails.id, this)) {
                     logging.withTime(chalk.yellow("[ServerVideo] Recieved invalid video details from " + logging.prettyPrintClientID(client)));
                     return 1;
                 }
