@@ -112,7 +112,15 @@ function ReceiverNickname(room, client, nick, callback) {
 
 function ReceiverPreloadingFinished(room, client, videoID) {
     // Call the receiver preloading finished event
-    room.events.receiverPreloadingFinished(videoID, client);
+    try {
+        // This could throw if the client is on the wrong video
+        room.events.receiverPreloadingFinished(videoID, client);
+    } catch (error) {
+        if (error == "Wrong video"){
+            console.log(logging.prettyPrintClientID(client) + " is on the wrong video.");
+            return;
+        }
+    }
 }
 
 

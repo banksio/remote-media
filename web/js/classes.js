@@ -223,10 +223,11 @@ class Room {
                 return;
             },
             receiverPreloadingFinished: (videoID, client) => {
+                // TODO: Needs further testing/refactoring
                 // Ignore if it's the wrong video
                 if (!utils.validateClientVideo(videoID, this)) {
                     logging.withTime(chalk.yellow("[ClientVideo] " + logging.prettyPrintClientID(client) + " has finished preloading, but is on the wrong video."));
-                    return 1; // Code 1: wrong video
+                    throw new Error("Wrong video");
                 }
 
                 client.status.updatePreloading(false);
