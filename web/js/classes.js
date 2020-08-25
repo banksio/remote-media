@@ -820,7 +820,7 @@ class NewQueue {
         // }
         // Add the id from each url in turn
         for (var url of urlArray) {
-            var id = getIDFromURL(url);
+            var id = utils.getIDFromURL(url);
             if (id != undefined) {
                 this.addVideoFromID(id);
                 // consoleLogWithTime(id);
@@ -975,7 +975,7 @@ class Video {
     }
 
     setIDFromURL(url) {
-        this.id = getIDFromURL(url);
+        this.id = utils.getIDFromURL(url);
         this.title = this.title ? this.title : this.id;
     }
 }
@@ -1169,37 +1169,6 @@ module.exports = {
     "Video": Video,
     "ServerVideo": ServerVideo
 };
-
-function getIDFromURL(url) {
-    let id;
-
-    const regex = /(?:\.be\/(.*?)(?:\?|$)|watch\?v=(.*?)(?:\&|$|\n))/ig;
-    let m;
-
-    while ((m = regex.exec(url)) !== null) {
-        // This is necessary to avoid infinite loops with zero-width matches
-        if (m.index === regex.lastIndex) {
-            regex.lastIndex++;
-        }
-
-        // The result can be accessed through the `m`-variable.
-        m.forEach((match, groupIndex) => {
-            if (groupIndex == 0) {
-                return "oof";
-            }
-            if (match == undefined) {
-                return "oof";
-            }
-            // console.log(`Found match, group ${groupIndex}: ${match}`);
-            id = match;
-
-        });
-    }
-    if (id == undefined) {
-        throw Error;
-    }
-    return id;
-}
 
 // function makeid(length) {
 //     var result = '';
