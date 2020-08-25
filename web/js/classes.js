@@ -9,6 +9,8 @@ class Room {
         this.clients = {};
         this._currentVideo = new ServerVideo();
         this.io = io;
+        this._cbEvent = () => {console.error("Callback not set.")}
+        this._cbClientEvent = () => {console.error("Callback not set.")}
 
         this.transportConstructs = {
             clients: () => {
@@ -336,6 +338,31 @@ class Room {
                 // }
                 this.broadcastBufferingIfClientNowReady(client.status);
                 // TODO: Buffer pausing
+            },
+            videoStateChange: (state) => {
+                console.log(chalk.blueBright("[ServerVideo] State " + state));
+                switch (state) {
+                    case 1:
+                        this._cbEvent(new event("serverPlayerControl", "play"), this);
+                        break;
+                    case 2:
+    
+                    // break; Fall through
+                    case 3:
+                        this._cbEvent(new event("serverPlayerControl", "pause"), this);
+                        break;
+                    case 5:
+    
+                        break;
+                    default:
+                        break;
+                }
+            },
+            videoFinished: () => {
+                // Video has finished.
+                logging.withTime(chalk.blueBright("[ServerVideo] The video has finished. Elapsed time: " + this.currentVideo.getElapsedTime()));
+                // TODO: Test that this works
+                this.playNextInQueue();
             }
         }
     }
@@ -435,34 +462,12 @@ class Room {
             console.log("DLEEYAY");
         });
         this.currentVideo.state = 5;
-        this.currentVideo.onStateChange((state) => {
-            console.log(chalk.blueBright("[ServerVideo] State " + state));
-            switch (state) {
-                case 1:
-                    this._cbEvent(new event("serverPlayerControl", "play"), this);
-                    break;
-                case 2:
-
-                // break; Fall through
-                case 3:
-                    this._cbEvent(new event("serverPlayerControl", "pause"), this);
-                    break;
-                case 5:
-
-                    break;
-                default:
-                    break;
-            }
-        })
-        this.currentVideo.whenFinished(() => {
-            // Video has finished.
-            logging.withTime(chalk.blueBright("[ServerVideo] The video has finished. Elapsed time: " + this.currentVideo.getElapsedTime()));
-            // TODO: Test that this works
-            this.playNextInQueue();
-        });
+        this.currentVideo.onStateChange(this.events.videoStateChange);
+        this.currentVideo.whenFinished(this.events.videoFinished);
     }
 
     sendTimestampIfClientRequires(client) {
+        // ? Would clients start playing at ts 0 when they shouldn't be playing yet (e.g. others still waiting)?
         if (this.currentVideo.state != 0 && client.status.requiresTimestamp) {
             // We'll send the client a timestamp so it can sync with the server
             client.status.requiresTimestamp = false;
@@ -482,7 +487,7 @@ class Room {
     }
 
     broadcastBufferingIfClientNowReady(status) {
-        // If the client is no longer 
+        // If the client is no longer buffering (state was 3 or above but is now beneath 3)
         if (status.state < 3 && status.previousState >= 3) {
             let bufferingClients = new event();
             let bufferingClientsConstruct = this.transportConstructs.bufferingClients()
@@ -497,13 +502,13 @@ class Room {
         return queue.shuffle;
     }
     
-    
+
     playNextInQueue() {
         let nextVideo = this.queue.nextVideo();
         if (nextVideo != undefined) {
             this.preloadNewVideoInRoom(nextVideo);
         }
-        return;
+        return nextVideo;
     }
     
     
@@ -512,7 +517,7 @@ class Room {
         if (nextVideo != undefined) {
             this.preloadNewVideoInRoom(nextVideo);
         }
-        return;
+        return nextVideo;
     }
 
     getAllClientNames() {
@@ -530,17 +535,17 @@ class Room {
         return
     }
 
-    AnyClientStateChange(cb) {
-        this._cbAnyClientStateChange = cb;
-    }
+    // AnyClientStateChange(cb) {
+    //     this._cbAnyClientStateChange = cb;
+    // }
 
     onRoomEvent(cb){
-        console.log("set room cb")
+        console.log("Room event callback set")
         this._cbEvent = cb.bind(this);
     }
 
     onClientEvent(cb){
-        console.log("set Client CB")
+        console.log("Client event callback set")
         this._cbClientEvent = cb.bind(this);
     }
 }
@@ -556,23 +561,24 @@ class Login {
         this.status.stateChangeCallback = this.stateChangeCallbackToRoom.bind(this);
     }
 
-    set ping(ping) {
-        if (this._pingHistory.length >= 5) {
-            this._pingHistory.shift();
-        }
-        this._pingHistory.push(ping);
-    }
+    // ! Not currently using ping measurements
+    // set ping(ping) {
+    //     if (this._pingHistory.length >= 5) {
+    //         this._pingHistory.shift();
+    //     }
+    //     this._pingHistory.push(ping);
+    // }
 
-    get ping() {
-        let totalPing = 0;
-        let pingCount = 0;
-        this._pingHistory.forEach(ping => {
-            totalPing += ping;
-            pingCount += 1;
-        });
-        let avgPing = totalPing / pingCount;
-        return avgPing;
-    }
+    // get ping() {
+    //     let totalPing = 0;
+    //     let pingCount = 0;
+    //     this._pingHistory.forEach(ping => {
+    //         totalPing += ping;
+    //         pingCount += 1;
+    //     });
+    //     let avgPing = totalPing / pingCount;
+    //     return avgPing;
+    // }
 
     get name() {
         return this._name;
@@ -960,7 +966,7 @@ function shuffle(array) {
 }
 
 class Video {
-    constructor(id = undefined, title = undefined, channel = "Unknown", duration = undefined) {
+    constructor(id = undefined, title = undefined, channel = "Unknown", duration = 0) {
         this.id = id;
         this.title = title ? title : id;
         this.channel = channel;
@@ -978,7 +984,7 @@ class ServerVideo extends Video {
         super(id, title, channel, duration);
 
         this._state = 5;  // The state of the video (matches the official YouTube API's states)
-        this.startingTime = 0;  // The timestamp at which the video started
+        this.startingTime = -1;  // The timestamp at which the video started
         this.elapsedTime = 0;  // The duration the video's been playing
         this._pausedSince = 0;  // The timestamp of when it was paused
         this._pausedTime = 0;  // The duration it's been paused
@@ -1000,7 +1006,7 @@ class ServerVideo extends Video {
         if (this._pausedSince != 0) {
 
         }
-        if (this.startingTime == 0) {
+        if (this.startingTime == -1) {
             this.elapsedTime = 0;
             return 0;
         }
@@ -1032,8 +1038,6 @@ class ServerVideo extends Video {
         console.log(chalk.greenBright("[classes.js][ServerVideo] The video has been resumed. It was paused for " + this._pausedTime));
     }
 
-
-
     whenFinished(cbWhenFinished) {
         this._cbWhenFinished = cbWhenFinished;
         return;
@@ -1042,27 +1046,35 @@ class ServerVideo extends Video {
     // Function to set the video playing
     playVideo() {
         if (this._state >= 2 && this._state <= 3) {  // If the video was previously paused
-            this.resumeTimer();  // This can only be run if the video was previously paused
-        } else if (this._state == 5) {
-            this.startingTime = new Date().getTime();
+            this.resumeTimer();  // Resume the timer - This can only be run if the video was previously paused
+        } else if (this._state == 5) {  // If the video was previously cued
+            this.startingTime = new Date().getTime();  // Set the starting time of the video to now
         }
 
-        let oof0 = this.title;
+        let oof0 = this.title;  // Debugging stuff
 
+        // TODO: Ensure this is tested
+        clearTimeout(this._cbWhenFinishedTimeout);  // Clear the video finishing timeout
+
+        // Debug stuff
         console.log(oof0 + " DEBUGGGGGGGGGGGG Cleared any existing timestamp");
-        clearTimeout(this._cbWhenFinishedTimeout);
         this.oof1 = (this._duration - (this.elapsedTime * 1000));
         this.oof2 = new Date().getTime();
         console.log(oof0 + " DEBUGGGGGGGGGGGG Set timeout to " + (this._duration - (this.elapsedTime * 1000)));
+
+        this._timeRemainingSinceLastResumed = (this._duration - (this.elapsedTime * 1000));  // Set the time remaining
+
+        // If there's a video finished callback set, set a timeout for when the video finishes
         if (this._cbWhenFinished) {
-            this._cbWhenFinishedTimeout = setTimeout((id) => {
+            this._cbWhenFinishedTimeout = setTimeout((id) => {  // , to call the callback
                 console.log(oof0 + " THE VIDEO HAS FINISHED");
                 console.log(oof0 + " OFFFFFFFFFFFFFFFFFFFFFFFFFOOOFFFFFFFFFFFFFFFFFFFFF" + ((new Date().getTime()) - this.oof2));
                 console.log(oof0 + " " + this.oof1);
-                return this._cbWhenFinished();
-            }, (this._duration - (this.elapsedTime * 1000)), oof0);
+                return this._cbWhenFinished();  // Call the callback
+            }, this._timeRemainingSinceLastResumed, oof0);
         }
 
+        // Play the video
         this.state = 1;
     }
 
@@ -1140,12 +1152,12 @@ class ServerVideo extends Video {
     }
 }
 
-class ReceiverTransport {
-    constructor(videoID, data) {
-        this.videoID = videoID
-        this.data = data
-    }
-}
+// class ReceiverTransport {
+//     constructor(videoID, data) {
+//         this.videoID = videoID
+//         this.data = data
+//     }
+// }
 
 module.exports = {
     "Room": Room,
@@ -1154,8 +1166,7 @@ module.exports = {
     "Login": Login,
     "State": State,
     "Video": Video,
-    "ServerVideo": ServerVideo,
-    "ReceiverTransport": ReceiverTransport
+    "ServerVideo": ServerVideo
 };
 
 function getIDFromURL(url) {
@@ -1189,12 +1200,12 @@ function getIDFromURL(url) {
     return id;
 }
 
-function makeid(length) {
-    var result = '';
-    var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    var charactersLength = characters.length;
-    for (var i = 0; i < length; i++) {
-        result += characters.charAt(Math.floor(Math.random() * charactersLength));
-    }
-    return result;
-}
+// function makeid(length) {
+//     var result = '';
+//     var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+//     var charactersLength = characters.length;
+//     for (var i = 0; i < length; i++) {
+//         result += characters.charAt(Math.floor(Math.random() * charactersLength));
+//     }
+//     return result;
+// }

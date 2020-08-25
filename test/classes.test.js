@@ -1,6 +1,8 @@
 const assert = require('assert');
 const sinon = require('sinon');
 
+const { event } = require("../web/js/event");
+
 const testHelpers = require('../src/test/setupFunctions');
 
 // Classes
@@ -496,6 +498,30 @@ describe('Room object', function () {
         let actual = room.clientsWithoutCircularReferences();
         assert.deepStrictEqual(actual, expected);
     });
+
+    it('Should return next video and undefined when queue empty', function () {
+        let room = new classes.Room();
+        let video = new classes.Video("p47fEXGabaY");
+        let queue = room.queue;
+        queue.addVideo(video);
+        
+        assert.deepStrictEqual(room.playNextInQueue(), video);
+        assert.strictEqual(room.playNextInQueue(), undefined);
+    });
+
+    it('Should return previous video and undefined when queue at beginning', function () {
+        let room = new classes.Room();
+        let video = new classes.Video("p47fEXGabaY");
+        let video2 = new classes.Video("p47fEXGabaZ");
+        let queue = room.queue;
+        queue.addVideo(video);
+        queue.addVideo(video2);
+        
+        room.playNextInQueue();
+        room.playNextInQueue();
+        assert.deepStrictEqual(room.playPrevInQueue(), video);
+        assert.strictEqual(room.playPrevInQueue(), undefined);
+    });
 });
 
 // Room object tests
@@ -613,7 +639,7 @@ describe('Server video timekeeping', function () {
         this.clock.restore();
     })
 
-    it('Should not call back as paused', function (){
+    it('Should hold correct pause timestamp', function (){
         let newServerVideo = new classes.ServerVideo("testID", "testTitle");
         let duration = 2500;
         let elapsed = 100;
@@ -729,7 +755,7 @@ describe('Server video timekeeping', function () {
         assert.strictEqual(newServerVideo._timeRemainingSinceLastResumed, expected);
     })
 
-    it('Should set the time remaining correctly', function (){
+    it('Should set the time remaining correctly when time has elapsed', function (){
         let newServerVideo = new classes.ServerVideo("testID", "testTitle");
         let expected = 1500;
         let duration = 2500;
@@ -744,18 +770,19 @@ describe('Server video timekeeping', function () {
         assert.strictEqual(newServerVideo._timeRemainingSinceLastResumed, expected);
     })
 
-    it('Should not call back as not finished', function (){
+    it('Should not call back as not finished', function (done){
         let newServerVideo = new classes.ServerVideo("testID", "testTitle");
         let duration = 2500;
         newServerVideo.duration = (duration / 1000);
 
         newServerVideo.whenFinished(function () {
-            assert.fail("Video should not yet have finished");
+            done();  // This should not be called
         })
 
         newServerVideo.playVideo();
 
         this.clock.tick(duration - 100);
+        done();
     })
 
     it('Should call back as finished', function (done){
@@ -772,19 +799,20 @@ describe('Server video timekeeping', function () {
         this.clock.tick(duration);
     })
 
-    it('Should not call back as paused', function (){
+    it('Should not call back as paused', function (done){
         let newServerVideo = new classes.ServerVideo("testID", "testTitle");
         let duration = 2500;
         newServerVideo.duration = (duration / 1000);
 
         newServerVideo.whenFinished(function () {
-            assert.fail("Video should not yet have finished");
+            done();  // This should not be called
         })
 
         newServerVideo.playVideo();
         newServerVideo.pauseVideo();
 
         this.clock.tick(duration);
+        done();
     })
 
     // TODO: Test callback when timestamp has been changed
@@ -800,6 +828,7 @@ describe('Server video timekeeping', function () {
 
         assert.strictEqual(newServerVideo.getElapsedTime(), expected / 1000);
     })
+
     it('Should get elapsed time whilst paused', function (){
         let newServerVideo = new classes.ServerVideo("testID", "testTitle");
         let expected = 1000;
@@ -891,6 +920,7 @@ describe('Room client management tests', function () {
     })
 });
 
+
 // Room transport tests
 describe('Room transport tests', function () {
     it('Should return correct queue JSON', function () {
@@ -959,5 +989,253 @@ describe('Room event tests', function () {
         }
         
         assert.deepStrictEqual(queueTransportConstruct.data, expected);
+    });
+
+    it('Should callback with buffering clients', function (done) {
+        let room = testHelpers.roomWithTwoClients();
+        room.clients.fakeID1;
+
+        // Client 1 should be seen as "newly ready"
+        room.clients.fakeID1.status.updateState(3);
+        room.clients.fakeID1.status.updateState(1);
+
+        let bufferingClients = new event();
+        let bufferingClientsConstruct = room.transportConstructs.bufferingClients()
+        bufferingClients.addBroadcastEventFromConstruct(bufferingClientsConstruct);
+        
+        room.onRoomEvent(function (data, room){
+            done(assert.deepStrictEqual(data, bufferingClients));
+        })
+
+        room.broadcastBufferingIfClientNowReady(room.clients.fakeID1.status);
+    });
+
+    it('Should not callback with buffering clients', function (done) {
+        let room = testHelpers.roomWithTwoClients();
+        room.clients.fakeID1;
+
+        // Client 1 should not be seen as "newly ready"
+        room.clients.fakeID1.status.updateState(2);
+        room.clients.fakeID1.status.updateState(1);
+        
+        room.onRoomEvent(function (data, room){
+            done();  // This should not be called
+        })
+
+        room.broadcastBufferingIfClientNowReady(room.clients.fakeID1.status);
+        done();
+    });
+
+    it('Should log video finishing to the console', function (){
+        let spy = sinon.spy(console, 'log');
+        let valueOfLogTest = "[ServerVideo] The video has finished. Elapsed time:";
+
+        let room = new classes.Room();
+
+        room.events.videoFinished();
+
+        // assert that it logged the correct value
+        assert.ok(console.log.getCall(0).args[0].includes(valueOfLogTest));
+
+        // restore the original function
+        spy.restore();
+    });
+
+    it('Should call back with video play broadcast event', function (done){
+        let room = new classes.Room();
+
+        let expected = new event("serverPlayerControl", "play");
+        
+        room.onRoomEvent(function (data, room){
+            assert.deepStrictEqual(data, expected);
+            done();
+        })
+
+        room.events.videoStateChange(1);
+    })
+
+    it('Should call back with video pause broadcast event', function (done){
+        let room = new classes.Room();
+
+        let expected = new event("serverPlayerControl", "pause");
+        
+        room.onRoomEvent(function (data, room){
+            assert.deepStrictEqual(data, expected);
+            done();
+        })
+
+        room.events.videoStateChange(2);
+    })
+
+    it('Should call back with video pause broadcast event', function (done){
+        let room = new classes.Room();
+
+        let expected = new event("serverPlayerControl", "pause");
+        
+        room.onRoomEvent(function (data, room){
+            assert.deepStrictEqual(data, expected);
+            done();
+        })
+
+        room.events.videoStateChange(3);
+    })
+
+    it('Should not call back as no video control required', function (done){
+        let room = new classes.Room();
+        
+        room.onRoomEvent(function (data, room){
+            done();  // Should not be called
+        })
+
+        room.events.videoStateChange(5);
+        done();
+    })
+
+    it('Should not call back as no video control required', function (done){
+        let room = new classes.Room();
+        
+        room.onRoomEvent(function (data, room){
+            done();  // Should not be called
+        })
+
+        room.events.videoStateChange(undefined);
+        done();
+    })
+
+    it('Should start the video playing', function (){
+        let room = testHelpers.roomWithTwoClients();
+        let spy = sinon.spy(room.currentVideo, "playVideo");
+
+        room.currentVideo.duration = 1;
+
+        room.clients.fakeID1.status.updatePreloading(false);
+        room.clients.fakeID2.status.updatePreloading(false);
+
+        room.playIfPreloadingFinished();
+
+        // assert that it was called
+        assert.ok(spy.calledOnce);
+
+        // restore the original function
+        spy.restore();
+    })
+
+    it('Should not start the video playing as client preloading', function (){
+        let room = testHelpers.roomWithTwoClients();
+        let spy = sinon.spy(room.currentVideo, "playVideo");
+
+        room.currentVideo.duration = 1;
+
+        room.clients.fakeID1.status.updatePreloading(false);
+        room.clients.fakeID2.status.updatePreloading(true);
+
+        room.playIfPreloadingFinished();
+
+        // assert that it was called
+        assert.ok(spy.notCalled);
+
+        // restore the original function
+        spy.restore();
+    })
+
+    it('Should not start the video playing as no video duration', function (){
+        let room = testHelpers.roomWithTwoClients();
+        let spy = sinon.spy(room.currentVideo, "playVideo");
+
+        room.clients.fakeID1.status.updatePreloading(false);
+        room.clients.fakeID2.status.updatePreloading(false);
+
+        room.playIfPreloadingFinished();
+
+        // assert that it was called
+        assert.ok(spy.notCalled);
+
+        // restore the original function
+        spy.restore();
+    })
+
+    it('Should not start the video playing as no video cued', function (){
+        let room = testHelpers.roomWithTwoClients();
+        let spy = sinon.spy(room.currentVideo, "playVideo");
+
+        room.currentVideo.state = 0;
+
+        room.playIfPreloadingFinished();
+
+        // assert that it was called
+        assert.ok(spy.notCalled);
+
+        // restore the original function
+        spy.restore();
+    })
+});
+
+describe('Room time sensitive events', function () {
+    const testTimestamp = 5;
+
+    beforeEach(function () {
+        this.clock = sinon.useFakeTimers(testTimestamp);
+    })
+
+    afterEach(function () {
+        this.clock.restore();
+    })
+
+    it('Should callback with timestamp for client', function (done) {
+        let room = testHelpers.roomWithTwoClients();
+
+        room.currentVideo.duration = 1;
+        room.currentVideo.playVideo();
+
+        room.clients.fakeID1.status.requiresTimestamp = true;
+
+        let timestampForClient = new event();
+        timestampForClient.addSendEvent("serverVideoTimestamp", room.currentVideo.getElapsedTime());
+        
+        room.onClientEvent(function (data, room, client){
+            assert.deepStrictEqual(client, room.clients.fakeID1);
+            assert.deepStrictEqual(data, timestampForClient);
+            done();
+        })
+
+        room.sendTimestampIfClientRequires(room.clients.fakeID1);
+    });
+
+    it('Should not callback with timestamp for client as video finished', function (done) {
+        let room = testHelpers.roomWithTwoClients();
+
+        room.currentVideo.duration = 1;
+        room.currentVideo.state = 0;
+
+        room.clients.fakeID1.status.requiresTimestamp = true;
+
+        let timestampForClient = new event();
+        timestampForClient.addSendEvent("serverVideoTimestamp", room.currentVideo.getElapsedTime());
+        
+        room.onClientEvent(function (){
+            done();  // Should not be called
+        })
+
+        room.sendTimestampIfClientRequires(room.clients.fakeID1);
+        done();
+    });
+
+    it('Should not callback with timestamp for client as not required', function (done) {
+        let room = testHelpers.roomWithTwoClients();
+
+        room.currentVideo.duration = 1;
+        room.currentVideo.playVideo();
+
+        room.clients.fakeID1.status.requiresTimestamp = false;
+
+        let timestampForClient = new event();
+        timestampForClient.addSendEvent("serverVideoTimestamp", room.currentVideo.getElapsedTime());
+        
+        room.onClientEvent(function (){
+            done();  // Should not be called
+        });
+
+        room.sendTimestampIfClientRequires(room.clients.fakeID1);
+        done();
     });
 });
