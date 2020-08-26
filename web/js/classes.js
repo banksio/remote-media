@@ -986,7 +986,7 @@ class ServerVideo extends Video {
 
         this._state = 5;  // The state of the video (matches the official YouTube API's states)
         this.startingTime = -1;  // The timestamp at which the video started
-        this.elapsedTime = 0;  // The duration the video's been playing
+        this._elapsedTime = 0;  // The duration the video's been playing
         this._pausedSince = 0;  // The timestamp of when it was paused
         this._pausedTime = 0;  // The duration it's been paused
     }
@@ -999,110 +999,19 @@ class ServerVideo extends Video {
         else if (key == "cbStateDelayRoomRef") return undefined;
         else return value;
     }
-
-    // Get the elapsed time of the video relative to the starting time
-    getElapsedTime(currentTime = new Date().getTime()) {
-        // this.elapsedTime = Math.round((currentTime - this.startingTime));
-        // TODO BUG: Server returns timestamp ahead of real timestamp when timer has been paused, corrects itself once timer is resumed
-        if (this._pausedSince != 0) {
-
-        }
-        if (this.startingTime == -1) {
-            this.elapsedTime = 0;
-            return 0;
-        }
-        this.elapsedTime = (((currentTime - this.startingTime) - this._pausedTime));
-        console.log(chalk.blueBright("[classes.js][ServerVideo] The video's currently elapsed time is " + this.elapsedTime + " and has been paused for " + this._pausedTime));
-        return this.elapsedTime;
-    }
-
     set timestamp(ts) {
         this.startingTime = new Date().getTime() - (ts);
         this._pausedTime = 0;
         this._pausedSince = 0;
+        this.playVideo();
     }
-
-    pauseTimer(time = new Date().getTime()) {
-        this._pausedSince = time;  // Set the time of pausing
-        console.log(chalk.yellowBright("[classes.js][ServerVideo] The video has been set paused."));
-        // if (this._cbWhenFinishedTimeout){
-        clearTimeout(this._cbWhenFinishedTimeout);
-        console.log("DEBUGGGGGGGGGGGG The timeout has been cleared ");
-        // }
+    
+    get duration() {
+        return this._duration;
     }
-
-    resumeTimer(time = new Date().getTime()) {
-        this._pausedTime += (time - this._pausedSince);
-        this._pausedSince = 0;
-        // Callback when the video has finished
-
-        console.log(chalk.greenBright("[classes.js][ServerVideo] The video has been resumed. It was paused for " + this._pausedTime));
-    }
-
-    whenFinished(cbWhenFinished) {
-        this._cbWhenFinished = cbWhenFinished;
-        return;
-    }
-
-    // Function to set the video playing
-    playVideo() {
-        if (this._state >= 2 && this._state <= 3) {  // If the video was previously paused
-            this.resumeTimer();  // Resume the timer - This can only be run if the video was previously paused
-        } else if (this._state == 5) {  // If the video was previously cued
-            this.startingTime = new Date().getTime();  // Set the starting time of the video to now
-        }
-
-        let oof0 = this.title;  // Debugging stuff
-
-        // TODO: Ensure this is tested
-        clearTimeout(this._cbWhenFinishedTimeout);  // Clear the video finishing timeout
-
-        // Debug stuff
-        console.log(oof0 + " DEBUGGGGGGGGGGGG Cleared any existing timestamp");
-        this.oof1 = (this._duration - (this.elapsedTime));
-        this.oof2 = new Date().getTime();
-        console.log(oof0 + " DEBUGGGGGGGGGGGG Set timeout to " + (this._duration - (this.elapsedTime)));
-
-        this._timeRemainingSinceLastResumed = (this._duration - (this.elapsedTime));  // Set the time remaining
-
-        // If there's a video finished callback set, set a timeout for when the video finishes
-        if (this._cbWhenFinished) {
-            this._cbWhenFinishedTimeout = setTimeout((id) => {  // , to call the callback
-                console.log(oof0 + " THE VIDEO HAS FINISHED");
-                console.log(oof0 + " OFFFFFFFFFFFFFFFFFFFFFFFFFOOOFFFFFFFFFFFFFFFFFFFFF" + ((new Date().getTime()) - this.oof2));
-                console.log(oof0 + " " + this.oof1);
-                return this._cbWhenFinished();  // Call the callback
-            }, this._timeRemainingSinceLastResumed, oof0);
-        }
-
-        // Play the video
-        this.state = 1;
-    }
-
-    // Function to pause the video
-    pauseVideo(buffer) {
-        console.log("SERVER VIDEO HAS PAUSED");
-        this.pauseTimer();
-        if (buffer) {
-            this.state = 3;
-        } else {
-            this.state = 2;
-        }
-        return;
-    }
-
-    onPlayDelay(cb) {
-        this.cbStateDelay = cb;
-        // this.cbStateDelayRoomRef = room;
-    }
-
     set duration(time) {
         this._duration = time;
         return;
-    }
-
-    get duration() {
-        return this._duration;
     }
 
     get pausedTime() {
@@ -1133,6 +1042,8 @@ class ServerVideo extends Video {
         //     this.startingTime = new Date().getTime();
 
         // }
+
+        // No timing operations here
         if (this.cbStateDelay) {
             this._stateDelayInterval = setTimeout(() => {
                 if (this.state != 1) {
@@ -1145,6 +1056,99 @@ class ServerVideo extends Video {
             return this._cbStateChange(this.state);
         }
         return;
+    }
+
+    // Get the elapsed time of the video relative to the starting time
+    getElapsedTime(currentTime = new Date().getTime()) {
+        // this.elapsedTime = Math.round((currentTime - this.startingTime));
+        // TODO BUG: Server returns timestamp ahead of real timestamp when timer has been paused, corrects itself once timer is resumed
+        if (this._state >= 2 && this._state <= 3 && this.startingTime != -1) {  // If the video is paused then we need to subract the two timestamps
+            return ((this._pausedSince - this.startingTime) - this._pausedTime)  // Get the elapsed time 
+        }
+        
+        if (this._pausedSince != 0) {
+
+        }
+        if (this.startingTime == -1) {
+            return 0;
+        }
+        // console.log(chalk.blueBright("[classes.js][ServerVideo] The video's currently elapsed time is " + this._elapsedTime + " and has been paused for " + this._pausedTime));
+        return ((currentTime - this.startingTime) - this._pausedTime);
+    }
+
+    pauseTimer(time = new Date().getTime()) {
+        this._pausedSince = new Date().getTime();  // Set the time of pausing
+        console.log(chalk.yellowBright("[classes.js][ServerVideo] The video has been set paused."));
+        // if (this._cbWhenFinishedTimeout){
+        clearTimeout(this._cbWhenFinishedTimeout);
+        console.log("DEBUGGGGGGGGGGGG The timeout has been cleared ");
+        // }
+    }
+
+    resumeTimer(time = new Date().getTime()) {
+        this._pausedTime += (time - this._pausedSince);
+        this._pausedSince = 0;
+        // Callback when the video has finished
+
+        console.log(chalk.greenBright("[classes.js][ServerVideo] The video has been resumed. It was paused for " + this._pausedTime));
+    }
+
+    whenFinished(cbWhenFinished) {
+        this._cbWhenFinished = cbWhenFinished;
+        return;
+    }
+
+    // Function to set the video playing
+    playVideo() {
+        if (this._state >= 2 && this._state <= 3) {  // If the video was previously paused
+            this.resumeTimer();  // Resume the timer - This can only be run if the video was previously paused
+        } else if (this._state == 5) {  // If the video was previously cued
+            this.startingTime = new Date().getTime();  // Set the starting time of the video to now
+        }
+        // Play the video, use setter to trigger callbacks and timeouts
+        this.state = 1;
+
+        let oof0 = this.title;  // Debugging stuff
+
+        // TODO: Ensure this is tested
+        clearTimeout(this._cbWhenFinishedTimeout);  // Clear the video finishing timeout
+
+        // Debug stuff
+        console.log(oof0 + " DEBUGGGGGGGGGGGG Cleared any existing timestamp");
+        // this.oof1 = (this._duration - (this._elapsedTime));
+        this.oof2 = new Date().getTime();
+        // console.log(oof0 + " DEBUGGGGGGGGGGGG Set timeout to " + (this._duration - (this._elapsedTime)));
+
+        console.log(this._duration);
+        console.log(this.getElapsedTime());
+        this._timeRemainingSinceLastResumed = (this._duration - (this.getElapsedTime()));  // Set the time remaining
+
+        // If there's a video finished callback set, set a timeout for when the video finishes
+        if (this._cbWhenFinished) {
+            this._cbWhenFinishedTimeout = setTimeout((id) => {  // , to call the callback
+                console.log(oof0 + " THE VIDEO HAS FINISHED");
+                console.log(oof0 + " OFFFFFFFFFFFFFFFFFFFFFFFFFOOOFFFFFFFFFFFFFFFFFFFFF" + ((new Date().getTime()) - this.oof2));
+                console.log(oof0 + " " + this.oof1);
+                return this._cbWhenFinished();  // Call the callback
+            }, this._timeRemainingSinceLastResumed, oof0);
+        }
+    }
+
+    // Function to pause the video
+    pauseVideo(buffer) {
+        console.log("SERVER VIDEO HAS PAUSED");
+        this.pauseTimer();
+        if (buffer) {
+            this.state = 3;
+        } else {
+            this.state = 2;
+        }
+        return;
+    }
+
+    onPlayDelay(cb) {
+        this.cbStateDelay = cb;
+        // this.cbStateDelayRoomRef = room;
     }
 
     onStateChange(cbStateChange) {
