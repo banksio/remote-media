@@ -38,25 +38,6 @@ describe('Video object URL parsing test', function () {
     });
 });
 
-// Test video object timekeeping
-// TODO Test: Refactor to use sinon fake clock
-describe('Video object timekeeping test', function () {
-    this.timeout(15000);
-    let video = new classes.ServerVideo();
-    it('Time after 5 seconds', function (done) {
-        let elapsedTime = 5000;
-        video.startingTime = new Date().getTime();
-        let timestamp = video.getElapsedTime(new Date(Date.now() + elapsedTime).getTime());
-        done(assert.ok((4980 < timestamp && timestamp < 5020), video.getElapsedTime(new Date(Date.now() + elapsedTime).getTime())));
-    });
-    it('Time after 10 seconds', function (done) {
-        let elapsedTime = 10000;
-        video.startingTime = new Date().getTime();
-        let timestamp = video.getElapsedTime(new Date(Date.now() + elapsedTime).getTime());
-        done(assert.ok((9980 < timestamp && timestamp < 10020), video.getElapsedTime(new Date(Date.now() + elapsedTime).getTime())));
-    });
-});
-
 // Queue tests
 // describe('Queue tests', function () {
 //     let video = new classes.Video("p47fEXGabaY");
@@ -639,6 +620,21 @@ describe('Server video timekeeping', function () {
     afterEach(function () {
         this.clock.restore();
     })
+
+    it('Time after 5 seconds', function (done) {
+        let video = new classes.ServerVideo();
+        let elapsedTime = 5000;
+        video.startingTime = new Date().getTime();
+        this.clock.tick(elapsedTime);
+        done(assert.strictEqual(video.getElapsedTime(), elapsedTime));
+    });
+    it('Time after 10 seconds', function (done) {
+        let video = new classes.ServerVideo();
+        let elapsedTime = 10000;
+        video.startingTime = new Date().getTime();
+        this.clock.tick(elapsedTime);
+        done(assert.strictEqual(video.getElapsedTime(), elapsedTime));
+    });
 
     it('Should hold correct pause timestamp', function () {
         let newServerVideo = new classes.ServerVideo("testID", "testTitle");
