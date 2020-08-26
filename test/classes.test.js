@@ -276,7 +276,7 @@ describe('NewQueue tests', function () {
         console.log(queue.videos);
         console.log(JSON.stringify(queue.videos));
 
-        assert.strictEqual(queue._currentIndex, 0);
+        assert.strictEqual(queue._currentIndex, -1);
         assert.strictEqual(queue.nextVideo(), undefined);
         assert.strictEqual(queue.previousVideo(), undefined);
         assert.strictEqual(queue.unplayedVideos, false);
@@ -928,7 +928,7 @@ describe('Room transport tests', function () {
         let expected = {
             "videos": room.queue.videos,
             "length": 2,
-            "index": 0
+            "index": -1
         }
 
         assert.deepStrictEqual(queueTransportConstruct.data, expected);
@@ -1017,7 +1017,7 @@ describe('Room event tests', function () {
         let expected = {
             "videos": room.queue.videos,
             "length": 2,
-            "index": 0
+            "index": -1
         }
 
         assert.deepStrictEqual(queueTransportConstruct.data, expected);
@@ -1031,7 +1031,7 @@ describe('Room event tests', function () {
         let expected = {
             "videos": room.queue.videos,
             "length": 2,
-            "index": 0
+            "index": -1
         }
 
         assert.deepStrictEqual(queueTransportConstruct.data, expected);

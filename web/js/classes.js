@@ -719,7 +719,7 @@ class NewQueue {
     constructor(shuffle = false) {
         this._videos = [];
         this._videosShuffled = [];
-        this._currentIndex = 0;
+        this._currentIndex = -1;
         this._currentVideo = undefined;
         this._nextIndex = 0;
         this._lengthUnplayed = 0;
@@ -930,7 +930,7 @@ class NewQueue {
     empty() {
         this._videos = [];
         this._videosShuffled = [];
-        this._currentIndex = 0;
+        this._currentIndex = -1;
         this._currentVideo = undefined;
         this._nextIndex = 0;
         this._lengthUnplayed = 0;
@@ -941,9 +941,9 @@ class NewQueue {
     _generateShuffled() {
         this._videosShuffled = this._videos.slice(this._nextIndex);
         this._videosShuffled = shuffle(this._videosShuffled);
-        // console.log("                           " + this._currentIndex);
-        this._videosShuffled = [this._videos[this._currentIndex]].concat(this._videosShuffled);
-        // console.log(this._videosShuffled);
+        if (this._currentIndex != -1){
+            this._videosShuffled = [this._videos[this._currentIndex]].concat(this._videosShuffled);
+        }
     }
 }
 
