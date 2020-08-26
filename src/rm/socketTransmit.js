@@ -127,6 +127,7 @@ function broadcastConnectionManagement(room, control){
 
 function broadcastEventObject(io, eventObj) {
     for (let [event, data] of Object.entries(eventObj.broadcastEvents)) {
+        JSON.stringify(data);  // This will catch and throw any circular references
         console.log(chalk.magentaBright(`Broadcast ${event}: ${data}`));
         io.binary(false).emit(event, data);
     }
@@ -134,6 +135,7 @@ function broadcastEventObject(io, eventObj) {
 
 function sendEventObject(io, clientID, eventObj) {
     for (let [event, data] of Object.entries(eventObj.sendEvents)) {
+        JSON.stringify(data);  // This will catch and throw any circular references
         console.log(chalk.magenta(`Send ${event}: ${data}`));
         getSocketObjectFromServer(io, clientID).binary(false).emit(event, data);
     }
