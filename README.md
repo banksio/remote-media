@@ -6,7 +6,7 @@
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/y/banksio/remote-media)
 [![Docker Pulls](https://img.shields.io/docker/pulls/banksio/remote-media)](https://hub.docker.com/r/banksio/remote-media)
 
-A node.js web app to synchronise YouTube videos (and the audio) between different users.
+A node.js web app to synchronise YouTube videos (and the audio) between different users. Currently designed for audio, this solution does not yet keep users in sync if they manually seek after the video has begun. Everyone should be in sync at the beginning of the video and otherwise if they do not seek their video manually.
 
 Currently in beta: There may still be some rough edges, but please feel free to test it and report any bugs found, or new features that may be beneficial!
 ## Features
@@ -59,7 +59,7 @@ And kill with: `docker rm --force remotemedia`
 ## Usage
 remote-media runs on port 3694 by default.
 
-The root page is the "reciever", and the admin panel is used to control the media playing on the recievers. The admin page is located at `/admin`.
+The root page is the "receiver", and the admin panel is used to control the media playing on the receivers. The admin page is located at `/admin`.
 
 **If it doesn't work, please [submit a bug](https://github.com/banksio/remote-media/issues).**
 

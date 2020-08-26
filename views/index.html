@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Website Favicon-->
+    <link rel="icon" href="favicon.ico" type='image/x-icon' />
+
+    <!-- Title -->
+    <title>Remote Media</title>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.1/css/all.css"
+        integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" href="/stylesheets/bootstrap.css" integrity="Ol2O/HwcbwjWwkxzdkrX+MpASsYiZGQYRUIB+U2aZ28="
+        crossorigin="anonymous">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" media="screen" href="/receiverStyles.css" />
+
+    <!-- socket.io for communications -->
+    <script src="/js/socket.io.js" integrity="sha256-bQmrZe4yPnQrLTY+1gYylfNMBuGfnT/HKsCGX+9Xuqo="></script>
+
+</head>
+
+<body>
+
+    <!--Testing-->
+    <!--pointer-events:none;-->
+    <div id="player" style="position:absolute;top:0;left:0;width:100%;height:100%;"></div>
+
+
+    <div style="overflow: hidden;">
+        <div id="seekControlPanel" class="side-control-right d-flex flex-column text-light hidecontrol-right">
+            <div class="controlPanelButton d-flex flex-column" onclick="requestTimestampFromServer();">
+                <i class="fas fa-undo text-light"></i> Re sync
+            </div>
+            <div class="controlPanelButton d-flex flex-column "
+                onclick="pushTimestampToServer(player.getCurrentTime());">
+                <i class="fas fa-sync text-light"></i> Sync others
+            </div>
+
+        </div>
+    </div>
+
+    <div id="screensaver" class="fadeOutDiv">
+        <svg id="screensaver-logo" version="1.1" viewBox="0 0 59.957 20.292" xmlns="http://www.w3.org/2000/svg">
+            <g transform="translate(-34.47 -35.746)" stroke-width=".26458">
+                <g aria-label="SYNC">
+                    <path
+                        d="m35.177 39.926q-0.09922-1.4139 1.1658-2.6789 1.2774-1.265 5.2586-1.141 3.9936 0.11162 4.9609 3.8819l-3.4603 0.02481q-0.66973-1.3767-2.22-1.4015-1.5379-0.02481-1.9844 0.69453-0.44648 0.70693 1.1534 1.1162 5.7423 1.0046 6.3996 3.1378t-0.80615 3.5595q-1.4511 1.4263-4.9485 1.4263-5.7795-0.02481-6.226-4.6385h2.9766q0.76894 1.9472 3.3734 1.9968 1.9968 0.09922 2.3316-0.70693 0.34726-0.80615-0.83096-1.2402-4.5021-1.017-5.7671-1.8107-1.265-0.80615-1.3767-2.22z"
+                        style="font-variant-caps:normal;font-variant-east-asian:normal;font-variant-ligatures:normal;font-variant-numeric:normal" />
+                    <path
+                        d="m55.626 54.92q-2.6293 0-4.4896-1.8852-1.8604-1.8604-1.8604-4.4648h3.175q0 1.2898 0.91777 2.2324 0.94258 0.94258 2.2572 0.94258 1.2898 0 2.2324-0.94258 0.94258-0.94258 0.94258-2.2324v-0.81856q-1.4387 0.81856-3.175 0.81856-2.6293 0-4.4896-1.8604-1.8604-1.8604-1.8604-4.4896v-6.35h3.175v6.35q0 1.3146 0.91777 2.2572 0.94258 0.91777 2.2572 0.91777 1.2898 0 2.2324-0.91777 0.94258-0.94258 0.94258-2.2572v-6.35h3.175v12.7q0 2.6045-1.8852 4.4648-1.8604 1.8852-4.4648 1.8852z"
+                        style="font-variant-caps:normal;font-variant-east-asian:normal;font-variant-ligatures:normal;font-variant-numeric:normal" />
+                    <path
+                        d="m64.702 48.57v-12.7h3.175v0.84336q1.4139-0.84336 3.175-0.84336 2.6045 0 4.4648 1.8852 1.8852 1.8604 1.8852 4.4648v6.35h-3.175v-6.35q0-1.2898-0.94258-2.2324t-2.2324-0.94258q-1.3146 0-2.2572 0.94258-0.91777 0.94258-0.91777 2.2324v6.35z"
+                        style="font-variant-caps:normal;font-variant-east-asian:normal;font-variant-ligatures:normal;font-variant-numeric:normal" />
+                    <path
+                        d="m89.566 42.418 3.175-0.0248q-0.04961 0.83096-0.33486 1.6991-0.81856 2.5053-3.1502 3.6711-2.344 1.1906-4.8493 0.35967-2.4929-0.81855-3.6711-3.1626-1.1782-2.3316-0.35967-4.8245 0.81855-2.5301 3.1626-3.7083 2.3316-1.1782 5.085-0.32246 1.1534 0.35967 2.8029 1.6495l-2.282 2.282q-0.97978-0.76894-1.5131-0.94258-1.5131-0.40928-2.6665 0.17363-1.1658 0.58291-1.5875 1.8479-0.39688 1.2526 0.18604 2.4061 0.59531 1.1782 1.8355 1.6123 1.2526 0.38447 2.4309-0.19844 1.1534-0.58291 1.5751-1.8231 0.11162-0.33486 0.16123-0.69453z"
+                        style="font-variant-caps:normal;font-variant-east-asian:normal;font-variant-ligatures:normal;font-variant-numeric:normal" />
+                </g>
+                <g style="font-variant-caps:normal;font-variant-east-asian:normal;font-variant-ligatures:normal;font-variant-numeric:normal"
+                    aria-label="VIDEO">
+                    <path d="m66.687 54.643 2.2049-5.6637h1.7639l-2.7285 7.0556h-2.4805l-2.7423-7.0556h1.7639z"
+                        style="font-variant-caps:normal;font-variant-east-asian:normal;font-variant-ligatures:normal;font-variant-numeric:normal" />
+                    <path
+                        d="m71.552 48.662q-0.88194 0-0.88194-0.88194t0.88194-0.88194 0.88194 0.88194-0.88194 0.88194zm-0.88194 7.3725v-7.0556h1.7639v7.0556z"
+                        style="font-variant-caps:normal;font-variant-east-asian:normal;font-variant-ligatures:normal;font-variant-numeric:normal" />
+                    <path
+                        d="m76.237 54.271q0.71658 0 1.2402-0.50987 0.52365-0.52365 0.52365-1.254 0-0.71658-0.52365-1.2402t-1.2402-0.52365q-0.73036 0-1.254 0.52365-0.50987 0.52365-0.50987 1.2402 0 0.73036 0.50987 1.254 0.52365 0.50987 1.254 0.50987zm0 1.7639q-1.4607 0-2.4942-1.0335-1.0335-1.0335-1.0335-2.4942 0-1.4469 1.0335-2.4805 1.0335-1.0473 2.4942-1.0473 0.96463 0 1.7639 0.46853v-6.0634h1.7639v12.65h-1.7639v-0.45475q-0.79926 0.45475-1.7639 0.45475z"
+                        style="font-variant-caps:normal;font-variant-east-asian:normal;font-variant-ligatures:normal;font-variant-numeric:normal" />
+                    <path
+                        d="m82.142 53.692q0.26183 0.29628 0.64768 0.46164 0.86816 0.33762 1.6674 0 0.80615-0.33762 1.1093-1.4332l1.7019 0.03445q-0.50298 2.3564-2.1428 2.9628-1.6399 0.60634-2.9972 0.06201-1.3574-0.55122-1.9224-1.8879-0.565-1.3436-0.02067-2.701 0.55122-1.3643 1.8535-1.9293 3.4175-1.4332 4.892 2.4047zm2.2393-2.7905q-0.50987-0.55122-1.5296-0.1378-1.0197 0.40652-1.0404 1.1644-0.01378 0.03445-0.02756 0.0689z"
+                        style="font-variant-caps:normal;font-variant-east-asian:normal;font-variant-ligatures:normal;font-variant-numeric:normal" />
+                    <path
+                        d="m90.899 54.271q0.71658 0 1.2402-0.50987 0.52365-0.52365 0.52365-1.254 0-0.71658-0.52365-1.2402-0.52366-0.52365-1.2402-0.52365-0.73036 0-1.254 0.52365-0.50987 0.52365-0.50987 1.2402 0 0.73036 0.50987 1.254 0.52365 0.50987 1.254 0.50987zm0 1.7639q-1.4607 0-2.4942-1.0335t-1.0335-2.4942q0-1.4469 1.0335-2.4805 1.0335-1.0473 2.4942-1.0473 1.4469 0 2.4805 1.0473 1.0473 1.0335 1.0473 2.4805 0 1.4607-1.0473 2.4942-1.0335 1.0335-2.4805 1.0335z"
+                        style="font-variant-caps:normal;font-variant-east-asian:normal;font-variant-ligatures:normal;font-variant-numeric:normal" />
+                </g>
+            </g>
+        </svg>
+    </div>
+
+    <!-- Loading overlay -->
+    <div id="connectionBanner" class="banner">
+        <div id="bannerReconnectingSpinner" class="d-none d-flex align-items-center">
+            <span class="text-warning">Reconnecting...</span>
+            <div id="spinnerConnection" class="spinner-border ml-auto text-warning" role="status" aria-hidden="true">
+            </div>
+        </div>
+        <span id="statusConnection" class="text-success d-none">Connected</span>
+    </div>
+
+    <div id="notificationBanner" class="banner hideBanner">
+        <!-- <div id="bannerReconnectingSpinner" class="d-none d-flex align-items-center">
+      <span class="text-warning">Reconnecting...</span>
+      <div id="spinnerConnection" class="spinner-border ml-auto text-warning" role="status" aria-hidden="true">
+      </div>
+    </div> -->
+        <span id="notificationText" class="text-light">Playing new video...</span>
+    </div>
+
+
+
+
+    <!-- Nickname Modal Prompt -->
+    <div class="Container">
+        <div class="modal fade" id="nameModal" role="dialog">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header text-center">
+                        <h4 class="modal-title w-100 font-weight-bold">Enter Nickname</h4>
+                    </div>
+                    <form class="needs-validation" id="nicknameForm" novalidate="true">
+                        <div class="modal-body mx-2">
+                            <div class="md-form mb-2">
+                                <input type="text" id="validationDefault01" class="form-control" placeholder="Nickname"
+                                    required />
+                                <div class="invalid-feedback">
+                                    You must enter a nickname.
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <a class="mr-3" href="/admin" target="_blank">Admin panel</a>
+                                <button type="submit" class="btn btn-success">Submit</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/dvd.js"></script>
+
+
+    <!--Custom JS -->
+    <script src="/receiver.js"></script>
+    <script src="/player.js"></script>
+
+    <script src="/js/jquery.slim.min.js" integrity="sha256-4+XzXVhsDmqanXGHaHvgh1gMQKX40OUvDEBTu8JcmNs="></script>
+    <script src="/js/bootstrap.bundle.min.js" integrity="sha256-Xt8pc4G0CdcRvI0nZ2lRpZ4VHng0EoUDMlGcBSQ9HiQ="></script>
+
+</body>
+
+</html>
