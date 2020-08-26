@@ -1671,6 +1671,110 @@ describe('Room event tests', function () {
 
         returnedClient = room.events.newClient(socketObjectMock);
     })
+
+    it('Should call back with clients after new status received', function (done) {
+        let room = testHelpers.roomWithTwoClients();
+        room.currentVideo.duration = 1000;
+        room.currentVideo.playVideo();
+        let stateJSON = {
+            "videoID": undefined,
+            data: {
+                "state": 3,
+                "preloading": false,
+                "firstVideo": false
+            }
+        };
+
+        room.onRoomEvent(function (data, room) {
+            let statusResponse = new event();
+            let clients = this.transportConstructs.clients();
+            statusResponse.addBroadcastEventFromConstruct(clients);
+
+            assert.deepStrictEqual(data, statusResponse);
+            done();
+        })
+
+        room.events.receiverPlayerStatus(stateJSON, room.clients.fakeID1);
+    })
+
+    it('Should set the video to state 3', function () {
+        let room = testHelpers.roomWithTwoClients();
+        room.currentVideo.duration = 1000;
+        room.currentVideo.playVideo();
+        let stateJSON = {
+            "videoID": undefined,
+            data: {
+                "state": 3,
+                "preloading": false,
+                "firstVideo": false
+            }
+        };
+
+        room.events.receiverPlayerStatus(stateJSON, room.clients.fakeID1);
+        assert.strictEqual(room.currentVideo.state, 3);
+    })
+
+    it('Should do nothing, invalid client video', function () {
+        let room = testHelpers.roomWithTwoClients();
+        room.currentVideo.duration = 1000;
+        room.currentVideo.playVideo();
+        let stateJSON = {
+            "videoID": "wrongID",
+            data: {
+                "state": 3,
+                "preloading": false,
+                "firstVideo": false
+            }
+        };
+
+        let returnCode = room.events.receiverPlayerStatus(stateJSON, room.clients.fakeID1);
+        assert.notStrictEqual(room.currentVideo.state, 3);
+        assert.strictEqual(returnCode, 1);
+    })
+
+    it('Should do nothing, client preloading', function () {
+        let room = testHelpers.roomWithTwoClients();
+        room.currentVideo.duration = 1000;
+        room.currentVideo.playVideo();
+        let stateJSON = {
+            "videoID": undefined,
+            data: {
+                "state": 3,
+                "preloading": true,
+                "firstVideo": false
+            }
+        };
+
+        room.events.receiverPlayerStatus(stateJSON, room.clients.fakeID1);
+        assert.notStrictEqual(room.currentVideo.state, 3);
+    })
+
+    it('Should resume clients', function () {
+        let room = testHelpers.roomWithTwoClients();
+        room.currentVideo.duration = 1000;
+        room.currentVideo.playVideo();
+        let stateJSON = {
+            "videoID": undefined,
+            data: {
+                "state": 3,
+                "preloading": false,
+                "firstVideo": false
+            }
+        };
+        let notBufferingStateJSON = {
+            "videoID": undefined,
+            data: {
+                "state": 1,
+                "preloading": false,
+                "firstVideo": false
+            }
+        };
+
+        room.events.receiverPlayerStatus(stateJSON, room.clients.fakeID1);
+        assert.strictEqual(room.currentVideo.state, 3);
+        room.events.receiverPlayerStatus(notBufferingStateJSON, room.clients.fakeID1);
+        assert.strictEqual(room.currentVideo.state, 1);
+    })
 });
 
 describe('Room time sensitive events', function () {
