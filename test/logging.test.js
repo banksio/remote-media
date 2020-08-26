@@ -4,9 +4,17 @@ const logging = require('../src/rm/logging');
 const classes = require('../web/js/classes');
 
 describe('Logging function tests', function () {
+    const sandbox = sinon.createSandbox();
+
+    beforeEach(function() {
+        sandbox.spy(console, 'log');
+    });
+
+    afterEach(function() {
+        sandbox.restore();
+    });
     
     it('Should log to the console with the time and date', function () {
-        let spy = sinon.spy(console, 'log');
         let valueOfLogTest = "Test";
 
         let now = new Date();
@@ -20,10 +28,7 @@ describe('Logging function tests', function () {
 
         // TODO: This will sometimes fail due to the system time changing in-between statements
         // assert that it logged the correct value
-        assert(spy.calledWith(valueOfLogReturn));
-
-        // restore the original function
-        spy.restore();
+        assert(console.log.calledWith(valueOfLogReturn));
     });
 
     it('Should return both the client ID and name', function () {
