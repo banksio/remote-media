@@ -15,6 +15,7 @@ describe('Utilties: Nickname validation tests', function () {
         login.name = "Nick";
         room.addClient(login);
         room.addClient(login2);
+
         assert.throws(() => { rmUtils.setNicknameInRoom(login2, "Nick", room) }, Error);
     });
 
@@ -28,6 +29,7 @@ describe('Utilties: Nickname validation tests', function () {
         room.addClient(login);
         room.addClient(login2);
         rmUtils.setNicknameInRoom(login2, "Nick", room);
+
         assert.strictEqual(login2.name, "Nick");
     });
 
@@ -37,6 +39,7 @@ describe('Utilties: Nickname validation tests', function () {
         let login = new classes.Login(loginID);
         room.addClient(login);
         rmUtils.setNicknameInRoom(login, "<h1>Injectable</h1>", room);
+
         assert.strictEqual(login.name, "&lt;h1&gt;Injectable&lt;/h1&gt;");
     });
 });
@@ -49,6 +52,7 @@ describe('Utilties: Video validation tests', function () {
         let clientVideo = new classes.Video(videoIDClient);
         let serverVideo = new classes.Video(videoIDServer);
         room.currentVideo = serverVideo;
+
         assert.ok(utils.validateClientVideo(clientVideo.id, room));
     });
     it('Should return false as the two video IDs differ', function () {
@@ -58,6 +62,45 @@ describe('Utilties: Video validation tests', function () {
         let clientVideo = new classes.Video(videoIDClient);
         let serverVideo = new classes.Video(videoIDServer);
         room.currentVideo = serverVideo;
+
         assert.ok(!utils.validateClientVideo(clientVideo.id, room));
+    });
+});
+
+describe('Utilties: ID from URL tests', function () {
+    it('Should return the id from the URL', function () {
+        let videoURL = "https://www.youtube.com/watch?v=FoSe_KAQEr8";
+        let expected = "FoSe_KAQEr8";
+
+        let actual = utils.getIDFromURL(videoURL);
+
+        assert.strictEqual(actual, expected);
+    });
+
+    it('Should return the id from the URL with extra parameters', function () {
+        let videoURL = "https://www.youtube.com/watch?v=BnO3nijfYmU&list=PLJlPsYbof_C4JOCj7JVotCm8HGZewIFoG&index=2&t=0s";
+        let expected = "BnO3nijfYmU";
+
+        let actual = utils.getIDFromURL(videoURL);
+
+        assert.strictEqual(actual, expected);
+    });
+
+    it('Should return the id from the short URL', function () {
+        let videoURL = "https://youtu.be/xi3c-9qzrPY";
+        let expected = "xi3c-9qzrPY";
+
+        let actual = utils.getIDFromURL(videoURL);
+
+        assert.strictEqual(actual, expected);
+    });
+
+    it('Should return the id from the short URL with extra parameters', function () {
+        let videoURL = "https://youtu.be/xi3c-9qzrPY?list=RDMMEK_LN3XEcnw";
+        let expected = "xi3c-9qzrPY";
+
+        let actual = utils.getIDFromURL(videoURL);
+
+        assert.strictEqual(actual, expected);
     });
 });
