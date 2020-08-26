@@ -167,7 +167,7 @@ class Room {
                 logging.withTime(chalk.blueBright("[ServerVideo] Recieved video details from " + logging.prettyPrintClientID(client)));
                 this.currentVideo.title = videoDetails.title;
                 this.currentVideo.channel = videoDetails.channel;
-                this.currentVideo.duration = videoDetails.duration;
+                this.currentVideo.duration = videoDetails.duration * 1000;
                 logging.withTime("The video duration is " + videoDetails.duration);
 
                 // Trigger event callback
@@ -178,7 +178,7 @@ class Room {
             },
             newTimestamp: (ts) => {
                 // TODO: Add validation for the current video ID
-                this.currentVideo.timestamp = ts;
+                this.currentVideo.timestamp = ts * 1000;
                 this._cbEvent(new event("serverVideoTimestamp", ts), this);
             },
             receiverReady: (client) => {
@@ -1002,7 +1002,7 @@ class ServerVideo extends Video {
 
     // Get the elapsed time of the video relative to the starting time
     getElapsedTime(currentTime = new Date().getTime()) {
-        // this.elapsedTime = Math.round((currentTime - this.startingTime) / 1000);
+        // this.elapsedTime = Math.round((currentTime - this.startingTime));
         // TODO BUG: Server returns timestamp ahead of real timestamp when timer has been paused, corrects itself once timer is resumed
         if (this._pausedSince != 0) {
 
@@ -1011,13 +1011,13 @@ class ServerVideo extends Video {
             this.elapsedTime = 0;
             return 0;
         }
-        this.elapsedTime = (((currentTime - this.startingTime) - this._pausedTime) / 1000);
-        console.log(chalk.blueBright("[classes.js][ServerVideo] The video's currently elapsed time is " + this.elapsedTime + " and has been paused for " + this._pausedTime / 1000));
+        this.elapsedTime = (((currentTime - this.startingTime) - this._pausedTime));
+        console.log(chalk.blueBright("[classes.js][ServerVideo] The video's currently elapsed time is " + this.elapsedTime + " and has been paused for " + this._pausedTime));
         return this.elapsedTime;
     }
 
     set timestamp(ts) {
-        this.startingTime = new Date().getTime() - (ts * 1000);
+        this.startingTime = new Date().getTime() - (ts);
         this._pausedTime = 0;
         this._pausedSince = 0;
     }
@@ -1059,11 +1059,11 @@ class ServerVideo extends Video {
 
         // Debug stuff
         console.log(oof0 + " DEBUGGGGGGGGGGGG Cleared any existing timestamp");
-        this.oof1 = (this._duration - (this.elapsedTime * 1000));
+        this.oof1 = (this._duration - (this.elapsedTime));
         this.oof2 = new Date().getTime();
-        console.log(oof0 + " DEBUGGGGGGGGGGGG Set timeout to " + (this._duration - (this.elapsedTime * 1000)));
+        console.log(oof0 + " DEBUGGGGGGGGGGGG Set timeout to " + (this._duration - (this.elapsedTime)));
 
-        this._timeRemainingSinceLastResumed = (this._duration - (this.elapsedTime * 1000));  // Set the time remaining
+        this._timeRemainingSinceLastResumed = (this._duration - (this.elapsedTime));  // Set the time remaining
 
         // If there's a video finished callback set, set a timeout for when the video finishes
         if (this._cbWhenFinished) {
@@ -1097,7 +1097,7 @@ class ServerVideo extends Video {
     }
 
     set duration(time) {
-        this._duration = time * 1000;
+        this._duration = time;
         return;
     }
 
@@ -1107,9 +1107,9 @@ class ServerVideo extends Video {
 
     get pausedTime() {
         if (this._pausedSince != 0) {
-            return (this._pausedTime + (new Date().getTime() - this._pausedSince)) / 1000;
+            return (this._pausedTime + (new Date().getTime() - this._pausedSince));
         }
-        return this._pausedTime / 1000;
+        return this._pausedTime;
     }
 
     get state() {

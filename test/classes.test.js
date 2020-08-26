@@ -39,6 +39,7 @@ describe('Video object URL parsing test', function () {
 });
 
 // Test video object timekeeping
+// TODO Test: Refactor to use sinon fake clock
 describe('Video object timekeeping test', function () {
     this.timeout(15000);
     let video = new classes.ServerVideo();
@@ -46,13 +47,13 @@ describe('Video object timekeeping test', function () {
         let elapsedTime = 5000;
         video.startingTime = new Date().getTime();
         let timestamp = video.getElapsedTime(new Date(Date.now() + elapsedTime).getTime());
-        done(assert.ok((4.980 < timestamp && timestamp < 5.020), video.getElapsedTime(new Date(Date.now() + elapsedTime).getTime())));
+        done(assert.ok((4980 < timestamp && timestamp < 5020), video.getElapsedTime(new Date(Date.now() + elapsedTime).getTime())));
     });
     it('Time after 10 seconds', function (done) {
         let elapsedTime = 10000;
         video.startingTime = new Date().getTime();
         let timestamp = video.getElapsedTime(new Date(Date.now() + elapsedTime).getTime());
-        done(assert.ok((9.980 < timestamp && timestamp < 10.020), video.getElapsedTime(new Date(Date.now() + elapsedTime).getTime())));
+        done(assert.ok((9980 < timestamp && timestamp < 10020), video.getElapsedTime(new Date(Date.now() + elapsedTime).getTime())));
     });
 });
 
@@ -585,11 +586,11 @@ describe('Server video tests', function () {
     })
 
 
-    it('Should set time * 1000', function () {
+    it('Should set duration', function () {
         let newServerVideo = new classes.ServerVideo("testID", "testTitle");
         let expected = 5000;
 
-        newServerVideo.duration = (expected / 1000);
+        newServerVideo.duration = (expected);
 
         assert.strictEqual(newServerVideo.duration, expected)
     })
@@ -598,7 +599,7 @@ describe('Server video tests', function () {
         let newServerVideo = new classes.ServerVideo("testID", "testTitle");
         let expected = 1;
         let duration = 2500;
-        newServerVideo.duration = (duration / 1000);
+        newServerVideo.duration = (duration);
 
         newServerVideo.playVideo();
 
@@ -608,7 +609,7 @@ describe('Server video tests', function () {
         let newServerVideo = new classes.ServerVideo("testID", "testTitle");
         let expected = 2;
         let duration = 2500;
-        newServerVideo.duration = (duration / 1000);
+        newServerVideo.duration = (duration);
 
         newServerVideo.playVideo();
         newServerVideo.pauseVideo();
@@ -619,7 +620,7 @@ describe('Server video tests', function () {
         let newServerVideo = new classes.ServerVideo("testID", "testTitle");
         let expected = 3;
         let duration = 2500;
-        newServerVideo.duration = (duration / 1000);
+        newServerVideo.duration = (duration);
 
         newServerVideo.playVideo();
         newServerVideo.pauseVideo(true);
@@ -643,7 +644,7 @@ describe('Server video timekeeping', function () {
         let newServerVideo = new classes.ServerVideo("testID", "testTitle");
         let duration = 2500;
         let elapsed = 100;
-        newServerVideo.duration = (duration / 1000);
+        newServerVideo.duration = (duration);
 
         newServerVideo.playVideo();
 
@@ -657,14 +658,14 @@ describe('Server video timekeeping', function () {
         let newServerVideo = new classes.ServerVideo("testID", "testTitle");
         let expected = 1000;
         let duration = 2500;
-        newServerVideo.duration = (duration / 1000);
+        newServerVideo.duration = (duration);
 
         newServerVideo.playVideo();
 
         newServerVideo.pauseVideo();
         setTimeout(() => {
             newServerVideo.playVideo();
-            done(assert.strictEqual(Math.floor(newServerVideo.pausedTime), expected / 1000));
+            done(assert.strictEqual(Math.floor(newServerVideo.pausedTime), expected));
         }, expected);
 
         this.clock.tick(expected);
@@ -675,14 +676,14 @@ describe('Server video timekeeping', function () {
         let newServerVideo = new classes.ServerVideo("testID", "testTitle");
         let expected = 1000;
         let duration = 2500;
-        newServerVideo.duration = (duration / 1000);
+        newServerVideo.duration = (duration);
 
         newServerVideo.playVideo();
 
         newServerVideo.pauseVideo();
         setTimeout(() => {
             newServerVideo.playVideo();
-            done(assert.strictEqual(Math.floor(newServerVideo.pausedTime), expected / 1000));
+            done(assert.strictEqual(Math.floor(newServerVideo.pausedTime), expected));
         }, expected);
 
         this.clock.tick(expected);
@@ -692,13 +693,13 @@ describe('Server video timekeeping', function () {
         let newServerVideo = new classes.ServerVideo("testID", "testTitle");
         let expected = 1000;
         let duration = 2500;
-        newServerVideo.duration = (duration / 1000);
+        newServerVideo.duration = (duration);
 
         newServerVideo.playVideo();
 
         newServerVideo.pauseVideo();
         setTimeout(() => {
-            done(assert.strictEqual(Math.floor(newServerVideo.pausedTime), expected / 1000));
+            done(assert.strictEqual(Math.floor(newServerVideo.pausedTime), expected));
         }, expected);
 
         this.clock.tick(expected);
@@ -719,7 +720,7 @@ describe('Server video timekeeping', function () {
     it('Should set the starting time correctly', function () {
         let newServerVideo = new classes.ServerVideo("testID", "testTitle");
         let duration = 2500;
-        newServerVideo.duration = (duration / 1000);
+        newServerVideo.duration = (duration);
 
         newServerVideo.playVideo();
 
@@ -730,7 +731,7 @@ describe('Server video timekeeping', function () {
         let newServerVideo = new classes.ServerVideo("testID", "testTitle");
         let expected = 1000;
         let duration = 2500;
-        newServerVideo.duration = (duration / 1000);
+        newServerVideo.duration = (duration);
 
         newServerVideo.playVideo();
         newServerVideo.pauseVideo();
@@ -748,7 +749,7 @@ describe('Server video timekeeping', function () {
     it('Should set the time remaining correctly', function () {
         let newServerVideo = new classes.ServerVideo("testID", "testTitle");
         let expected = 2500;
-        newServerVideo.duration = (expected / 1000);
+        newServerVideo.duration = (expected);
 
         newServerVideo.playVideo();
 
@@ -759,7 +760,7 @@ describe('Server video timekeeping', function () {
         let newServerVideo = new classes.ServerVideo("testID", "testTitle");
         let expected = 1500;
         let duration = 2500;
-        newServerVideo.duration = (duration / 1000);
+        newServerVideo.duration = (duration);
 
         newServerVideo.playVideo();
 
@@ -773,7 +774,7 @@ describe('Server video timekeeping', function () {
     it('Should not call back as not finished', function (done) {
         let newServerVideo = new classes.ServerVideo("testID", "testTitle");
         let duration = 2500;
-        newServerVideo.duration = (duration / 1000);
+        newServerVideo.duration = (duration);
 
         newServerVideo.whenFinished(function () {
             done();  // This should not be called
@@ -788,7 +789,7 @@ describe('Server video timekeeping', function () {
     it('Should call back as finished', function (done) {
         let newServerVideo = new classes.ServerVideo("testID", "testTitle");
         let duration = 2500;
-        newServerVideo.duration = (duration / 1000);
+        newServerVideo.duration = (duration);
 
         newServerVideo.whenFinished(function () {
             done();
@@ -802,7 +803,7 @@ describe('Server video timekeeping', function () {
     it('Should not call back as paused', function (done) {
         let newServerVideo = new classes.ServerVideo("testID", "testTitle");
         let duration = 2500;
-        newServerVideo.duration = (duration / 1000);
+        newServerVideo.duration = (duration);
 
         newServerVideo.whenFinished(function () {
             done();  // This should not be called
@@ -821,37 +822,37 @@ describe('Server video timekeeping', function () {
         let newServerVideo = new classes.ServerVideo("testID", "testTitle");
         let expected = 1000;
         let duration = 2500;
-        newServerVideo.duration = (duration / 1000);
+        newServerVideo.duration = (duration);
 
         newServerVideo.playVideo();
         this.clock.tick(expected);
 
-        assert.strictEqual(newServerVideo.getElapsedTime(), expected / 1000);
+        assert.strictEqual(newServerVideo.getElapsedTime(), expected);
     })
 
     it('Should get elapsed time whilst paused', function () {
         let newServerVideo = new classes.ServerVideo("testID", "testTitle");
         let expected = 1000;
         let duration = 2500;
-        newServerVideo.duration = (duration / 1000);
+        newServerVideo.duration = (duration);
 
         newServerVideo.playVideo();
         this.clock.tick(expected);
         newServerVideo.pauseVideo();
         this.clock.tick(expected);  // This should not affect the video's timestamp (it should be paused)
 
-        assert.strictEqual(newServerVideo.getElapsedTime(), expected / 1000);
+        assert.strictEqual(newServerVideo.getElapsedTime(), expected);
     })
 
     it('Should get elapsed time as 0', function () {
         let newServerVideo = new classes.ServerVideo("testID", "testTitle");
         let expected = 0;
         let duration = 2500;
-        newServerVideo.duration = (duration / 1000);
+        newServerVideo.duration = (duration);
 
         this.clock.tick(expected);
 
-        assert.strictEqual(newServerVideo.getElapsedTime(), expected / 1000);
+        assert.strictEqual(newServerVideo.getElapsedTime(), expected);
     })
 });
 
