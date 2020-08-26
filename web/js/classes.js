@@ -8,6 +8,7 @@ class Room {
         this.queue = new NewQueue();
         this.clients = {};
         this._currentVideo = new ServerVideo();
+        this._bufferingClients = [];
         this.io = io;
         this._cbEvent = () => {console.error("Callback not set.")}
         this._cbClientEvent = () => {console.error("Callback not set.")}
@@ -246,9 +247,9 @@ class Room {
             },
             receiverPlayerStatus: (data, client) => {
                 // If the socket's not initialised, skip it
-                if (client.socket.id == undefined) {
-                    return -1;
-                }
+                // if (client.socket.id == undefined) {
+                //     return -1;
+                // }
 
                 // If the client's on the wrong video, ignore this interaction
                 if (!utils.validateClientVideo(data.videoID, this)) {
@@ -267,10 +268,11 @@ class Room {
                 // Get the current state and use for logic
                 let previousStatusState = client.status.state;
 
+                // Debugging
                 console.log(JSON.stringify(data));
-                // Save the state and the preloading state, send to clients
-                let state = data.data.state;
 
+                // Save the state and the preloading state
+                let state = data.data.state;
                 let preloading = data.data.preloading;
 
                 client.status.updateState(state);
@@ -284,10 +286,39 @@ class Room {
 
                 logging.withTime(chalk.cyan("[CliStatus] " + logging.prettyPrintClientID(client) + " has new status:" + " status: " + state + " preloading:" + preloading));
 
-                // If the client is preloading
+                // If the client is preloading, don't continue with this function
                 if (preloading == true) {
-                    return; // Don't continue with this function
+                    return;
                 }
+
+                // If the client is buffering and everyone is preloaded
+                if (client.status.state == 3 && this.allPreloaded()) {
+                    // Add the socket to the array and pause all the clients
+                    this._bufferingClients.push(client.id);
+                    // sendPlayerControl("pause");
+                    this.currentVideo.pauseVideo(true);
+                    // defaultRoom.currentVideo.state = 3;
+                    logging.withTime("[BufferMgnt] " + logging.prettyPrintClientID(client) + " is buffering. The video has been paused.");
+                // If client is playing
+                } else if (client.status.state == 1 && this.allPreloaded()) {
+                    // If anyone was previously listed as buffering
+                    if (this._bufferingClients.length > 0) {
+                        // Remove this client from the buffering array, they're ready
+                        logging.withTime("[BufferMgnt] " + logging.prettyPrintClientID(client) + " has stopped buffering.");
+                        this._bufferingClients.splice(this._bufferingClients.indexOf(client.id), 1);
+                        // If that means no one is buffering now, resume everyone
+                        if (this._bufferingClients.length == 0) {
+                            logging.withTime("[BufferMgnt] No one is buffering, resuming the video.");
+                            // sendPlayerControl("play");  // Play all the recievers
+                            this.currentVideo.playVideo();
+                            // defaultRoom.currentVideo.state = 1;  // Tell the server the video's now playing again
+                        }
+                    }
+                }
+        
+                // if (previousStatusState == 3 && status.state != 3){
+                //     broadcastBufferingClients(defaultRoom);
+                // }
 
                 // There'll be no state yet if the client hasn't yet recieved a video
                 // if (state == undefined) {
@@ -358,6 +389,10 @@ class Room {
                     default:
                         break;
                 }
+
+                if (state == 3){
+                    this.broadcastBufferingClients();
+                }
             },
             videoFinished: () => {
                 // Video has finished.
@@ -404,7 +439,7 @@ class Room {
         let bufferingClients = [];
         for (var i in this.clients) {
             if (this.clients[i].status.state > 2) {
-                bufferingClients.push(this.clients[i]);
+                bufferingClients.push(JSON.parse(JSON.stringify(this.clients[i], this.cyclicReplacer)));
             }
         }
         return bufferingClients;
@@ -490,11 +525,15 @@ class Room {
     broadcastBufferingIfClientNowReady(status) {
         // If the client is no longer buffering (state was 3 or above but is now beneath 3)
         if (status.state < 3 && status.previousState >= 3) {
-            let bufferingClients = new event();
-            let bufferingClientsConstruct = this.transportConstructs.bufferingClients()
-            bufferingClients.addBroadcastEventFromConstruct(bufferingClientsConstruct);
-            this._cbEvent(bufferingClients, this);
+            this.broadcastBufferingClients();
         }
+    }
+
+    broadcastBufferingClients() {
+        let bufferingClients = new event();
+        let bufferingClientsConstruct = this.transportConstructs.bufferingClients();
+        bufferingClients.addBroadcastEventFromConstruct(bufferingClientsConstruct);
+        this._cbEvent(bufferingClients, this);
     }
 
     queueShuffleToggle() {
