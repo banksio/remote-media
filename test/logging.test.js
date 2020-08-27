@@ -5,13 +5,16 @@ const classes = require('../web/js/classes');
 
 describe('Logging function tests', function () {
     const sandbox = sinon.createSandbox();
+    const testTimestamp = new Date().getTime();
 
     beforeEach(function() {
         sandbox.spy(console, 'log');
+        this.clock = sinon.useFakeTimers(testTimestamp);
     });
 
     afterEach(function() {
         sandbox.restore();
+        this.clock.restore();
     });
     
     it('Should log to the console with the time and date', function () {
@@ -24,9 +27,8 @@ describe('Logging function tests', function () {
         let valueOfLogReturn = "[" + day + "/" + month + "/" + year + "]" + "[" + ('0' + now.getHours()).slice(-2) + ":" + ('0' + now.getMinutes()).slice(-2) + ":" + ('0' + now.getSeconds()).slice(-2) + "] " + valueOfLogTest;
 
         // call the function that needs to be tested
-        logging.withTime(valueOfLogTest, now);
+        logging.withTime(valueOfLogTest);
 
-        // TODO: This will sometimes fail due to the system time changing in-between statements
         // assert that it logged the correct value
         assert(console.log.calledWith(valueOfLogReturn));
     });
