@@ -15,7 +15,7 @@ const indexRouter = require('./routes/index');
 // Constants 
 const port = 3694;
 
-logging.withTime("[INFO] Starting server...");
+logging.withTime("[INFO] Starting remote-media...");
 logging.withTime("[INFO] Starting express...");
 
 //create express object

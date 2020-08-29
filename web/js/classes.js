@@ -581,12 +581,12 @@ class Room {
     // }
 
     onRoomEvent(cb){
-        console.log("Room event callback set")
+        logging.withTime(chalk.green("Room event callback set"))
         this._cbEvent = cb.bind(this);
     }
 
     onClientEvent(cb){
-        console.log("Client event callback set")
+        logging.withTime(chalk.green("Client event callback set"))
         this._cbClientEvent = cb.bind(this);
     }
 }

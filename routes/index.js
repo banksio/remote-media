@@ -3,8 +3,7 @@ var express = require('express');
 var router = express.Router();
 
 var pjson = require('../package.json');
-console.log(pjson.version);
-
+console.log("remote-media version " + pjson.version);
 
 /* GET room receiver */
 // router.get('/:room', function(req, res, next) {
