@@ -3,6 +3,11 @@ var arr = url.split("/");
 var result = arr[0] + "//" + arr[2];
 var socket = io(result + "/");
 
+let nickModalSpinner = document.getElementById("nickModalSubmitSpinner");
+let nickModalButton = document.querySelector("#nicknameForm > div > div.modal-footer > button");
+
+
+
 socket.on('connect', () => {
     console.log("Connected to server with socket ID " + socket.id);
     frontendChangeConnectionIdentifier(1);
@@ -216,7 +221,8 @@ function frontendShowSideControlPanel(show) {
                 let name = document.getElementById('validationDefault01').value;
                 if (name !== "") {
                     // Check nickname async
-                    // TODO: Show loading spinner or something
+                    nickModalSpinner.style.display = "block";
+                    nickModalButton.setAttribute('disabled', 'disabled');
                     checkNickname(name);
                 }
             }, false);
@@ -227,12 +233,14 @@ function frontendShowSideControlPanel(show) {
 // Ask the server to validate the nickname and get the response
 function checkNickname(nick) {
     socket.emit('receiverNickname', nick, (error) => { // Async callback with server's validation response
-        // If response is true, we're good - hide the modal
-        if (error == undefined){
+        nickModalSpinner.style.display = "none";
+        // If response is undefined, we're good - hide the modal
+        if (error === null){
             $('#nameModal').modal('hide');
             return;
         }
-        // If response is false, there's been an error
+        nickModalButton.removeAttribute('disabled');
+        // If response is anything else, there's been an error
         alert("Setting nickname has been encountered an error: " + error);
         return error;
     });

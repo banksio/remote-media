@@ -94,6 +94,12 @@ body {
     top: 50px;
 }
 
+#nickModalSubmitSpinner{
+    display: none;
+    position: absolute;
+    right: 1rem;
+}
+
 #screensaver {
     display: none;
     background-color: rgb(0, 0, 0);
