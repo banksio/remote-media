@@ -46,7 +46,7 @@ body {
 }
 
 .hideBanner {
-    transition-delay: 3s;
+    transition-delay: 1s;
     transform: translate3d(0, -100%, 0);
     /* display      : none; */
 }
