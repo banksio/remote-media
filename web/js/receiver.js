@@ -59,7 +59,7 @@ socket.on("serverBufferingClients", function (buffering) {
     buffering.forEach(client => {
         names += (client._name + ", ");
     });
-        frontendShowNotificationBanner(names, true);
+        frontendShowNotificationBanner(names, true, true);
 
 });
 
@@ -78,6 +78,7 @@ function frontendChangeBanner(notificationObject) {
 }
 
 function pushTimestampToServer(timestamp) {
+    frontendShowNotificationBanner("Syncing others...", true, true);
     socket.emit("receiverTimestampSyncRequest", timestamp);
 }
 
@@ -146,10 +147,23 @@ function frontendChangeConnectionStatusText(show, connected = true) {
     return;
 }
 
-function frontendShowNotificationBanner(notification, persist) {
+function frontendShowNotificationBanner(notification, persist, spinner=false) {
     console.log("Banner shown");
     let frontendNotificationBanner = document.getElementById("notificationBanner");  // The banner
-    let frontendNotificationText = document.getElementById("notificationText");  // The reconnecting text and spinner
+    let frontendNotificationText = document.getElementById("notificationText");  // The notification text
+    let frontendNotificationSpinner = document.getElementById("notificationSpinner");  // The spinner
+
+    switch (spinner) {
+        case true:  // Don't hide after showing
+            // Show the spinner
+            frontendNotificationSpinner.classList.remove("d-none");
+            break;
+        case false:  // Hide after showing
+            frontendNotificationSpinner.classList.add("d-none");
+            break;
+        default:
+            break;
+    }
 
     switch (persist) {
         case true:  // Don't hide after showing

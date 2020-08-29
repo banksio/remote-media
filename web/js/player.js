@@ -121,6 +121,7 @@ function skipToTimestamp(timestamp) {
 
 
 function requestTimestampFromServer() {
+    frontendShowNotificationBanner("Re syncing...", true, true);
     // Ask the server for the current timestamp
     socket.emit('receiverTimestampRequest', (timestamp) => { // args are sent in order to acknowledgement function
         // If they're more than 2 seconds apart, show the menu
