@@ -107,15 +107,7 @@
                         <img id="videoThumbnailNext" class="img-fluid mb-2" />
                     </div>
                 </div>
-                <hr>
                 <p style="font-size: 1.5rem;">Clients</p>
-                <button class="btn btn-warning" onclick="reloadClients();"><i class="fas fa-sync-alt"></i>
-                    Reload
-                    All</button>
-                <button class="btn btn-danger" onclick="disconnectClients();"><i class="fas fa-sign-out-alt"></i>
-                    Disconnect All</button>
-                <br>
-                <br>
                 <table class="table" id="data-table">
                     <thead>
                         <tr>
@@ -129,6 +121,15 @@
                         </tr>
                     </tbody>
                 </table>
+                <div class="d-flex">
+                    <button class="btn btn-warning" onclick="reloadClients();"><i class="fas fa-sync-alt"></i>
+                        Reload All
+                    </button>
+                    <button class="btn btn-danger ml-2" onclick="disconnectClients();"><i class="fas fa-sign-out-alt"></i>
+                        Disconnect All
+                    </button>
+                </div>
+
 
             </div>
             <!-- Right hand side -->
