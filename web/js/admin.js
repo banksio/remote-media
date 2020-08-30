@@ -3,6 +3,22 @@ var arr = url.split("/");
 var result = arr[0] + "//" + arr[2];
 var socket = io(result + "/");
 
+const btnQueueAppend = document.querySelector("#queue > div.input-group > div > button");
+const btnVideoPush = document.querySelector("#quickpush > div > div > button");
+const tableRef = document.getElementById("playlist-table-body");
+const upNextTitle = document.getElementById("videoTitleNext");
+const upNextImage = document.getElementById("videoThumbnailNext");
+const nowplayingTitleElement = document.getElementById("nowPlayingTitle");
+const nowplayingChannelElement = document.getElementById("nowPlayingChannel");
+const nowplayingThumbnail = document.getElementById("imgNowPlaying");
+
+// If the thumbnail is the default YouTube invalid thumbnail, get the lower resolution
+nowplayingThumbnail.onload = () => {
+    if (nowplayingThumbnail.naturalHeight === 90) {
+        nowplayingThumbnail.src = nowplayingThumbnail.src.slice(0,-17) + "hqdefault.jpg";
+    }
+}
+
 socket.on('connect', () => {
     console.log(socket.id);
     // alert(socket.id);
@@ -150,9 +166,6 @@ socket.on("serverCurrentVideo", function (video) {
     video = JSON.parse(video);
     console.log("Recieved video details from server");
     // console.log(JSON.parse(video));
-    let nowplayingTitleElement = document.getElementById("nowPlayingTitle");
-    let nowplayingChannelElement = document.getElementById("nowPlayingChannel");
-    let nowplayingThumbnail = document.getElementById("imgNowPlaying");
     nowplayingThumbnail.src = getThumbnailSrc(video);
     nowplayingTitleElement.innerText = video.title;
     nowplayingChannelElement.innerText = video.channel;
@@ -184,10 +197,7 @@ socket.on("serverQueueVideos", function (queueData) {
     // prompt("queue", JSON.stringify(queueData));
     // queueData = JSON.parse(queueData);
     // return;
-    // Get a reference to the table, and empty it
-    let tableRef = document.getElementById("playlist-table-body");
-    let upNextTitle = document.getElementById("videoTitleNext");
-    let upNextImage = document.getElementById("videoThumbnailNext");
+    // Empty the table
     tableRef.innerHTML = "";
     // console.log(queueData);
     var videos = queueData.videos;
@@ -206,14 +216,14 @@ socket.on("serverQueueVideos", function (queueData) {
             
             i++;
         }
+        // Update the "next up" indicator
         try {
-            // TODO: Handle the unavailability of a next video
             upNextTitle.innerText = videos[queueData.index + 1].title;
-            upNextImage.src = getThumbnailSrc(videos[queueData.index + 1]);
-        } catch (error) {
-            
+            upNextImage.src = getMQThumbnailSrc(videos[queueData.index + 1]);
+        } catch (error) {  // If there's nothing up next, indicate this
+            upNextTitle.innerText = "There's nothing up next just yet.";
+            upNextImage.removeAttribute("src");
         }
-            
     }
 
     if (videos.length > 0){
@@ -232,6 +242,10 @@ socket.on("serverQueueVideos", function (queueData) {
 
 function getThumbnailSrc(video) {
     return "https://i3.ytimg.com/vi/" + video.id + "/maxresdefault.jpg";
+}
+
+function getMQThumbnailSrc(video) {
+    return "https://i3.ytimg.com/vi/" + video.id + "/mqdefault.jpg";
 }
 
 function toggleShuffle(toggled) {
