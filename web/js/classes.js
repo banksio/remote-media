@@ -1108,7 +1108,9 @@ class ServerVideo extends Video {
         // }
 
         // No timing operations here
-        if (this.cbStateDelay) {
+        // If there's a delay callback set
+        if (this.cbStateDelay && this.state != 0) {
+            // After 2 seconds, if the video is not playing, call the delay callback
             this._stateDelayInterval = setTimeout(() => {
                 if (this.state != 1) {
                     return this.cbStateDelay(this.state);
@@ -1198,6 +1200,7 @@ class ServerVideo extends Video {
                 console.log(oof0 + " THE VIDEO HAS FINISHED");
                 console.log(oof0 + " OFFFFFFFFFFFFFFFFFFFFFFFFFOOOFFFFFFFFFFFFFFFFFFFFF" + ((new Date().getTime()) - this.oof2));
                 console.log(oof0 + " " + this.oof1);
+                this.state = 0;
                 return this._cbWhenFinished();  // Call the callback
             }, this._timeRemainingSinceLastResumed, oof0);
         }
