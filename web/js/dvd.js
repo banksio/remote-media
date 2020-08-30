@@ -1,7 +1,7 @@
 var x = Math.floor(Math.random() * window.innerWidth);
 var y = Math.floor(Math.random() * window.innerHeight);
-var xSpeed = (1/60)*10;
-var ySpeed = (1/60)*10;
+var xSpeed = 120;
+var ySpeed = 120;
 var vewPoint;
 var colours = ['rgb(0, 0, 255)', 'rgb(0, 255, 0)', 'rgb(0, 128, 128)', 'rgb(255, 0, 0)', 'rgb(128, 0, 128)', 'rgb(128, 128, 0)'];
 
@@ -28,7 +28,7 @@ var logoAnimate = function(timestamp){
     if (lastTS === undefined){
         lastTS = timestamp;
     }
-    let delta = timestamp - lastTS;
+    let delta = (timestamp - lastTS) / 1000;
     let xMove = xSpeed * delta;
     let yMove = ySpeed * delta;
     x += xMove;
