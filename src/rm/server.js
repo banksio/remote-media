@@ -49,8 +49,8 @@ module.exports.start = function startServer(expressServer, cb) {
             handlers.ReceiverTimestampRequest(defaultRoom, currentClient, fn);
         });
 
-        socket.on("receiverTimestampSyncRequest", (timestamp) => {
-            handlers.ReceiverTimestampSyncRequest(defaultRoom, timestamp);
+        socket.on("receiverTimestampSyncRequest", (data, fn) => {
+            handlers.ReceiverTimestampSyncRequest(defaultRoom, data, fn);
         });
 
 

@@ -189,10 +189,14 @@ class Room {
                 videoDetailsEvent.addBroadcastEventFromConstruct(video);
                 this._cbEvent(videoDetailsEvent, this);
             },
-            newTimestamp: (ts) => {
-                // TODO: Add validation for the current video ID
-                this.currentVideo.timestamp = ts * 1000;
-                this._cbEvent(new event("serverVideoTimestamp", ts), this);
+            newTimestamp: (data, callback) => {
+                let ts = data.timestamp;
+                if (utils.validateClientVideo(data.videoID, this)) {
+                    this.currentVideo.timestamp = ts * 1000;
+                    this._cbEvent(new event("serverVideoTimestamp", ts), this);
+                } else {
+                    callback("Invalid Video");
+                }
             },
             receiverReady: (client) => {
                 logging.withTime(chalk.cyan("[CliMgnt] " + logging.prettyPrintClientID(client) + " is ready. "));

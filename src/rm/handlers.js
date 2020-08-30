@@ -84,9 +84,9 @@ function ReceiverVideoDetails(room, client, videoDetails) {
 }
 
 
-function ReceiverTimestampSyncRequest(room, timestamp) {
+function ReceiverTimestampSyncRequest(room, data, callback) {
     // Call the newTimestamp event to set the video timestamp
-    room.events.newTimestamp(timestamp);
+    room.events.newTimestamp(data, callback);
 }
 
 

@@ -1329,10 +1329,13 @@ describe('Room event tests', function () {
 
     it('Should callback with the new timestamp', function (done){
         let room = testHelpers.roomWithTwoClients();
-        let expected = 5;
+        let expected = {
+            timestamp: 5,
+            videoID: undefined
+        };
 
         room.onRoomEvent(function (data, room) {
-            assert.strictEqual(data.broadcastEvents.serverVideoTimestamp, expected);
+            assert.strictEqual(data.broadcastEvents.serverVideoTimestamp, expected.timestamp);
             done();
         })
 

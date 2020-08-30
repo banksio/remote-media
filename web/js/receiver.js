@@ -79,7 +79,15 @@ function frontendChangeBanner(notificationObject) {
 
 function pushTimestampToServer(timestamp) {
     frontendShowNotificationBanner("Syncing others...", true, true);
-    socket.emit("receiverTimestampSyncRequest", timestamp);
+    let data = {
+        timestamp: timestamp,
+        videoID: vid
+    }
+    socket.emit("receiverTimestampSyncRequest", data, (error) => {
+        if (error) {
+            frontendShowNotificationBanner("Error syncing others: " + error, false, false);
+        }
+    });
 }
 
 setInterval(() => {
