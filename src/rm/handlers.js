@@ -90,11 +90,9 @@ function ReceiverTimestampSyncRequest(room, data, callback) {
 }
 
 
-// Not a room event
-// TODO: Refactor
-function ReceiverTimestampRequest(room, client, callback) {
+function ReceiverTimestampRequest(room, client, data, callback) {
     console.log("[CliMgnt] " + logging.prettyPrintClientID(client) + " has requested a timestamp.");
-    callback(room.currentVideo.getElapsedTime() / 1000);
+    room.events.currentTimestampRequest(data, callback);
 }
 
 

@@ -1792,7 +1792,7 @@ describe('Room time sensitive events', function () {
     it('Should callback with timestamp for client', function (done) {
         let room = testHelpers.roomWithTwoClients();
 
-        room.currentVideo.duration = 1;
+        room.currentVideo.duration = 1000;
         room.currentVideo.playVideo();
 
         room.clients.fakeID1.status.requiresTimestamp = true;
@@ -1812,7 +1812,7 @@ describe('Room time sensitive events', function () {
     it('Should not callback with timestamp for client as video finished', function (done) {
         let room = testHelpers.roomWithTwoClients();
 
-        room.currentVideo.duration = 1;
+        room.currentVideo.duration = 1000;
         room.currentVideo.state = 0;
 
         room.clients.fakeID1.status.requiresTimestamp = true;
@@ -1831,7 +1831,7 @@ describe('Room time sensitive events', function () {
     it('Should not callback with timestamp for client as not required', function (done) {
         let room = testHelpers.roomWithTwoClients();
 
-        room.currentVideo.duration = 1;
+        room.currentVideo.duration = 1000;
         room.currentVideo.playVideo();
 
         room.clients.fakeID1.status.requiresTimestamp = false;
@@ -1846,4 +1846,40 @@ describe('Room time sensitive events', function () {
         room.sendTimestampIfClientRequires(room.clients.fakeID1);
         done();
     });
+
+    it('Should callback with current timestamp', function (done){
+        let room = testHelpers.roomWithTwoClients();
+        let ts = 100;
+        let data = {
+            videoID: undefined
+        }
+
+        room.currentVideo.duration = 1000;
+        room.currentVideo.playVideo();
+
+        this.clock.tick(ts);
+
+        room.events.currentTimestampRequest(data, function(timestamp, error){
+            assert.strictEqual(timestamp * 1000, ts);
+            done();
+        });
+    })
+
+    it('Should callback with error as invalid ID', function (done){
+        let room = testHelpers.roomWithTwoClients();
+        let ts = 100;
+        let data = {
+            videoID: "invalid"
+        }
+
+        room.currentVideo.duration = 1000;
+        room.currentVideo.playVideo();
+
+        this.clock.tick(ts);
+
+        room.events.currentTimestampRequest(data, function(timestamp, error){
+            assert.ok(error);
+            done();
+        });
+    })
 });

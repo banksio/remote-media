@@ -122,9 +122,16 @@ function skipToTimestamp(timestamp) {
 
 function requestTimestampFromServer() {
     frontendShowNotificationBanner("Re syncing...", true, true);
+    let data = {
+        videoID: vid
+    }
     // Ask the server for the current timestamp
-    socket.emit('receiverTimestampRequest', (timestamp) => { // args are sent in order to acknowledgement function
-        // If they're more than 2 seconds apart, show the menu
+    socket.emit('receiverTimestampRequest', data, (timestamp, error) => {
+        if (error) {
+            frontendShowNotificationBanner("Error getting server timestamp: " + error, false, false);
+            return;
+        } // args are sent in order to acknowledgement function
+        // Skip to the correct time
         skipToTimestamp(timestamp);
     });
 }
@@ -201,8 +208,15 @@ function preloadFinisher() {
 
 function compareWithServerTimestamp() {
     console.log("checking TS");
+    let data = {
+        videoID: vid
+    }
     // Ask the server for the current timestamp
-    socket.emit('receiverTimestampRequest', (timestamp) => { // args are sent in order to acknowledgement function
+    socket.emit('receiverTimestampRequest', data, (timestamp, error) => { // args are sent in order to acknowledgement function
+        if (error) {
+            frontendShowNotificationBanner("Error getting server timestamp: " + error, false, false);
+            return;
+        }
         // If they're more than 2 seconds apart, show the menu
         if (compareTimestamps(player.getCurrentTime(), timestamp)) {
             frontendShowSideControlPanel(true);

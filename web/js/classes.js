@@ -198,6 +198,13 @@ class Room {
                     callback("Invalid Video");
                 }
             },
+            currentTimestampRequest: (data, callback) => {
+                if (utils.validateClientVideo(data.videoID, this)) {
+                    callback(this.currentVideo.getElapsedTime() / 1000);
+                } else {
+                    callback(undefined, "Invalid Video");
+                }
+            },
             receiverReady: (client) => {
                 logging.withTime(chalk.cyan("[CliMgnt] " + logging.prettyPrintClientID(client) + " is ready. "));
                 // Update the state in our server
