@@ -81,6 +81,8 @@ emptyPlaylist.addEventListener("click", function () {
 // })
 
 function send() {
+    btnVideoPush.setAttribute("disabled", "disabled");
+    frontendChangeMainSpinner(1, "Pushing video...");
     var val = document.getElementById("target").value;
     socket.binary(false).emit("adminNewVideo", { value: val, pass: true });
 }
@@ -112,6 +114,8 @@ function sendAppend(data) {
     //         socket.binary(false).emit("targetAppend",{value: match, pass: document.getElementById("password").value});
     //     });
     // }
+    btnQueueAppend.setAttribute("disabled", "disabled");
+    frontendChangeMainSpinner(1, "Adding to queue...");
     socket.binary(false).emit("adminQueueAppend", { value: data });
 }
 
@@ -159,6 +163,8 @@ function speak() {
 socket.on("serverNewVideo", function (data) {
     // Show loading of thumbnail
     frontendChangeThumbnailSpinner(true);
+    btnVideoPush.removeAttribute("disabled");
+    frontendChangeMainSpinner(0);
 });
 
 // Recieved video details from the server
@@ -193,6 +199,7 @@ socket.on("serverClients", function (clients) {
 });
 
 socket.on("serverQueueVideos", function (queueData) {
+    frontendChangeMainSpinner(1, "Downloading queue...");
     // alert("oof");
     // prompt("queue", JSON.stringify(queueData));
     // queueData = JSON.parse(queueData);
@@ -237,6 +244,9 @@ socket.on("serverQueueVideos", function (queueData) {
         frontendChangeSkipButtons(false, false);
     }
 
+    btnQueueAppend.removeAttribute("disabled");
+    frontendChangeMainSpinner(0);
+
     // queueUpdateStatus(queueData);
 });
 
@@ -249,6 +259,7 @@ function getMQThumbnailSrc(video) {
 }
 
 function toggleShuffle(toggled) {
+    frontendChangeMainSpinner(1, "Shuffling queue...");
     var newState = (toggled == 'false');  // Invert boolean from DOM
     socket.binary(false).emit("adminQueueControl", "toggleShuffle");
 }
@@ -311,7 +322,7 @@ function frontendChangeConnectionIdentifier(connected) {
     return;
 }
 
-function frontendChangeMainSpinner(state) {
+function frontendChangeMainSpinner(state, message="Loading data...") {
     let frontendElementMainSpinner = document.getElementById("statusSpinner");
     let frontendElementMainSpinnerText = document.getElementById("statusLoading");
     switch (state) {
@@ -320,7 +331,7 @@ function frontendChangeMainSpinner(state) {
             break;
         case 1:  // Connected, loading data
             frontendElementMainSpinner.style.visibility = 'visible';
-            frontendElementMainSpinnerText.innerText = "Loading data...";
+            frontendElementMainSpinnerText.innerText = message;
             break;
         case 2:  // Connecting to server
             frontendElementMainSpinner.style.visibility = 'visible';
