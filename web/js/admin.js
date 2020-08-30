@@ -3,6 +3,8 @@ var arr = url.split("/");
 var result = arr[0] + "//" + arr[2];
 var socket = io(result + "/");
 
+const tableWorker = new Worker('js/worker.js');
+
 const btnQueueAppend = document.querySelector("#queue > div.input-group > div > button");
 const btnVideoPush = document.querySelector("#quickpush > div > div > button");
 const tableRef = document.getElementById("playlist-table-body");
@@ -183,33 +185,23 @@ socket.on("serverQueueVideos", function (queueData) {
     queue.index = queueData.index;
     queue.length = status.length;
 
-    // Empty the table
-    tableRef.innerHTML = "";
-
     // Repopulate the table
     repopulateQueueTable();
     // Update the "next up" indicator
     updateQueueFrontend();
 
-    btnQueueAppend.removeAttribute("disabled");
-    frontendChangeMainSpinner(0);
-
     // queueUpdateStatus(queueData);
 });
 
 function repopulateQueueTable() {
-    if (queue.videos.length > 0) {
-        var i = 1;
-        for (var video of queue.videos) {
-            if (i == queue.index + 1) {
-                tableRef.innerHTML = tableRef.innerHTML + '<tr id="queue-table-video-' + i + '" class="tr-active"><td>' + i + '</td><td>' + video.title + '</td><td>' + video.channel + '</td></tr>';
-            }
-            else {
-                tableRef.innerHTML = tableRef.innerHTML + '<tr id="queue-table-video-' + i + '"><td>' + i + '</td><td>' + video.title + '</td><td>' + video.channel + '</td></tr>';
-            }
-            i++;
-        }
-    }
+    tableWorker.postMessage(queue);
+}
+
+tableWorker.onmessage = function(e) {
+    tableRef.innerHTML = e.data;
+    console.log('Message received from worker');
+    btnQueueAppend.removeAttribute("disabled");
+    frontendChangeMainSpinner(0);
 }
 
 function updateQueueFrontend() {
