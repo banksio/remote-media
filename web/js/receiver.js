@@ -6,11 +6,16 @@ var socket = io(result + "/");
 let nickModalSpinner = document.getElementById("nickModalSubmitSpinner");
 let nickModalButton = document.querySelector("#nicknameForm > div > div.modal-footer > button");
 
-
+const receiverDetails = {
+    nickname: undefined
+}
 
 socket.on('connect', () => {
     console.log("Connected to server with socket ID " + socket.id);
     frontendChangeConnectionIdentifier(1);
+    if (receiverDetails.nickname){
+        checkNickname(receiverDetails.nickname);
+    }
 });
 
 socket.on('disconnect', () => {
@@ -258,9 +263,12 @@ function checkNickname(nick) {
         nickModalSpinner.style.display = "none";
         // If response is undefined, we're good - hide the modal
         if (error === null){
+            receiverDetails.nickname = nick;
             $('#nameModal').modal('hide');
+            frontendShowNotificationBanner("Set nickname: " + receiverDetails.nickname, false, false);
             return;
         }
+        $('#nameModal').modal('show');
         nickModalButton.removeAttribute('disabled');
         // If response is anything else, there's been an error
         alert("Setting nickname has been encountered an error: " + error);
