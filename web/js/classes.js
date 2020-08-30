@@ -72,7 +72,7 @@ class Room {
             }
         }
 
-        this.events = {
+        this.incomingEvents = {
             newClient: (socket) => {
                 let newClient = this.addClient(new Login(socket.id, socket, socket.id));
                 logging.withTime(chalk.cyan("[CliMgnt] New Client " + newClient.id));
@@ -110,38 +110,33 @@ class Room {
                 return;
             },
             queueControl: (data) => {
-                // TODO: Refactor the queue responses into their respective functions
-                let queue, queueStatus;
-                var queueControlResponse = new event();
+                let queueStatus;
+                let queue = this.transportConstructs.queue();
+                let queueControlResponse = new event();
+
+                queueControlResponse.addBroadcastEventFromConstruct(queue);
+
                 switch (data) {
                     case "prev":
                         this.playPrevInQueue();
-                        queueStatus = this.transportConstructs.queueStatus();
-                        queueControlResponse.addBroadcastEventFromConstruct(queueStatus);
-                        this._cbEvent(queueControlResponse, this);
-                        break;
+                        return;
                     case "skip":
                         this.playNextInQueue();
-                        break;
+                        return;
                     case "empty":
                         logging.withTime("[ServerQueue] Emptying playlist");
                         this.queue.empty();
-                        queue = this.transportConstructs.queue();
-                        queueControlResponse.addBroadcastEventFromConstruct(queue);
-                        this._cbEvent(queueControlResponse, this);
                         break;
                     case "toggleShuffle":
                         this.queueShuffleToggle();
                         logging.withTime("[ServerQueue] Shuffle: " + this.queue.shuffle);
-                        queue = this.transportConstructs.queue();
-                        queueControlResponse.addBroadcastEventFromConstruct(queue);
                         queueStatus = this.transportConstructs.queueStatus();
                         queueControlResponse.addBroadcastEventFromConstruct(queueStatus);
-                        this._cbEvent(queueControlResponse, this);
                         break;
                     default:
                         break;
                 }
+                this._cbEvent(queueControlResponse, this);
             },
             queueAppend: (data) => {
                 this.queue.addVideosCombo(data);  // Add videos to queue
@@ -392,7 +387,6 @@ class Room {
                 //     playNextInQueue(defaultRoom);
                 // }
                 this.broadcastBufferingIfClientNowReady(client.status);
-                // TODO: Buffer pausing
             },
             videoStateChange: (state) => {
                 console.log(chalk.blueBright("[ServerVideo] State " + state));
@@ -422,6 +416,16 @@ class Room {
                 logging.withTime(chalk.blueBright("[ServerVideo] The video has finished. Elapsed time: " + this.currentVideo.getElapsedTime()));
                 // TODO: Test that this works
                 this.playNextInQueue();
+            }
+        }
+
+        this.events = {
+            queueStatus: () => {
+                // Send the new queue index etc.
+                let queueControlResponse = new event();
+                let queueStatus = this.transportConstructs.queueStatus();
+                queueControlResponse.addBroadcastEventFromConstruct(queueStatus);
+                this._cbEvent(queueControlResponse, this);
             }
         }
     }
@@ -521,8 +525,8 @@ class Room {
             console.log("DLEEYAY");
         });
         this.currentVideo.state = 5;
-        this.currentVideo.onStateChange(this.events.videoStateChange);
-        this.currentVideo.whenFinished(this.events.videoFinished);
+        this.currentVideo.onStateChange(this.incomingEvents.videoStateChange);
+        this.currentVideo.whenFinished(this.incomingEvents.videoFinished);
     }
 
     sendTimestampIfClientRequires(client) {
@@ -572,11 +576,7 @@ class Room {
             this.preloadNewVideoInRoom(nextVideo);
         }
 
-        // Send the new queue index etc.
-        let queueControlResponse = new event();
-        let queueStatus = this.transportConstructs.queueStatus();
-        queueControlResponse.addBroadcastEventFromConstruct(queueStatus);
-        this._cbEvent(queueControlResponse, this);
+        this.events.queueStatus();
 
         return nextVideo;
     }
@@ -587,6 +587,9 @@ class Room {
         if (nextVideo != undefined) {
             this.preloadNewVideoInRoom(nextVideo);
         }
+
+        this.events.queueStatus();
+
         return nextVideo;
     }
 

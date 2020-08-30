@@ -10,13 +10,13 @@ const { event } = require("../../web/js/event")
 function clientConnect(room, socket) {
     // Call the newClient event to add a new client
     // Return the new client for the calling function to use
-    return room.events.newClient(socket)
+    return room.incomingEvents.newClient(socket)
 }
 
 
 function clientDisconnect(room, client) {
     // Call the newClient event to remove the client
-    room.events.disconnectClient(client);
+    room.incomingEvents.disconnectClient(client);
 }
 
 
@@ -41,13 +41,13 @@ function AdminConnectionManagement(room, control) {
 
 function AdminQueueControl(room, data) {
     // Call the queueControl event to modify the queue
-    room.events.queueControl(data);
+    room.incomingEvents.queueControl(data);
 }
 
 
 function AdminPlayerControl(room, data) {
     // Call the videoControl event to change the state of the video
-    room.events.videoControl(data);
+    room.incomingEvents.videoControl(data);
 }
 
 
@@ -60,51 +60,51 @@ function AdminTTSRequest(room, data) {
 
 function AdminQueueAppend(room, data) {
     // Call queueAppend event to add videos to queue
-    room.events.queueAppend(data.value);
+    room.incomingEvents.queueAppend(data.value);
     return;
 }
 
 
 function AdminNewVideo(room, data) {
     // Call the new video event to set a new video in the room
-    room.events.newVideo(data.value);
+    room.incomingEvents.newVideo(data.value);
     return;
 }
 
 
 function ReceiverPlayerStatus(room, client, data) {
     // Call the receiver player status room event
-    room.events.receiverPlayerStatus(data, client);
+    room.incomingEvents.receiverPlayerStatus(data, client);
 }
 
 
 function ReceiverVideoDetails(room, client, videoDetails) {
     // Call the video details event to assign the details of the video to the server
-    room.events.receiverVideoDetails(videoDetails, client);
+    room.incomingEvents.receiverVideoDetails(videoDetails, client);
 }
 
 
 function ReceiverTimestampSyncRequest(room, data, callback) {
     // Call the newTimestamp event to set the video timestamp
-    room.events.newTimestamp(data, callback);
+    room.incomingEvents.newTimestamp(data, callback);
 }
 
 
 function ReceiverTimestampRequest(room, client, data, callback) {
     console.log("[CliMgnt] " + logging.prettyPrintClientID(client) + " has requested a timestamp.");
-    room.events.currentTimestampRequest(data, callback);
+    room.incomingEvents.currentTimestampRequest(data, callback);
 }
 
 
 function ReceiverPlayerReady(room, client) {
     // Call the receiver ready event to send the current video if there's one playing
-    room.events.receiverReady(client);
+    room.incomingEvents.receiverReady(client);
 }
 
 
 function ReceiverNickname(room, client, nick, callback) {
     // Empty response is success, tells receiver to continue
-    callback(room.events.receiverNickname(nick, client));
+    callback(room.incomingEvents.receiverNickname(nick, client));
 }
 
 
@@ -112,7 +112,7 @@ function ReceiverPreloadingFinished(room, client, videoID) {
     // Call the receiver preloading finished event
     try {
         // This could throw if the client is on the wrong video
-        room.events.receiverPreloadingFinished(videoID, client);
+        room.incomingEvents.receiverPreloadingFinished(videoID, client);
     } catch (error) {
         if (error == "Wrong video"){
             console.log(logging.prettyPrintClientID(client) + " is on the wrong video.");
