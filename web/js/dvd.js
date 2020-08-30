@@ -1,7 +1,7 @@
 var x = Math.floor(Math.random() * window.innerWidth);
 var y = Math.floor(Math.random() * window.innerHeight);
-var xSpeed = 2;
-var ySpeed = 2;
+var xSpeed = (1/60)*10;
+var ySpeed = (1/60)*10;
 var vewPoint;
 var colours = ['rgb(0, 0, 255)', 'rgb(0, 255, 0)', 'rgb(0, 128, 128)', 'rgb(255, 0, 0)', 'rgb(128, 0, 128)', 'rgb(128, 128, 0)'];
 
@@ -11,6 +11,7 @@ var screenOffTime = 1; //ms
 
 let currentFrameCb;
 let shown = false;
+let lastTS;
 
 var logoImg = document.getElementById("screensaver-logo");
 
@@ -23,8 +24,14 @@ logoImg.style.cssText = 'width:20%; position:absolute; left:0px; top:0px;';
 logoImg.style.fill = colours[Math.floor(Math.random() * colours.length)];
 
 // Animate the logo
-var logoAnimate = function(){
-    x += xSpeed;
+var logoAnimate = function(timestamp){
+    if (lastTS === undefined){
+        lastTS = timestamp;
+    }
+    let delta = timestamp - lastTS;
+    let xMove = xSpeed * delta;
+    let yMove = ySpeed * delta;
+    x += xMove;
     if (((x + logoImg.clientWidth) > window.innerWidth) || (x < 0)) {
         xSpeed *= -1;
         logoImg.style.fill = colours[(colours.indexOf(logoImg.style.fill) + 1) % colours.length];
@@ -32,15 +39,16 @@ var logoAnimate = function(){
     if ((x + logoImg.clientWidth) > window.innerWidth) x=window.innerWidth-logoImg.clientWidth;
     if (x < 0) x=0;
 
-    y += ySpeed;
+    y += yMove;
     if (((y + logoImg.clientHeight) > window.innerHeight) || (y < 0)) {
         ySpeed *= -1;
         logoImg.style.fill = colours[(colours.indexOf(logoImg.style.fill) + 1) % colours.length];
-    };
+    }
     if ((y + logoImg.clientHeight) > window.innerHeight) y=window.innerHeight-logoImg.clientHeight;
     if (y < 0) y=0;
     
     logoImg.style.transform = "translate(" + x + "px, " + y + "px)";
+    lastTS = timestamp;
     currentFrameCb = window.requestAnimationFrame(logoAnimate);
 };
 
@@ -63,7 +71,7 @@ function stopScreensaver() {
     shown = false;
 
     vewPoint.addEventListener('transitionend', function (){
-        console.log("oof");
+        console.log("The screensaver has faded out.");
         document.getElementById("screensaver").style.display = "none";
         window.cancelAnimationFrame(currentFrameCb);
     }, {once: true});
