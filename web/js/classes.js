@@ -43,7 +43,11 @@ class Room {
                 return data;
             },
             queueStatus: () => {
-                let queueStatus = { shuffle: this.queue.shuffle };
+                let queueStatus = {
+                    shuffle: this.queue.shuffle,
+                    length: this.queue.length,
+                    index: this.queue.currentIndex
+                };
 
                 let data = {
                     "event": "serverQueueStatus",
@@ -106,11 +110,15 @@ class Room {
                 return;
             },
             queueControl: (data) => {
-                let queueStatus;
+                // TODO: Refactor the queue responses into their respective functions
+                let queue, queueStatus;
                 var queueControlResponse = new event();
                 switch (data) {
                     case "prev":
                         this.playPrevInQueue();
+                        queueStatus = this.transportConstructs.queueStatus();
+                        queueControlResponse.addBroadcastEventFromConstruct(queueStatus);
+                        this._cbEvent(queueControlResponse, this);
                         break;
                     case "skip":
                         this.playNextInQueue();
@@ -118,19 +126,22 @@ class Room {
                     case "empty":
                         logging.withTime("[ServerQueue] Emptying playlist");
                         this.queue.empty();
+                        queue = this.transportConstructs.queue();
+                        queueControlResponse.addBroadcastEventFromConstruct(queue);
+                        this._cbEvent(queueControlResponse, this);
                         break;
                     case "toggleShuffle":
                         this.queueShuffleToggle();
                         logging.withTime("[ServerQueue] Shuffle: " + this.queue.shuffle);
+                        queue = this.transportConstructs.queue();
+                        queueControlResponse.addBroadcastEventFromConstruct(queue);
                         queueStatus = this.transportConstructs.queueStatus();
                         queueControlResponse.addBroadcastEventFromConstruct(queueStatus);
+                        this._cbEvent(queueControlResponse, this);
                         break;
                     default:
                         break;
                 }
-                let queue = this.transportConstructs.queue();
-                queueControlResponse.addBroadcastEventFromConstruct(queue);
-                this._cbEvent(queueControlResponse, this);
             },
             queueAppend: (data) => {
                 this.queue.addVideosCombo(data);  // Add videos to queue
@@ -549,6 +560,13 @@ class Room {
         if (nextVideo != undefined) {
             this.preloadNewVideoInRoom(nextVideo);
         }
+
+        // Send the new queue index etc.
+        let queueControlResponse = new event();
+        let queueStatus = this.transportConstructs.queueStatus();
+        queueControlResponse.addBroadcastEventFromConstruct(queueStatus);
+        this._cbEvent(queueControlResponse, this);
+
         return nextVideo;
     }
     

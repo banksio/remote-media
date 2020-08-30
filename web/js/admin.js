@@ -12,6 +12,12 @@ const nowplayingTitleElement = document.getElementById("nowPlayingTitle");
 const nowplayingChannelElement = document.getElementById("nowPlayingChannel");
 const nowplayingThumbnail = document.getElementById("imgNowPlaying");
 
+const queue = {
+    "index": 0,
+    "shuffle": false,
+    "videos": []
+};
+
 // If the thumbnail is the default YouTube invalid thumbnail, get the lower resolution
 nowplayingThumbnail.onload = () => {
     if (nowplayingThumbnail.naturalHeight === 90) {
@@ -89,31 +95,6 @@ function send() {
 
 
 function sendAppend(data) {
-    // var val = document.getElementById("targetAppend").value;
-    // alert(data);
-    // var id = undefined;
-
-    // const regex = /(?:\.be\/(.*?)(?:\?|$)|watch\?v=(.*?)(?:\&|$|\n))/ig;
-    // let m;
-
-    // while ((m = regex.exec(val)) !== null) {
-    //     // This is necessary to avoid infinite loops with zero-width matches
-    //     if (m.index === regex.lastIndex) {
-    //         regex.lastIndex++;
-    //     }
-
-    //     // The result can be accessed through the `m`-variable.
-    //     m.forEach((match, groupIndex) => {
-    //         if (groupIndex == 0){
-    //             return;
-    //         }
-    //         if (match == undefined){
-    //             return;
-    //         }
-    //         // console.log(`Found match, group ${groupIndex}: ${match}`);
-    //         socket.binary(false).emit("targetAppend",{value: match, pass: document.getElementById("password").value});
-    //     });
-    // }
     btnQueueAppend.setAttribute("disabled", "disabled");
     frontendChangeMainSpinner(1, "Adding to queue...");
     socket.binary(false).emit("adminQueueAppend", { value: data });
@@ -172,9 +153,7 @@ socket.on("serverCurrentVideo", function (video) {
     video = JSON.parse(video);
     console.log("Recieved video details from server");
     // console.log(JSON.parse(video));
-    nowplayingThumbnail.src = getThumbnailSrc(video);
-    nowplayingTitleElement.innerText = video.title;
-    nowplayingChannelElement.innerText = video.channel;
+    changeMainThumbnail(video);
     frontendChangeThumbnailSpinner(false);
     // console.log(videoDetails);
 });
@@ -199,56 +178,68 @@ socket.on("serverClients", function (clients) {
 });
 
 socket.on("serverQueueVideos", function (queueData) {
-    frontendChangeMainSpinner(1, "Downloading queue...");
-    // alert("oof");
-    // prompt("queue", JSON.stringify(queueData));
-    // queueData = JSON.parse(queueData);
-    // return;
+    frontendChangeMainSpinner(1, "Updating queue...");
+    queue.videos = queueData.videos;
+    queue.index = queueData.index;
+    queue.length = status.length;
+
     // Empty the table
     tableRef.innerHTML = "";
-    // console.log(queueData);
-    var videos = queueData.videos;
-    if (videos.length > 0) {
-        var i = 1;
-        for (var video of videos) {
-            // prompt("", video);
-            // console.log(video);
-            var videoID = video.id;
-            // $('#playlist-table-body tr:last').after('<tr><td>'+ i +'</td><td>'+ video["id"] +'</td></tr>');
-            if (i == queueData.index + 1){
-                tableRef.innerHTML = tableRef.innerHTML + '<tr class="tr-active"><td>' + i + '</td><td>' + video.title + '</td><td>' + video.channel + '</td></tr>';
-            } else {
-                tableRef.innerHTML = tableRef.innerHTML + '<tr><td>' + i + '</td><td>' + video.title + '</td><td>' + video.channel + '</td></tr>';
-            }
-            
-            i++;
-        }
-        // Update the "next up" indicator
-        try {
-            upNextTitle.innerText = videos[queueData.index + 1].title;
-            upNextImage.src = getMQThumbnailSrc(videos[queueData.index + 1]);
-        } catch (error) {  // If there's nothing up next, indicate this
-            upNextTitle.innerText = "There's nothing up next just yet.";
-            upNextImage.removeAttribute("src");
-        }
-    }
 
-    if (videos.length > 0){
-        frontendChangeSkipButtons(undefined, true);
-        if (queueData.index > 0) {
-            frontendChangeSkipButtons(true, undefined);
-        } else {
-            frontendChangeSkipButtons(false, undefined);
-        }
-    } else if (videos.length == 0){
-        frontendChangeSkipButtons(false, false);
-    }
+    // Repopulate the table
+    repopulateQueueTable();
+    // Update the "next up" indicator
+    updateQueueFrontend();
 
     btnQueueAppend.removeAttribute("disabled");
     frontendChangeMainSpinner(0);
 
     // queueUpdateStatus(queueData);
 });
+
+function repopulateQueueTable() {
+    if (queue.videos.length > 0) {
+        var i = 1;
+        for (var video of queue.videos) {
+            if (i == queue.index + 1) {
+                tableRef.innerHTML = tableRef.innerHTML + '<tr id="queue-table-video-' + i + '" class="tr-active"><td>' + i + '</td><td>' + video.title + '</td><td>' + video.channel + '</td></tr>';
+            }
+            else {
+                tableRef.innerHTML = tableRef.innerHTML + '<tr id="queue-table-video-' + i + '"><td>' + i + '</td><td>' + video.title + '</td><td>' + video.channel + '</td></tr>';
+            }
+            i++;
+        }
+    }
+}
+
+function updateQueueFrontend() {
+    if (queue.videos.length > 0){
+        try {
+            upNextTitle.innerText = queue.videos[queue.index + 1].title;
+            upNextImage.src = getMQThumbnailSrc(queue.videos[queue.index + 1]);
+        }
+        catch (error) { // If there's nothing up next, indicate this
+            upNextTitle.innerText = "There's nothing up next just yet.";
+            upNextImage.removeAttribute("src");
+        }
+
+        frontendChangeSkipButtons(undefined, true);
+        if (queue.index > 0) {
+            frontendChangeSkipButtons(true, undefined);
+        }
+        else {
+            frontendChangeSkipButtons(false, undefined);
+        }
+    } else if (queue.videos.length == 0){
+        frontendChangeSkipButtons(false, false);
+    }
+}
+
+function changeMainThumbnail(video) {
+    nowplayingThumbnail.src = getThumbnailSrc(video);
+    nowplayingTitleElement.innerText = video.title;
+    nowplayingChannelElement.innerText = video.channel;
+}
 
 function getThumbnailSrc(video) {
     return "https://i3.ytimg.com/vi/" + video.id + "/maxresdefault.jpg";
@@ -269,19 +260,29 @@ socket.on("serverQueueStatus", function (status) {
 });
 
 function queueUpdateStatus(status) {
-    // alert(status);
-    // alert(JSON.stringify(status))
+    // Update the status
+    queue.shuffle = status.shuffle;
+    queue.index = status.index;
+    queue.length = status.length;
+
     if (status.shuffle == true) {
         checkQueueShuffle.checked = true;
     } else {
         checkQueueShuffle.checked = false;
     }
-}
 
-// // the client code
-// socket.on('ferret', (name, fn) => {
-//     fn('woot');
-// });
+    let activeTableRow = document.querySelector("#playlist-table-body > tr.tr-active");
+    let nextTableRow = document.getElementById("queue-table-video-" + (queue.index + 1));
+
+    if (activeTableRow == null && queue.length > 0) {
+        nextTableRow.classList.add("tr-active");
+    } else if (activeTableRow != null && activeTableRow.id.substring(0, 18) != (queue.index + 1)) {
+        activeTableRow.classList.remove("tr-active");
+        nextTableRow.classList.add("tr-active");
+    }
+    updateQueueFrontend();
+
+}
 
 socket.on("initFinished", function () {
     frontendChangeMainSpinner(0);

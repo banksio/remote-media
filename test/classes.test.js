@@ -940,7 +940,9 @@ describe('Room transport tests', function () {
 
         let queueStatusTransportConstruct = room.transportConstructs.queueStatus();
         let expected = {
-            "shuffle": room.queue.shuffle
+            "shuffle": room.queue.shuffle,
+            "length": room.queue.length,
+            "index": room.queue.currentIndex
         }
 
         assert.deepStrictEqual(queueStatusTransportConstruct.data, expected);
@@ -1480,8 +1482,8 @@ describe('Room event tests', function () {
 
         room.onRoomEvent(function (data, room) {
             var queueControlResponse = new event();
-            let queue = room.transportConstructs.queue();
-            queueControlResponse.addBroadcastEventFromConstruct(queue);
+            let queueStatus = room.transportConstructs.queueStatus();
+            queueControlResponse.addBroadcastEventFromConstruct(queueStatus);
             assert.deepStrictEqual(data, queueControlResponse);
 
             // Should have been called once
@@ -1501,8 +1503,8 @@ describe('Room event tests', function () {
 
         room.onRoomEvent(function (data, room) {
             var queueControlResponse = new event();
-            let queue = room.transportConstructs.queue();
-            queueControlResponse.addBroadcastEventFromConstruct(queue);
+            let queueStatus = room.transportConstructs.queueStatus();
+            queueControlResponse.addBroadcastEventFromConstruct(queueStatus);
             assert.deepStrictEqual(data, queueControlResponse);
             
             // Should have been called once
@@ -1569,26 +1571,22 @@ describe('Room event tests', function () {
         let spyQueueNext = sinon.spy(room, "playNextInQueue");
 
         room.onRoomEvent(function (data, room) {
-            var queueControlResponse = new event();
-            let queue = room.transportConstructs.queue();
-            queueControlResponse.addBroadcastEventFromConstruct(queue);
-            assert.deepStrictEqual(data, queueControlResponse);
-
-            // Should not have been called
-            assert.ok(spyQueueShuffle.notCalled);
-            assert.ok(spyQueueEmpty.notCalled);
-            assert.ok(spyQueuePrev.notCalled);
-            assert.ok(spyQueueNext.notCalled);
-
-            // restore the original function
-            spyQueueShuffle.restore();
-            spyQueueEmpty.restore();
-            spyQueuePrev.restore();
-            spyQueueNext.restore();
-            done();
+            done();  // Should not be called
         })
 
         room.events.queueControl("garbage");
+        // Should not have been called
+        assert.ok(spyQueueShuffle.notCalled);
+        assert.ok(spyQueueEmpty.notCalled);
+        assert.ok(spyQueuePrev.notCalled);
+        assert.ok(spyQueueNext.notCalled);
+
+        // restore the original function
+        spyQueueShuffle.restore();
+        spyQueueEmpty.restore();
+        spyQueuePrev.restore();
+        spyQueueNext.restore();
+        done();
     })
 
     it('Should call back with the new client list', function (done) {
