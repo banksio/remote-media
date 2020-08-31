@@ -3,8 +3,27 @@ var arr = url.split("/");
 var result = arr[0] + "//" + arr[2];
 var socket = io(result + "/");
 
+const stateIcons = [
+    '<i class="fas fa-hourglass-half"></i>',
+    '<i class="fas fa-stop"></i>',
+    '<i class="fas fa-play"></i>',
+    '<i class="fas fa-pause"></i>',
+    '<div class="spinner-border spinner-border-sm"></div>',
+    'Unknown',
+    '<i class="fas fa-check"></i>'
+];
+
 const tableWorker = new Worker('js/worker.js');
 
+// Page elements
+const volSlider = document.getElementById("volume");
+const btnPlaylistShuffleToggle = document.getElementById('btnPlaylistShuffle');
+const checkQueueShuffle = document.getElementById('shuffleCheck');
+const pause = document.getElementById('pause');
+const play = document.getElementById('play');
+const prev = document.getElementById('prev');
+const skip = document.getElementById('skip');
+const emptyPlaylist = document.getElementById('emptyPlaylist');
 const btnQueueAppend = document.querySelector("#queue > div.input-group > div > button");
 const btnVideoPush = document.querySelector("#quickpush > div > div > button");
 const tableRef = document.getElementById("playlist-table-body");
@@ -40,40 +59,19 @@ socket.on('disconnect', () => {
     frontendChangeConnectionIdentifier(false);
 });
 
-const stateIcons = [
-    '<i class="fas fa-hourglass-half"></i>',
-    '<i class="fas fa-stop"></i>',
-    '<i class="fas fa-play"></i>',
-    '<i class="fas fa-pause"></i>',
-    '<div class="spinner-border spinner-border-sm"></div>',
-    'Unknown',
-    '<i class="fas fa-check"></i>'
-];
 
-//page elements
-const volSlider = document.getElementById("volume");
-const btnPlaylistShuffleToggle = document.getElementById('btnPlaylistShuffle');
-const checkQueueShuffle = document.getElementById('shuffleCheck');
-
-const pause = document.getElementById('pause');
 pause.addEventListener("click", function () {
     socket.binary(false).emit("adminPlayerControl", "pause");
 });
-const play = document.getElementById('play');
 play.addEventListener("click", function () {
     socket.binary(false).emit("adminPlayerControl", "play");
 });
-
-const prev = document.getElementById('prev');
 prev.addEventListener("click", function () {
     socket.binary(false).emit("adminQueueControl", "prev");
 });
-const skip = document.getElementById('skip');
 skip.addEventListener("click", function () {
     socket.binary(false).emit("adminQueueControl", "skip");
 });
-
-const emptyPlaylist = document.getElementById('emptyPlaylist');
 emptyPlaylist.addEventListener("click", function () {
     socket.binary(false).emit("adminQueueControl", "empty");
 });
@@ -101,6 +99,7 @@ function sendAppend(data) {
     frontendChangeMainSpinner(1, "Adding to queue...");
     socket.binary(false).emit("adminQueueAppend", { value: data });
 }
+
 
 function getTitle(data) {
     var feed = data.feed;
