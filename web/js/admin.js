@@ -228,9 +228,26 @@ function updateQueueFrontend() {
 }
 
 function changeMainThumbnail(video) {
-    nowplayingThumbnail.src = getThumbnailSrc(video);
-    nowplayingTitleElement.innerText = video.title;
-    nowplayingChannelElement.innerText = video.channel;
+    if (video){
+        nowplayingThumbnail.src = getThumbnailSrc(video);
+        nowplayingTitleElement.innerText = video.title;
+        nowplayingChannelElement.innerText = video.channel;
+    } else {
+        nowplayingThumbnail.src = "branding/logo.png";
+        nowplayingTitleElement.innerText = "There's nothing playing right now";
+        nowplayingChannelElement.innerText = "Push a video to get started";
+    }
+}
+
+function changeUpNextThumbnail(video){
+    if (video){
+        upNextTitle.innerText = video.title;
+        upNextImage.src = getMQThumbnailSrc(video);
+    } else {
+        upNextTitle.innerText = "There's nothing up next just yet.";
+        upNextImage.removeAttribute("src");
+    }
+
 }
 
 function getThumbnailSrc(video) {
@@ -250,6 +267,10 @@ function toggleShuffle(toggled) {
 socket.on("serverQueueStatus", function (status) {
     queueUpdateStatus(status);
 });
+
+socket.on("serverQueueFinished", function () {
+    changeMainThumbnail();
+})
 
 function queueUpdateStatus(status) {
     // Update the status

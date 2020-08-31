@@ -415,7 +415,11 @@ class Room {
                 // Video has finished.
                 logging.withTime(chalk.blueBright("[ServerVideo] The video has finished. Elapsed time: " + this.currentVideo.getElapsedTime()));
                 // TODO: Test that this works
-                this.playNextInQueue();
+                // Try and play the next video in the queue
+                // If there isn't a next video in the queue, tell the admin panel
+                if (this.playNextInQueue() == undefined){
+                    this._cbEvent(new event("serverQueueFinished", "data"), this);
+                }
             }
         }
 
