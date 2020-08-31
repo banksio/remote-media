@@ -406,10 +406,9 @@ class Room {
                     default:
                         break;
                 }
-
-                if (state == 3){
-                    this.broadcastBufferingClients();
-                }
+            },
+            videoStateDelay: (state) => {
+                this.broadcastBufferingClients();
             },
             videoFinished: () => {
                 // Video has finished.
@@ -521,9 +520,7 @@ class Room {
 
         this.currentVideo = new ServerVideo();
         Object.assign(this.currentVideo, videoObj);
-        this.currentVideo.onPlayDelay(() => {
-            console.log("DLEEYAY");
-        });
+        this.currentVideo.onPlayDelay(this.incomingEvents.videoStateDelay);
         this.currentVideo.state = 5;
         this.currentVideo.onStateChange(this.incomingEvents.videoStateChange);
         this.currentVideo.whenFinished(this.incomingEvents.videoFinished);
