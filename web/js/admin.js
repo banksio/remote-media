@@ -51,29 +51,29 @@ const stateIcons = [
 ];
 
 //page elements
-var volSlider = document.getElementById("volume");
-var btnPlaylistShuffleToggle = document.getElementById('btnPlaylistShuffle');
-var checkQueueShuffle = document.getElementById('shuffleCheck');
+const volSlider = document.getElementById("volume");
+const btnPlaylistShuffleToggle = document.getElementById('btnPlaylistShuffle');
+const checkQueueShuffle = document.getElementById('shuffleCheck');
 
-var pause = document.getElementById('pause');
+const pause = document.getElementById('pause');
 pause.addEventListener("click", function () {
     socket.binary(false).emit("adminPlayerControl", "pause");
 });
-var play = document.getElementById('play');
+const play = document.getElementById('play');
 play.addEventListener("click", function () {
     socket.binary(false).emit("adminPlayerControl", "play");
 });
 
-var prev = document.getElementById('prev');
+const prev = document.getElementById('prev');
 prev.addEventListener("click", function () {
     socket.binary(false).emit("adminQueueControl", "prev");
 });
-var skip = document.getElementById('skip');
+const skip = document.getElementById('skip');
 skip.addEventListener("click", function () {
     socket.binary(false).emit("adminQueueControl", "skip");
 });
 
-var emptyPlaylist = document.getElementById('emptyPlaylist');
+const emptyPlaylist = document.getElementById('emptyPlaylist');
 emptyPlaylist.addEventListener("click", function () {
     socket.binary(false).emit("adminQueueControl", "empty");
 });
@@ -183,7 +183,7 @@ socket.on("serverQueueVideos", function (queueData) {
     frontendChangeMainSpinner(1, "Updating queue...");
     queue.videos = queueData.videos;
     queue.index = queueData.index;
-    queue.length = status.length;
+    queue.length = queueData.length;
 
     // Repopulate the table
     repopulateQueueTable();
@@ -207,12 +207,10 @@ tableWorker.onmessage = function(e) {
 function updateQueueFrontend() {
     if (queue.videos.length > 0){
         try {
-            upNextTitle.innerText = queue.videos[queue.index + 1].title;
-            upNextImage.src = getMQThumbnailSrc(queue.videos[queue.index + 1]);
+            changeUpNextThumbnail(queue.videos[queue.index + 1]);
         }
         catch (error) { // If there's nothing up next, indicate this
-            upNextTitle.innerText = "There's nothing up next just yet.";
-            upNextImage.removeAttribute("src");
+            changeUpNextThumbnail();
         }
 
         frontendChangeSkipButtons(undefined, true);
@@ -224,6 +222,7 @@ function updateQueueFrontend() {
         }
     } else if (queue.videos.length == 0){
         frontendChangeSkipButtons(false, false);
+        changeUpNextThumbnail();  // If the queue's empty then there's nothing up next, indicate this
     }
 }
 

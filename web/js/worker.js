@@ -12,6 +12,9 @@ onmessage = function(data) {
         }
         i++;
     }
+    if (i === 1){
+        tableHTML = "<tr><td>The queue is empty.</td></tr>";
+    }
     console.log('Posting message back to main script');
     postMessage(tableHTML);
 }
