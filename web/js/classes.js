@@ -111,10 +111,8 @@ class Room {
             },
             queueControl: (data) => {
                 let queueStatus;
-                let queue = this.transportConstructs.queue();
-                let queueControlResponse = new event();
 
-                queueControlResponse.addBroadcastEventFromConstruct(queue);
+                let queueControlResponse = new event();
 
                 switch (data) {
                     case "prev":
@@ -136,6 +134,9 @@ class Room {
                     default:
                         break;
                 }
+                // Broadcast the queue after any changes have been made
+                let queue = this.transportConstructs.queue();
+                queueControlResponse.addBroadcastEventFromConstruct(queue);
                 this._cbEvent(queueControlResponse, this);
             },
             queueAppend: (data) => {
