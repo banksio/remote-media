@@ -75,7 +75,7 @@ class Room {
         this.incomingEvents = {
             newClient: (socket) => {
                 let newClient = this.addClient(new Login(socket.id, socket, socket.id));
-                logging.withTime(chalk.cyan("[CliMgnt] New Client " + newClient.id));
+                logging.withTime(chalk.green("[CliMgnt] New Client " + newClient.id));
 
                 var newClientResponse = new event();
                 let queue = this.transportConstructs.queue();
