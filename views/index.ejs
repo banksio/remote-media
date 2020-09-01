@@ -31,17 +31,16 @@
 <body>
 
     <!--Testing-->
-    <!--pointer-events:none;-->
+    <!-- pointer-events:none; -->
     <div id="player" style="position:absolute;top:0;left:0;width:100%;height:100%;"></div>
 
 
     <div style="overflow: hidden;">
         <div id="seekControlPanel" class="side-control-right d-flex flex-column text-light hidecontrol-right">
-            <div class="controlPanelButton d-flex flex-column" onclick="requestTimestampFromServer();">
+            <div id="seekControlPanel-btnResync" class="controlPanelButton d-flex flex-column">
                 <i class="fas fa-undo text-light"></i> Re sync
             </div>
-            <div class="controlPanelButton d-flex flex-column "
-                onclick="pushTimestampToServer(player.getCurrentTime());">
+            <div id="seekControlPanel-btnPushTS" class="controlPanelButton d-flex flex-column">
                 <i class="fas fa-sync text-light"></i> Sync others
             </div>
 
@@ -139,12 +138,8 @@
         </div>
     </div>
 
-    <script src="/js/dvd.js"></script>
-
-
     <!--Custom JS -->
-    <script src="/js/receiver.js"></script>
-    <script src="/js/player.js"></script>
+    <script src="/js/receiver/main.js" type="module"></script>
 
     <script src="/js/jquery.slim.min.js" integrity="sha256-4+XzXVhsDmqanXGHaHvgh1gMQKX40OUvDEBTu8JcmNs="></script>
     <script src="/js/bootstrap.bundle.min.js" integrity="sha256-9nt4LsWmLI/O24lTW89IzAKuBqEZ47l/4rh1+tH/NY8="></script>
