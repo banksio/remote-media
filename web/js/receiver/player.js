@@ -135,7 +135,7 @@ export function preloadVideo(id) {
     // Set preloading true, send to 
     preloading = true;
     vid = id;
-    eventNewStatus(state, true, vid, vid)
+    eventNewStatus(player.getPlayerState(), true, vid, vid)
     player.mute();
     player.loadVideoById(vid);
 }
@@ -146,15 +146,17 @@ export function onPlayerStateChange(event) {
     if (preloading) {  // If we're preloading
         switch (newState) {
             case 1:  // And the video is now playing
+                eventNewStatus(newState, preloading, firstVideo, vid);  // For sending to server
+                callbacks.onNewStatus(newState, preloading);  // Not for sending to server
                 eventVideoDetails();  // Send the server the video details
                 preloadFinisher();  // Finish preloading
-                break;
+                return;  // Don't continue or fire any more callbacks
             default:
                 break;
         }
     }
-    eventNewStatus(newState, preloading, firstVideo, vid);
-    callbacks.onNewStatus(newState, preloading);
+    eventNewStatus(newState, preloading, firstVideo, vid);  // For sending to server
+    callbacks.onNewStatus(newState, preloading);  // Not for sending to server
 }
 
 // Main.js
@@ -182,6 +184,7 @@ export function onNewStatus(callback) {
 }
 
 function preloadFinisher() {
+    player.removeEventListener('onStateChange', onPlayerStateChange);
     console.log("Nearly preloaded.");
     player.pauseVideo();  // Pause the video
     player.seekTo(0); // Go back to the start
@@ -190,8 +193,10 @@ function preloadFinisher() {
     console.log("Preloading done.");
     // socket.binary(false).emit("receiverPlayerStatus", { "state": state, "preloading": false });
     // socket.binary(false).emit("receiverPlayerPreloadingFinished", vid);  Freshly deleted
+    eventNewStatus(2, preloading, firstVideo, vid);
     callbacks.event("receiverPlayerPreloadingFinished", vid);
     // callbacks.playerPreloadingFinished(vid);
+    player.addEventListener('onStateChange', onPlayerStateChange);
 }
 
 export function onPlayerPreloadingFinished(callback){
