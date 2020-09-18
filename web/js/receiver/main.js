@@ -16,7 +16,7 @@ transmit.onConnected((socketID) => {
     console.log("Connected to server with socket ID " + socketID);
     frontendUI.frontendChangeConnectionIdentifier(1);
     // If there's a nickname set, then try and set this with the server again
-    if (receiverDetails.nickname){
+    if (receiverDetails.nickname) {
         checkNickname(receiverDetails.nickname);
     }
 })
@@ -45,10 +45,7 @@ transmit.onServerBufferingClients((buffering) => {
     if (buffering.length == 0) {
         return frontendUI.showNotificationBanner("Playing now", false);
     }
-    let names = "Waiting for ";
-    buffering.forEach(client => {
-        names += (client._name + ", ");
-    });
+    let names = formatBufferingClientNames(buffering);
     frontendUI.showNotificationBanner(names, true, true);
 })
 
@@ -107,11 +104,27 @@ clickHandlers.onPushTSClick(() => {
     pushTimestampToServer(player.getCurrentTimestamp());
 })
 
+function formatBufferingClientNames(buffering) {
+    let names = "Waiting for ";
+
+    while (buffering.length > 2) {
+        names += (buffering.pop()._name + ", ");
+    }
+    while (buffering.length > 1) {
+        names += (buffering.pop()._name + " and ");
+    }
+    while (buffering.length > 0) {
+        names += buffering.pop()._name;
+    }
+
+    return names;
+}
+
 // Ask the server to validate the nickname and get the response
 function checkNickname(nick) {
     transmit.sendEventWithCallback('receiverNickname', nick, (error) => { // Async callback with server's validation response
         // If response is undefined, we're good - hide the modal
-        if (error === null){
+        if (error === null) {
             receiverDetails.nickname = nick;
             frontendUI.hideNicknameModal();
             frontendUI.showNotificationBanner("Set nickname: " + receiverDetails.nickname, false, false);
