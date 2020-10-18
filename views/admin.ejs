@@ -122,10 +122,10 @@
                     </tbody>
                 </table>
                 <div class="d-flex">
-                    <button class="btn btn-warning" onclick="reloadClients();"><i class="fas fa-sync-alt"></i>
+                    <button class="btn btn-warning" id="btnClientsReload" onclick="reloadClients();"><i class="fas fa-sync-alt"></i>
                         Reload All
                     </button>
-                    <button class="btn btn-danger ml-2" onclick="disconnectClients();"><i class="fas fa-sign-out-alt"></i>
+                    <button class="btn btn-danger ml-2" id="btnClientsDisconnect" onclick="disconnectClients();"><i class="fas fa-sign-out-alt"></i>
                         Disconnect All
                     </button>
                 </div>
@@ -150,9 +150,7 @@
                             <input class="form-control disabled" id="targetAppend"
                                 placeholder="YouTube URL(s), separated by commas" />
                             <div class="input-group-append">
-                                <button class="btn btn-primary"
-                                    onclick="sendAppend(document.getElementById('targetAppend').value);"><i
-                                        class="fas fa-plus"></i></button>
+                                <button class="btn btn-primary" id="btnAppendVideo"><i class="fas fa-plus"></i></button>
                             </div>
                         </div>
 
@@ -164,7 +162,7 @@
                             <button class="btn btn-danger btn-sm" id="emptyPlaylist"><i class="fas fa-times"></i> Empty
                                 Playlist</button>
                             <div class="form-check form-check-inline my-auto">
-                                <input class="form-check-input" type="checkbox" onchange="toggleShuffle(this.checked);"
+                                <input class="form-check-input" type="checkbox"
                                     checked="true" id="shuffleCheck">
                                 <label class="form-check-label" for="shuffleCheck">
                                     Shuffle
@@ -195,7 +193,7 @@
                             <input class="form-control" id="target" placeholder="YouTube URL" />
 
                             <div class="input-group-append">
-                                <button class="btn btn-primary" onclick="send();">Play Now</button>
+                                <button class="btn btn-primary" id="btnPushVideo">Play Now</button>
                             </div>
                         </div>
                     </div>
@@ -217,9 +215,7 @@
     </footer>
 
     <!-- Custom JS -->
-    <!-- <script src="/classes.js"></script> -->
-    <script src="/js/admin.js"></script>
-    <!-- <script src="../player.js"></script> -->
+    <script src="/js/admin/main.js" type="module"></script>
 
     <script src="/js/jquery.slim.min.js" integrity="sha256-4+XzXVhsDmqanXGHaHvgh1gMQKX40OUvDEBTu8JcmNs="></script>
     <script src="/js/bootstrap.bundle.min.js" integrity="sha256-9nt4LsWmLI/O24lTW89IzAKuBqEZ47l/4rh1+tH/NY8="></script>
