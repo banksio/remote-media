@@ -6,17 +6,14 @@ export function connectToSocket(href){
     var url = href;
     var arr = url.split("/");
     var result = arr[0] + "//" + arr[2];
+    // eslint-disable-next-line no-undef
     socket = io(result + "/");
 
     // On connection
-    socket.on('connect', () => {
-        callbacks.onConnected(socket.id);
-    });
+    socket.on('connect', () => callbacks.onConnected(socket.id));
 
     // On loss of connection
-    socket.on('disconnect', () => {
-        callbacks.onDisconnected();
-    });
+    socket.on('disconnect', () => callbacks.onDisconnected());
 
     socket.on("serverConnectionManagement", (data) => callbacks.onServerConnectionManagement(data));
     socket.on("serverBufferingClients", (data) => callbacks.onServerBufferingClients(data));

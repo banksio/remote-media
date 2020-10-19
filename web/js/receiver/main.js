@@ -1,7 +1,7 @@
 import * as player from "./player.js";
 import * as transmit from "./socketTransmit.js";
 import * as frontendUI from "./ui.js";
-import * as clickHandlers from "./click.js";
+import * as clickHandlers from "./uiEvents.js";
 import * as screensaver from "./dvd.js";
 
 const receiverDetails = {};
