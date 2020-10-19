@@ -43,7 +43,7 @@ transmit.onServerConnectionManagement((data) => {
 // When clients are buffering
 transmit.onServerBufferingClients((buffering) => {
     if (buffering.length == 0) {
-        return frontendUI.showNotificationBanner("Playing now", false);
+        return frontendUI.showNotificationBanner("Everyone's ready", false);
     }
     let names = formatBufferingClientNames(buffering);
     frontendUI.showNotificationBanner(names, true, true);
