@@ -189,7 +189,7 @@ class Room {
                 let ts = data.timestamp;
                 if (utils.validateClientVideo(data.videoID, this)) {
                     this.currentVideo.timestamp = ts * 1000;
-                    this._cbEvent(new event("serverVideoTimestamp", ts), this);
+                    this._cbEvent(new event("serverVideoTimestamp", this.currentVideo.getElapsedTime()), this);
                 } else {
                     callback("Invalid Video");
                 }
