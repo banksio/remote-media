@@ -58,16 +58,16 @@ function AdminTTSRequest(room, data) {
 }
 
 
-function AdminQueueAppend(room, data) {
+function AdminQueueAppend(room, data, callback) {
     // Call queueAppend event to add videos to queue
-    room.incomingEvents.queueAppend(data.value);
+    callback(room.incomingEvents.queueAppend(data.value));
     return;
 }
 
 
-function AdminNewVideo(room, data) {
+function AdminNewVideo(room, data, callback) {
     // Call the new video event to set a new video in the room
-    room.incomingEvents.newVideo(data.value);
+    callback(room.incomingEvents.newVideo(data.value));
     return;
 }
 

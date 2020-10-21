@@ -140,8 +140,12 @@ class Room {
                 this._cbEvent(queueControlResponse, this);
             },
             queueAppend: (data) => {
-                this.queue.addVideosCombo(data);  // Add videos to queue
-
+                try {
+                    this.queue.addVideosCombo(data);  // Add videos to queue
+                } catch (error) {
+                    return error.message;
+                }
+                
                 // Generate event for broadcasting to clients
                 let queueAppendResponse = new event();
                 let queue = this.transportConstructs.queue();
@@ -153,7 +157,11 @@ class Room {
                 // If there's only one URL
                 if (urlArray.length == 1) {
                     let newVideo = new Video();
-                    newVideo.setIDFromURL(urlArray[0]);
+                    try {
+                        newVideo.setIDFromURL(urlArray[0]);
+                    } catch (error) {
+                        return error.message;
+                    }
                     this.preloadNewVideoInRoom(newVideo);
                 }
             },
@@ -895,10 +903,7 @@ class NewQueue {
         // Add the id from each url in turn
         for (var url of urlArray) {
             var id = utils.getIDFromURL(url);
-            if (id != undefined) {
-                this.addVideoFromID(id);
-                // consoleLogWithTime(id);
-            }
+            this.addVideoFromID(id);
         }
         // Once all the videos are added, shuffle if needs be
 

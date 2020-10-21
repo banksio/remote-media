@@ -57,12 +57,12 @@ module.exports.start = function startServer(expressServer, cb) {
         // All admin panel stuff //
 
         // Get new video and send to receivers
-        socket.on("adminNewVideo", function (data) {
-            return handlers.AdminNewVideo(defaultRoom, data);
+        socket.on("adminNewVideo", function (data, callback) {
+            return handlers.AdminNewVideo(defaultRoom, data, callback);
         });
 
-        socket.on("adminQueueAppend", function (data) {
-            return handlers.AdminQueueAppend(defaultRoom, data);
+        socket.on("adminQueueAppend", function (data, callback) {
+            return handlers.AdminQueueAppend(defaultRoom, data, callback);
         });
 
         // Text to speech

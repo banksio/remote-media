@@ -26,8 +26,6 @@ transmit.onDisonnected((socketID) => {
 
 transmit.onServerNewVideo(() => {
     frontendUI.changeThumbnailSpinner(true);  // Show loading of thumbnail
-    frontendUI.changeNewVideoButtonEnabled(true);  // Enable push video button
-    frontendUI.changeMainSpinner(0);
 })
 
 transmit.onServerCurrentVideo((video) => {
@@ -86,13 +84,25 @@ function queueUpdateStatus(status) {
 function pushNewVideo(videoID) {
     frontendUI.changeNewVideoButtonEnabled(false);
     frontendUI.changeMainSpinner(1, "Pushing video...");
-    transmit.sendEvent("adminNewVideo", { value: videoID, pass: true });
+    transmit.sendEventWithCallback("adminNewVideo", { value: videoID, pass: true }, (error) => {
+        frontendUI.changeNewVideoButtonEnabled(true);
+        frontendUI.changeMainSpinner(0);
+        if (error) {
+            alert(error);
+        }
+    });
 }
 
 function appendNewVideo(videoID) {
     frontendUI.changeAppendVideoButtonEnabled(false);
     frontendUI.changeMainSpinner(1, "Adding to queue...");
-    transmit.sendEvent("adminQueueAppend", { value: videoID });
+    transmit.sendEventWithCallback("adminQueueAppend", { value: videoID }, (error) => {
+        frontendUI.changeAppendVideoButtonEnabled(true);
+        frontendUI.changeMainSpinner(0);
+        if (error) {
+            alert(error);
+        }
+    });
 }
 
 function toggleShuffle(toggled) {

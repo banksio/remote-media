@@ -43,7 +43,7 @@ function getIDFromURL(url) {
         });
     }
     if (id == undefined) {
-        throw Error;
+        throw new Error("No video ID found in URL.");
     }
     return id;
 }
