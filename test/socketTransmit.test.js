@@ -3,13 +3,13 @@ const assert = require('assert');
 const testHelpers = require('../src/test/setupFunctions');
 const customAssert = require('../src/test/assertion');
 const transmit = require('../src/rm/socketTransmit');
-const classes = require('../web/js/classes');
+const classes = require('../src/rm/classes');
 const socketMock = require('../src/test/socketMock');
 const { event } = require("../web/js/event")
 // const remotemedia = require('../src/rm/server');
 
 const io = require('socket.io-client');
-const { Video } = require('../web/js/classes');
+const { Video } = require('../src/rm/classes');
 const ioOptions = {
     transports: ['websocket'],
     forceNew: true,

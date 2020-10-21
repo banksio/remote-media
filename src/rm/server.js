@@ -1,7 +1,7 @@
 const socketio = require('socket.io');
 
 // Classes
-const server = require('../../web/js/classes');
+const server = require('./classes');
 const logging = require('./logging');
 const handlers = require("./handlers");
 

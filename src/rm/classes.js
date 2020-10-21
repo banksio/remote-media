@@ -1,8 +1,8 @@
 const chalk = require('chalk');
-const logging = require('../../src/rm/logging');
-const { event } = require("./event");
-const utils = require('../../src/rm/utils');
-const rmErrors = require('../../src/rm/error');
+const logging = require('./logging');
+const { event } = require("../../web/js/event");
+const utils = require('./utils');
+const rmErrors = require('./error');
 
 class Room {
     constructor(io) {
@@ -75,7 +75,7 @@ class Room {
         this.incomingEvents = {
             newClient: (socket) => {
                 let newClient = this.addClient(new Login(socket.id, socket, socket.id));
-                logging.withTime(chalk.green("[CliMgnt] New Client " + newClient.id));
+                logging.info(chalk.green("[CliMgnt] New Client " + newClient.id));
 
                 var newClientResponse = new event();
                 let queue = this.transportConstructs.queue();
@@ -97,7 +97,7 @@ class Room {
             },
             disconnectClient: (client) => {
                 // Log removal
-                console.log(chalk.cyan("[CliMgnt] " + logging.prettyPrintClientID(client) + " has disconnected."));
+                logging.info(chalk.cyan("[CliMgnt] " + logging.prettyPrintClientID(client) + " has disconnected."));
                 // Remove client
                 this.removeClient(client);
                 
@@ -122,12 +122,12 @@ class Room {
                         this.playNextInQueue();
                         return;
                     case "empty":
-                        logging.withTime("[ServerQueue] Emptying playlist");
+                        logging.debug("[ServerQueue] Emptying playlist");
                         this.queue.empty();
                         break;
                     case "toggleShuffle":
                         this.queueShuffleToggle();
-                        logging.withTime("[ServerQueue] Shuffle: " + this.queue.shuffle);
+                        logging.debug("[ServerQueue] Shuffle: " + this.queue.shuffle);
                         queueStatus = this.transportConstructs.queueStatus();
                         queueControlResponse.addBroadcastEventFromConstruct(queueStatus);
                         break;
@@ -164,20 +164,20 @@ class Room {
                 else if (data == "play") {
                     this.currentVideo.playVideo();
                 }
-                logging.withTime("[VideoControl] Video Control: " + data);
+                logging.debug("[VideoControl] Video Control: " + data);
             },
             receiverVideoDetails: (videoDetails, client) => {
                 // If the video ID is not valid then return
                 if (!utils.validateClientVideo(videoDetails.id, this)) {
-                    logging.withTime(chalk.yellow("[ServerVideo] Recieved invalid video details from " + logging.prettyPrintClientID(client)));
+                    logging.debug(chalk.yellow("[ServerVideo] Recieved invalid video details from " + logging.prettyPrintClientID(client)));
                     return 1;
                 }
                 // Assign the video details
-                logging.withTime(chalk.blueBright("[ServerVideo] Recieved video details from " + logging.prettyPrintClientID(client)));
+                logging.debug(chalk.blueBright("[ServerVideo] Recieved video details from " + logging.prettyPrintClientID(client)));
                 this.currentVideo.title = videoDetails.title;
                 this.currentVideo.channel = videoDetails.channel;
                 this.currentVideo.duration = videoDetails.duration * 1000;
-                logging.withTime("The video duration is " + videoDetails.duration);
+                logging.debug("The video duration is " + videoDetails.duration);
 
                 // Trigger event callback
                 var videoDetailsEvent = new event();
@@ -202,7 +202,7 @@ class Room {
                 }
             },
             receiverReady: (client) => {
-                logging.withTime(chalk.cyan("[CliMgnt] " + logging.prettyPrintClientID(client) + " is ready. "));
+                logging.debug(chalk.cyan("[CliMgnt] " + logging.prettyPrintClientID(client) + " is ready. "));
                 // Update the state in our server
                 client.status.playerLoading = false;
                 client.status.state = -1;
@@ -239,19 +239,19 @@ class Room {
                 nicknameSetResponse.addBroadcastEventFromConstruct(clients);
                 this._cbEvent(nicknameSetResponse, this);
 
-                logging.withTime(chalk.cyan("[CliNick] " + logging.prettyPrintClientID(client) + " has set their nickname."));
+                logging.info(chalk.cyan("[CliNick] " + logging.prettyPrintClientID(client) + " has set their nickname."));
                 return;
             },
             receiverPreloadingFinished: (videoID, client) => {
                 // TODO: Needs further testing/refactoring
                 // Ignore if it's the wrong video
                 if (!utils.validateClientVideo(videoID, this)) {
-                    logging.withTime(chalk.yellow("[ClientVideo] " + logging.prettyPrintClientID(client) + " has finished preloading, but is on the wrong video."));
+                    logging.debug(chalk.yellow("[ClientVideo] " + logging.prettyPrintClientID(client) + " has finished preloading, but is on the wrong video."));
                     throw new Error("Wrong video");
                 }
 
                 client.status.updatePreloading(false);
-                logging.withTime(chalk.cyan("[ClientVideo] " + logging.prettyPrintClientID(client) + " has finished preloading."));
+                logging.debug(chalk.cyan("[ClientVideo] " + logging.prettyPrintClientID(client) + " has finished preloading."));
 
                 // Play the video if the server is waiting to start a video and this was the last client we were waiting for
                 if (this.playIfPreloadingFinished() == 0) {
@@ -272,13 +272,13 @@ class Room {
 
                 // If the client's on the wrong video, ignore this interaction
                 if (!utils.validateClientVideo(data.videoID, this)) {
-                    logging.withTime(chalk.yellow("[receiver Status] Recieved status from " + logging.prettyPrintClientID(client) + " but wrong video."));
+                    logging.debug(chalk.yellow("[receiver Status] Recieved status from " + logging.prettyPrintClientID(client) + " but wrong video."));
                     return 1
                 }
 
                 // Don't crash out if we can't get the current timestamp
                 try {
-                    logging.withTime(chalk.blueBright("[Server Video] The current video timestamp is " + this.currentVideo.getElapsedTime()));
+                    logging.debug(chalk.blueBright("[ServerVideo] The current video timestamp is " + this.currentVideo.getElapsedTime()));
                 }
                 catch (error) {
                     console.error(error);
@@ -288,7 +288,7 @@ class Room {
                 let previousStatusState = client.status.state;
 
                 // Debugging
-                console.log(JSON.stringify(data));
+                logging.debug("[ClientStatus]" + JSON.stringify(data));
 
                 // Save the state and the preloading state
                 let state = data.data.state;
@@ -303,7 +303,7 @@ class Room {
                 clientsEvent.addBroadcastEventFromConstruct(clients);
                 this._cbEvent(clientsEvent, this);
 
-                logging.withTime(chalk.cyan("[CliStatus] " + logging.prettyPrintClientID(client) + " has new status:" + " status: " + state + " preloading:" + preloading));
+                logging.debug(chalk.cyan("[CliStatus] " + logging.prettyPrintClientID(client) + " has new status:" + " status: " + state + " preloading:" + preloading));
 
                 // If the client is preloading, don't continue with this function
                 if (preloading == true) {
@@ -317,17 +317,17 @@ class Room {
                     // sendPlayerControl("pause");
                     this.currentVideo.pauseVideo(true);
                     // defaultRoom.currentVideo.state = 3;
-                    logging.withTime("[BufferMgnt] " + logging.prettyPrintClientID(client) + " is buffering. The video has been paused.");
+                    logging.debug("[BufferMgnt] " + logging.prettyPrintClientID(client) + " is buffering. The video has been paused.");
                 // If client is playing
                 } else if (client.status.state == 1 && this.allPreloaded()) {
                     // If anyone was previously listed as buffering
                     if (this._bufferingClients.length > 0) {
                         // Remove this client from the buffering array, they're ready
-                        logging.withTime("[BufferMgnt] " + logging.prettyPrintClientID(client) + " has stopped buffering.");
+                        logging.debug("[BufferMgnt] " + logging.prettyPrintClientID(client) + " has stopped buffering.");
                         this._bufferingClients.splice(this._bufferingClients.indexOf(client.id), 1);
                         // If that means no one is buffering now, resume everyone
                         if (this._bufferingClients.length == 0) {
-                            logging.withTime("[BufferMgnt] No one is buffering, resuming the video.");
+                            logging.debug("[BufferMgnt] No one is buffering, resuming the video.");
                             // sendPlayerControl("play");  // Play all the recievers
                             this.currentVideo.playVideo();
                             // defaultRoom.currentVideo.state = 1;  // Tell the server the video's now playing again
@@ -390,7 +390,7 @@ class Room {
                 this.broadcastBufferingIfClientNowReady(client.status);
             },
             videoStateChange: (state) => {
-                console.log(chalk.blueBright("[ServerVideo] State " + state));
+                logging.debug(chalk.blueBright("[ServerVideo] State " + state));
                 switch (state) {
                     case 1:
                         this._cbEvent(new event("serverPlayerControl", "play"), this);
@@ -413,7 +413,7 @@ class Room {
             },
             videoFinished: () => {
                 // Video has finished.
-                logging.withTime(chalk.blueBright("[ServerVideo] The video has finished. Elapsed time: " + this.currentVideo.getElapsedTime()));
+                logging.debug(chalk.blueBright("[ServerVideo] The video has finished. Elapsed time: " + this.currentVideo.getElapsedTime()));
                 // TODO: Test that this works
                 // Try and play the next video in the queue
                 // If there isn't a next video in the queue, tell the admin panel
@@ -497,12 +497,12 @@ class Room {
             // If everyone's preloaded, play the video
             if (this.allPreloaded()) {
                 if (this.currentVideo.duration == 0) {
-                    logging.withTime("[Preload] Video details not recieved, cannot play video.");
+                    logging.debug("[Preload] Video details not recieved, cannot play video.");
                     return 2;  // Error
                 }
                 // Set all the receivers playing
                 // sendPlayerControl("play");
-                logging.withTime("[Preload] Everyone has finished preloading, playing the video. allPreloaded: " + this.allPreloaded());
+                logging.debug("[Preload] Everyone has finished preloading, playing the video. allPreloaded: " + this.allPreloaded());
                 // Set the server's video instance playing
                 this.currentVideo.playVideo();
                 // room.currentVideo.state = 1;
@@ -536,8 +536,8 @@ class Room {
         if (this.currentVideo.state != 0 && client.status.requiresTimestamp) {
             // We'll send the client a timestamp so it can sync with the server
             client.status.requiresTimestamp = false;
-            logging.withTime(chalk.cyan("[ClientVideo] " + logging.prettyPrintClientID(client) + " requires a timestamp. Sending one to it now."));
-            console.log(chalk.cyan("[CliMgnt] " + logging.prettyPrintClientID(client) + " has been sent a timestamp."));
+            logging.debug(chalk.cyan("[ClientVideo] " + logging.prettyPrintClientID(client) + " requires a timestamp. Sending one to it now."));
+            logging.debug(chalk.cyan("[CliMgnt] " + logging.prettyPrintClientID(client) + " has been sent a timestamp."));
             try {
                 let timestampForClient = new event();
                 timestampForClient.addSendEvent("serverVideoTimestamp", this.currentVideo.getElapsedTime());
@@ -615,12 +615,12 @@ class Room {
     // }
 
     onRoomEvent(cb){
-        logging.withTime(chalk.green("Room event callback set"))
+        logging.debug(chalk.green("Room event callback set"))
         this._cbEvent = cb.bind(this);
     }
 
     onClientEvent(cb){
-        logging.withTime(chalk.green("Client event callback set"))
+        logging.debug(chalk.green("Client event callback set"))
         this._cbClientEvent = cb.bind(this);
     }
 }
@@ -830,9 +830,9 @@ class NewQueue {
 
     set shuffle(newShuffle) {
         let oldShuffle = this._shuffle;
-        logging.withTime("[Queue] Shuffle was " + oldShuffle)
+        logging.debug("[Queue] Shuffle was " + oldShuffle)
         this._shuffle = newShuffle;
-        logging.withTime("[Queue] Shuffle is now " + this._shuffle)
+        logging.debug("[Queue] Shuffle is now " + this._shuffle)
         if (oldShuffle === true && this._shuffle === false) {  // If shuffle has been switched off
             // We need to find the current video in the regular array and set the current index to that
             // Find the index of the current video in the regular array
@@ -1073,12 +1073,12 @@ class ServerVideo extends Video {
         else return value;
     }
     set timestamp(ts) {
-        console.log(chalk.redBright(ts));
+        logging.debug("[ServerVideo] Timestamp set to " + chalk.redBright(ts));
         if (ts < 0) {
             throw new rmErrors.ValueError("Video timestamp cannot be a negative value");
         }
         
-        logging.withTime(chalk.yellowBright("Received new timestamp of ") + ts)
+        logging.debug(chalk.yellowBright("Received new timestamp of ") + ts)
         this.startingTime = new Date().getTime() - (ts);
         this._pausedTime = 0;
         this._pausedSince = 0;
@@ -1160,10 +1160,10 @@ class ServerVideo extends Video {
 
     pauseTimer(time = new Date().getTime()) {
         this._pausedSince = new Date().getTime();  // Set the time of pausing
-        console.log(chalk.yellowBright("[classes.js][ServerVideo] The video has been set paused."));
+        logging.info(chalk.yellowBright("[ServerVideo] The video has been set paused."));
         // if (this._cbWhenFinishedTimeout){
         clearTimeout(this._cbWhenFinishedTimeout);
-        console.log("DEBUGGGGGGGGGGGG The timeout has been cleared ");
+        logging.debug("[ServerVideo] The timeout has been cleared ");
         // }
     }
 
@@ -1175,7 +1175,7 @@ class ServerVideo extends Video {
         this._pausedSince = 0;
         // Callback when the video has finished
 
-        console.log(chalk.greenBright("[classes.js][ServerVideo] The video has been resumed. It was paused for " + this._pausedTime));
+        logging.info(chalk.greenBright("[ServerVideo] The video has been resumed. It was paused for " + this._pausedTime));
     }
 
     whenFinished(cbWhenFinished) {
@@ -1199,21 +1199,21 @@ class ServerVideo extends Video {
         clearTimeout(this._cbWhenFinishedTimeout);  // Clear the video finishing timeout
 
         // Debug stuff
-        console.log(oof0 + " DEBUGGGGGGGGGGGG Cleared any existing timestamp");
+        logging.debug("[ServerVideo] " + oof0+ " Cleared any existing timestamp.");
         // this.oof1 = (this._duration - (this._elapsedTime));
         this.oof2 = new Date().getTime();
         // console.log(oof0 + " DEBUGGGGGGGGGGGG Set timeout to " + (this._duration - (this._elapsedTime)));
 
-        console.log(this._duration);
-        console.log(this.getElapsedTime());
+        logging.debug("[ServerVideo] New duration: " + this._duration);
+        logging.debug("[ServerVideo] New elapsed time: " + this.getElapsedTime());
         this._timeRemainingSinceLastResumed = (this._duration - (this.getElapsedTime()));  // Set the time remaining
 
         // If there's a video finished callback set, set a timeout for when the video finishes
         if (this._cbWhenFinished) {
             this._cbWhenFinishedTimeout = setTimeout((id) => {  // , to call the callback
-                console.log(oof0 + " THE VIDEO HAS FINISHED");
-                console.log(oof0 + " OFFFFFFFFFFFFFFFFFFFFFFFFFOOOFFFFFFFFFFFFFFFFFFFFF" + ((new Date().getTime()) - this.oof2));
-                console.log(oof0 + " " + this.oof1);
+                logging.debug("[ServerVideo] " + oof0 + " THE VIDEO HAS FINISHED");
+                logging.debug("[ServerVideo] " + oof0 + " OFFFFFFFFFFFFFFFFFFFFFFFFFOOOFFFFFFFFFFFFFFFFFFFFF" + ((new Date().getTime()) - this.oof2));
+                logging.debug("[ServerVideo] " + oof0 + " " + this.oof1);
                 this.state = 0;
                 return this._cbWhenFinished();  // Call the callback
             }, this._timeRemainingSinceLastResumed, oof0);
@@ -1222,7 +1222,7 @@ class ServerVideo extends Video {
 
     // Function to pause the video
     pauseVideo(buffer) {
-        console.log("SERVER VIDEO HAS PAUSED");
+        logging.debug("[ServerVideo] Video has been paused");
         this.pauseTimer();
         if (buffer) {
             this.state = 3;

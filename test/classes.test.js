@@ -6,9 +6,9 @@ const { event } = require("../web/js/event");
 const testHelpers = require('../src/test/setupFunctions');
 
 // Classes
-var classes = require('../web/js/classes');
+var classes = require('../src/rm/classes');
 const { queue } = require('jquery');
-const { Video, ServerVideo } = require('../web/js/classes');
+const { Video, ServerVideo } = require('../src/rm/classes');
 
 // Test video object ID parsing
 describe('Video object URL parsing test', function () {

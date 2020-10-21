@@ -1,4 +1,4 @@
-var server = require('../../web/js/classes');
+var server = require('./classes');
 
 
 function setNicknameInRoom(client, nickname, room) {

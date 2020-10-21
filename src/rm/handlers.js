@@ -1,5 +1,5 @@
 const chalk = require('chalk');
-var server = require('../../web/js/classes');
+var server = require('./classes');
 const rmUtilities = require('./utils');
 const logging = require('./logging');
 const transmit = require('./socketTransmit');

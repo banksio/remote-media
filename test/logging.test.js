@@ -1,7 +1,7 @@
 const assert = require('assert');
 const sinon = require('sinon');
 const logging = require('../src/rm/logging');
-const classes = require('../web/js/classes');
+const classes = require('../src/rm/classes');
 
 describe('Logging function tests', function () {
     const sandbox = sinon.createSandbox();
