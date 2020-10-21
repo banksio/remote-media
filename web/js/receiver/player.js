@@ -115,6 +115,7 @@ export function serverPlayerControl(data) {
 // });
 
 export function skipToTimestamp(timestamp) {
+    timestamp = timestamp / 1000  // Must convert to seconds as this is what the YouTube API expects
     player.playVideo();
     player.seekTo(timestamp);
 }
@@ -204,7 +205,7 @@ export function onPlayerPreloadingFinished(callback){
 }
 
 export function getCurrentTimestamp() {
-    return player.getCurrentTime();
+    return player.getCurrentTime() * 1000;  // Must multiply by 1000 as the server expects milliseconds
 }
 
 export function getCurrentVideoID() {
@@ -224,7 +225,7 @@ function eventVideoDetails() {
         id: videoDetails.video_id,
         title: videoDetails.title,
         channel: videoDetails.author,
-        duration: videoDuration
+        duration: videoDuration * 1000
     })
     // socket.binary(false).emit("receiverVideoDetails", {
     //     id: videoDetails.video_id,

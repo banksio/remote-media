@@ -176,7 +176,7 @@ class Room {
                 logging.debug(chalk.blueBright("[ServerVideo] Recieved video details from " + logging.prettyPrintClientID(client)));
                 this.currentVideo.title = videoDetails.title;
                 this.currentVideo.channel = videoDetails.channel;
-                this.currentVideo.duration = videoDetails.duration * 1000;
+                this.currentVideo.duration = videoDetails.duration;
                 logging.debug("The video duration is " + videoDetails.duration);
 
                 // Trigger event callback
@@ -188,15 +188,16 @@ class Room {
             newTimestamp: (data, callback) => {
                 let ts = data.timestamp;
                 if (utils.validateClientVideo(data.videoID, this)) {
-                    this.currentVideo.timestamp = ts * 1000;
-                    this._cbEvent(new event("serverVideoTimestamp", this.currentVideo.getElapsedTime()), this);
+                    this.currentVideo.timestamp = ts;
+                    this._cbEvent(new event("serverVideoTimestamp", ts), this);
                 } else {
                     callback("Invalid Video");
                 }
             },
             currentTimestampRequest: (data, callback) => {
+                console.log(this.currentVideo.getElapsedTime());
                 if (utils.validateClientVideo(data.videoID, this)) {
-                    callback(this.currentVideo.getElapsedTime() / 1000);
+                    callback(this.currentVideo.getElapsedTime());
                 } else {
                     callback(undefined, "Invalid Video");
                 }

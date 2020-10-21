@@ -90,7 +90,7 @@ player.loadYouTubeIframeAPI();
 
 transmit.onServerPlayerControl((data) => player.serverPlayerControl(data));
 transmit.onServerNewVideo((data) => player.preloadVideo(data.value));
-transmit.onServerVideoTimestamp((ts) => player.skipToTimestamp(ts / 1000));
+transmit.onServerVideoTimestamp((ts) => player.skipToTimestamp(ts));
 
 frontendUI.initNicknameModal((nickname) => {
     checkNickname(nickname);
@@ -172,9 +172,9 @@ function compareWithServerTimestamp() {
 function compareTimestamps(client, server) {
     console.log("CLIENT " + client);
     console.log("SERVER " + server);
-    if (client > server + 2) {
+    if (client > server + 2000) {
         return true;
-    } else if (client < server - 2) {
+    } else if (client < server - 2000) {
         return true;
     }
     return false;

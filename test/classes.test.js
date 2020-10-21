@@ -1327,21 +1327,6 @@ describe('Room event tests', function () {
         room.incomingEvents.receiverReady(room.clients.fakeID1);
     });
 
-    it('Should callback with the new timestamp', function (done){
-        let room = testHelpers.roomWithTwoClients();
-        let expected = {
-            timestamp: 5,
-            videoID: undefined
-        };
-
-        room.onRoomEvent(function (data, room) {
-            assert.strictEqual(data.broadcastEvents.serverVideoTimestamp, expected.timestamp);
-            done();
-        })
-
-        room.incomingEvents.newTimestamp(expected);
-    });
-
     it('Should callback with error as invalid video id', function (done){
         let room = testHelpers.roomWithTwoClients();
         let expected = {
@@ -1377,7 +1362,7 @@ describe('Room event tests', function () {
             assert.deepStrictEqual(data, videoDetailsEvent);
             assert.strictEqual(room.currentVideo.title, videoDetails.title);
             assert.strictEqual(room.currentVideo.channel, videoDetails.channel);
-            assert.strictEqual(room.currentVideo.duration / 1000, videoDetails.duration);
+            assert.strictEqual(room.currentVideo.duration, videoDetails.duration);
             done();
         })
 
@@ -1869,7 +1854,7 @@ describe('Room time sensitive events', function () {
         this.clock.tick(ts);
 
         room.incomingEvents.currentTimestampRequest(data, function(timestamp, error){
-            assert.strictEqual(timestamp * 1000, ts);
+            assert.strictEqual(timestamp, ts);
             done();
         });
     })
@@ -1891,4 +1876,18 @@ describe('Room time sensitive events', function () {
             done();
         });
     })
+    it('Should callback with the new timestamp', function (done){
+        let room = testHelpers.roomWithTwoClients();
+        let expected = {
+            timestamp: 5000,
+            videoID: undefined
+        };
+
+        room.onRoomEvent(function (data, room) {
+            assert.strictEqual(data.broadcastEvents.serverVideoTimestamp, expected.timestamp);
+            done();
+        })
+
+        room.incomingEvents.newTimestamp(expected);
+    });
 });
