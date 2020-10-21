@@ -23,15 +23,15 @@ function clientDisconnect(room, client) {
 // Not a room event
 // TODO: Refactor
 function AdminConnectionManagement(room, control) {
-    logging.withTime("Connection management request recieved.");
+    logging.debug("Connection management request recieved.");
     switch (control) {
         case "reload":
             transmit.broadcastConnectionManagement(room, "reload");
-            logging.withTime("[CliMgnt] Reloading all clients...");
+            logging.debug("[CliMgnt] Reloading all clients...");
             break;
         case "discon":
             transmit.broadcastConnectionManagement(room, "discon");
-            logging.withTime("[CliMgnt] Disconnecting all clients...");
+            logging.debug("[CliMgnt] Disconnecting all clients...");
             break;
         default:
             break;
@@ -91,7 +91,7 @@ function ReceiverTimestampSyncRequest(room, data, callback) {
 
 
 function ReceiverTimestampRequest(room, client, data, callback) {
-    console.log("[CliMgnt] " + logging.prettyPrintClientID(client) + " has requested a timestamp.");
+    logging.info("[CliMgnt] " + logging.prettyPrintClientID(client) + " has requested a timestamp.");
     room.incomingEvents.currentTimestampRequest(data, callback);
 }
 
@@ -115,7 +115,7 @@ function ReceiverPreloadingFinished(room, client, videoID) {
         room.incomingEvents.receiverPreloadingFinished(videoID, client);
     } catch (error) {
         if (error == "Wrong video"){
-            console.log(logging.prettyPrintClientID(client) + " is on the wrong video.");
+            logging.warn(logging.prettyPrintClientID(client) + " is on the wrong video.");
             return;
         }
     }
