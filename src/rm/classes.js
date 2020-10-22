@@ -203,7 +203,7 @@ class Room {
                 }
             },
             currentTimestampRequest: (data, callback) => {
-                console.log(this.currentVideo.getElapsedTime());
+                logging.debug("[ServerVideo] Current elapsed time: " + this.currentVideo.getElapsedTime());
                 if (utils.validateClientVideo(data.videoID, this)) {
                     callback(this.currentVideo.getElapsedTime());
                 } else {
