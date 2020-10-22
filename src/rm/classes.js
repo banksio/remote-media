@@ -564,6 +564,8 @@ class Room {
         // If the client is no longer buffering (state was 3 or above but is now beneath 3)
         if (status.state < 3 && status.previousState >= 3) {
             this.broadcastBufferingClients();
+        } else if (status.preloading == false && status.previousPreloading == true) {
+            this.broadcastBufferingClients();
         }
     }
 
@@ -686,6 +688,7 @@ class State {
         this.state = state;
         this.previousState = state;
         this.preloading = preloading;
+        this.previousPreloading = preloading;
         this.requiresTimestamp = false;
         this.playerLoading = true;
     }
@@ -698,6 +701,7 @@ class State {
     }
 
     updatePreloading(preloading) {
+        this.previousPreloading = this.preloading;
         this.preloading = preloading;
         // return this.cbStateChange();
     }
