@@ -3,9 +3,19 @@ var arr = url.split("/");
 var result = arr[0] + "//" + arr[2];
 var socket = io(result + "/");
 
+let nickModalSpinner = document.getElementById("nickModalSubmitSpinner");
+let nickModalButton = document.querySelector("#nicknameForm > div > div.modal-footer > button");
+
+const receiverDetails = {
+    nickname: undefined
+}
+
 socket.on('connect', () => {
     console.log("Connected to server with socket ID " + socket.id);
     frontendChangeConnectionIdentifier(1);
+    if (receiverDetails.nickname){
+        checkNickname(receiverDetails.nickname);
+    }
 });
 
 socket.on('disconnect', () => {
@@ -54,7 +64,7 @@ socket.on("serverBufferingClients", function (buffering) {
     buffering.forEach(client => {
         names += (client._name + ", ");
     });
-        frontendShowNotificationBanner(names, true);
+        frontendShowNotificationBanner(names, true, true);
 
 });
 
@@ -73,7 +83,16 @@ function frontendChangeBanner(notificationObject) {
 }
 
 function pushTimestampToServer(timestamp) {
-    socket.emit("receiverTimestampSyncRequest", timestamp);
+    frontendShowNotificationBanner("Syncing others...", true, true);
+    let data = {
+        timestamp: timestamp,
+        videoID: vid
+    }
+    socket.emit("receiverTimestampSyncRequest", data, (error) => {
+        if (error) {
+            frontendShowNotificationBanner("Error syncing others: " + error, false, false);
+        }
+    });
 }
 
 setInterval(() => {
@@ -141,10 +160,23 @@ function frontendChangeConnectionStatusText(show, connected = true) {
     return;
 }
 
-function frontendShowNotificationBanner(notification, persist) {
+function frontendShowNotificationBanner(notification, persist, spinner=false) {
     console.log("Banner shown");
     let frontendNotificationBanner = document.getElementById("notificationBanner");  // The banner
-    let frontendNotificationText = document.getElementById("notificationText");  // The reconnecting text and spinner
+    let frontendNotificationText = document.getElementById("notificationText");  // The notification text
+    let frontendNotificationSpinner = document.getElementById("notificationSpinner");  // The spinner
+
+    switch (spinner) {
+        case true:  // Don't hide after showing
+            // Show the spinner
+            frontendNotificationSpinner.classList.remove("d-none");
+            break;
+        case false:  // Hide after showing
+            frontendNotificationSpinner.classList.add("d-none");
+            break;
+        default:
+            break;
+    }
 
     switch (persist) {
         case true:  // Don't hide after showing
@@ -216,7 +248,8 @@ function frontendShowSideControlPanel(show) {
                 let name = document.getElementById('validationDefault01').value;
                 if (name !== "") {
                     // Check nickname async
-                    // TODO: Show loading spinner or something
+                    nickModalSpinner.style.display = "block";
+                    nickModalButton.setAttribute('disabled', 'disabled');
                     checkNickname(name);
                 }
             }, false);
@@ -227,12 +260,17 @@ function frontendShowSideControlPanel(show) {
 // Ask the server to validate the nickname and get the response
 function checkNickname(nick) {
     socket.emit('receiverNickname', nick, (error) => { // Async callback with server's validation response
-        // If response is true, we're good - hide the modal
-        if (error == undefined){
+        nickModalSpinner.style.display = "none";
+        // If response is undefined, we're good - hide the modal
+        if (error === null){
+            receiverDetails.nickname = nick;
             $('#nameModal').modal('hide');
+            frontendShowNotificationBanner("Set nickname: " + receiverDetails.nickname, false, false);
             return;
         }
-        // If response is false, there's been an error
+        $('#nameModal').modal('show');
+        nickModalButton.removeAttribute('disabled');
+        // If response is anything else, there's been an error
         alert("Setting nickname has been encountered an error: " + error);
         return error;
     });

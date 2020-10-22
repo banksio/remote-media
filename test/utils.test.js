@@ -1,7 +1,7 @@
 const assert = require('assert');
 
 // Classes
-var classes = require('../web/js/classes');
+var classes = require('../src/rm/classes');
 var rmUtils = require('../src/rm/utils');
 const utils = require('../src/rm/utils');
 

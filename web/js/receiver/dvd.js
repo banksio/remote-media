@@ -5,10 +5,6 @@ var ySpeed = 120;
 var vewPoint;
 var colours = ['rgb(0, 0, 255)', 'rgb(0, 255, 0)', 'rgb(0, 128, 128)', 'rgb(255, 0, 0)', 'rgb(128, 0, 128)', 'rgb(128, 128, 0)'];
 
-var timer;
-var intervalId;
-var screenOffTime = 1; //ms
-
 let currentFrameCb;
 let shown = false;
 let lastTS;
@@ -35,7 +31,7 @@ var logoAnimate = function(timestamp){
     if (((x + logoImg.clientWidth) > window.innerWidth) || (x < 0)) {
         xSpeed *= -1;
         logoImg.style.fill = colours[(colours.indexOf(logoImg.style.fill) + 1) % colours.length];
-    };
+    }
     if ((x + logoImg.clientWidth) > window.innerWidth) x=window.innerWidth-logoImg.clientWidth;
     if (x < 0) x=0;
 
@@ -52,7 +48,7 @@ var logoAnimate = function(timestamp){
     currentFrameCb = window.requestAnimationFrame(logoAnimate);
 };
 
-function startScreensaver() {
+export function start() {
     // Start and show the animation
     shown = true;
     document.getElementById("screensaver").style.display = "block";
@@ -64,7 +60,7 @@ function startScreensaver() {
     return true;
 }
 
-function stopScreensaver() {
+export function stop() {
     if (shown == false) return;  // Don't run if already animating out
     
     // Hide and stop the animation

@@ -1,5 +1,5 @@
 const chalk = require('chalk');
-var server = require('../../web/js/classes');
+var server = require('./classes');
 const rmUtilities = require('./utils');
 const logging = require('./logging');
 const transmit = require('./socketTransmit');
@@ -10,28 +10,28 @@ const { event } = require("../../web/js/event")
 function clientConnect(room, socket) {
     // Call the newClient event to add a new client
     // Return the new client for the calling function to use
-    return room.events.newClient(socket)
+    return room.incomingEvents.newClient(socket)
 }
 
 
 function clientDisconnect(room, client) {
     // Call the newClient event to remove the client
-    room.events.disconnectClient(client);
+    room.incomingEvents.disconnectClient(client);
 }
 
 
 // Not a room event
 // TODO: Refactor
 function AdminConnectionManagement(room, control) {
-    logging.withTime("Connection management request recieved.");
+    logging.debug("Connection management request recieved.");
     switch (control) {
         case "reload":
             transmit.broadcastConnectionManagement(room, "reload");
-            logging.withTime("[CliMgnt] Reloading all clients...");
+            logging.debug("[CliMgnt] Reloading all clients...");
             break;
         case "discon":
             transmit.broadcastConnectionManagement(room, "discon");
-            logging.withTime("[CliMgnt] Disconnecting all clients...");
+            logging.debug("[CliMgnt] Disconnecting all clients...");
             break;
         default:
             break;
@@ -41,13 +41,13 @@ function AdminConnectionManagement(room, control) {
 
 function AdminQueueControl(room, data) {
     // Call the queueControl event to modify the queue
-    room.events.queueControl(data);
+    room.incomingEvents.queueControl(data);
 }
 
 
 function AdminPlayerControl(room, data) {
     // Call the videoControl event to change the state of the video
-    room.events.videoControl(data);
+    room.incomingEvents.videoControl(data);
 }
 
 
@@ -58,55 +58,53 @@ function AdminTTSRequest(room, data) {
 }
 
 
-function AdminQueueAppend(room, data) {
+function AdminQueueAppend(room, data, callback) {
     // Call queueAppend event to add videos to queue
-    room.events.queueAppend(data.value);
+    callback(room.incomingEvents.queueAppend(data.value));
     return;
 }
 
 
-function AdminNewVideo(room, data) {
+function AdminNewVideo(room, data, callback) {
     // Call the new video event to set a new video in the room
-    room.events.newVideo(data.value);
+    callback(room.incomingEvents.newVideo(data.value));
     return;
 }
 
 
 function ReceiverPlayerStatus(room, client, data) {
     // Call the receiver player status room event
-    room.events.receiverPlayerStatus(data, client);
+    room.incomingEvents.receiverPlayerStatus(data, client);
 }
 
 
 function ReceiverVideoDetails(room, client, videoDetails) {
     // Call the video details event to assign the details of the video to the server
-    room.events.receiverVideoDetails(videoDetails, client);
+    room.incomingEvents.receiverVideoDetails(videoDetails, client);
 }
 
 
-function ReceiverTimestampSyncRequest(room, timestamp) {
+function ReceiverTimestampSyncRequest(room, data, callback) {
     // Call the newTimestamp event to set the video timestamp
-    room.events.newTimestamp(timestamp);
+    room.incomingEvents.newTimestamp(data, callback);
 }
 
 
-// Not a room event
-// TODO: Refactor
-function ReceiverTimestampRequest(room, client, callback) {
-    console.log("[CliMgnt] " + logging.prettyPrintClientID(client) + " has requested a timestamp.");
-    callback(room.currentVideo.getElapsedTime() / 1000);
+function ReceiverTimestampRequest(room, client, data, callback) {
+    logging.info("[CliMgnt] " + logging.prettyPrintClientID(client) + " has requested a timestamp.");
+    room.incomingEvents.currentTimestampRequest(data, callback);
 }
 
 
 function ReceiverPlayerReady(room, client) {
     // Call the receiver ready event to send the current video if there's one playing
-    room.events.receiverReady(client);
+    room.incomingEvents.receiverReady(client);
 }
 
 
 function ReceiverNickname(room, client, nick, callback) {
     // Empty response is success, tells receiver to continue
-    callback(room.events.receiverNickname(nick, client));
+    callback(room.incomingEvents.receiverNickname(nick, client));
 }
 
 
@@ -114,10 +112,10 @@ function ReceiverPreloadingFinished(room, client, videoID) {
     // Call the receiver preloading finished event
     try {
         // This could throw if the client is on the wrong video
-        room.events.receiverPreloadingFinished(videoID, client);
+        room.incomingEvents.receiverPreloadingFinished(videoID, client);
     } catch (error) {
         if (error == "Wrong video"){
-            console.log(logging.prettyPrintClientID(client) + " is on the wrong video.");
+            logging.warn(logging.prettyPrintClientID(client) + " is on the wrong video.");
             return;
         }
     }

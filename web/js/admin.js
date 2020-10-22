@@ -3,6 +3,49 @@ var arr = url.split("/");
 var result = arr[0] + "//" + arr[2];
 var socket = io(result + "/");
 
+const stateIcons = [
+    '<i class="fas fa-hourglass-half"></i>',
+    '<i class="fas fa-stop"></i>',
+    '<i class="fas fa-play"></i>',
+    '<i class="fas fa-pause"></i>',
+    '<div class="spinner-border spinner-border-sm"></div>',
+    'Unknown',
+    '<i class="fas fa-check"></i>'
+];
+
+const tableWorker = new Worker('js/worker.js');
+
+// Page elements
+const volSlider = document.getElementById("volume");
+const btnPlaylistShuffleToggle = document.getElementById('btnPlaylistShuffle');
+const checkQueueShuffle = document.getElementById('shuffleCheck');
+const pause = document.getElementById('pause');
+const play = document.getElementById('play');
+const prev = document.getElementById('prev');
+const skip = document.getElementById('skip');
+const emptyPlaylist = document.getElementById('emptyPlaylist');
+const btnQueueAppend = document.querySelector("#queue > div.input-group > div > button");
+const btnVideoPush = document.querySelector("#quickpush > div > div > button");
+const tableRef = document.getElementById("playlist-table-body");
+const upNextTitle = document.getElementById("videoTitleNext");
+const upNextImage = document.getElementById("videoThumbnailNext");
+const nowplayingTitleElement = document.getElementById("nowPlayingTitle");
+const nowplayingChannelElement = document.getElementById("nowPlayingChannel");
+const nowplayingThumbnail = document.getElementById("imgNowPlaying");
+
+const queue = {
+    "index": 0,
+    "shuffle": false,
+    "videos": []
+};
+
+// If the thumbnail is the default YouTube invalid thumbnail, get the lower resolution
+nowplayingThumbnail.onload = () => {
+    if (nowplayingThumbnail.naturalHeight === 90) {
+        nowplayingThumbnail.src = nowplayingThumbnail.src.slice(0,-17) + "hqdefault.jpg";
+    }
+}
+
 socket.on('connect', () => {
     console.log(socket.id);
     // alert(socket.id);
@@ -16,40 +59,19 @@ socket.on('disconnect', () => {
     frontendChangeConnectionIdentifier(false);
 });
 
-const stateIcons = [
-    '<i class="fas fa-hourglass-half"></i>',
-    '<i class="fas fa-stop"></i>',
-    '<i class="fas fa-play"></i>',
-    '<i class="fas fa-pause"></i>',
-    '<div class="spinner-border spinner-border-sm"></div>',
-    'Unknown',
-    '<i class="fas fa-check"></i>'
-];
 
-//page elements
-var volSlider = document.getElementById("volume");
-var btnPlaylistShuffleToggle = document.getElementById('btnPlaylistShuffle');
-var checkQueueShuffle = document.getElementById('shuffleCheck');
-
-var pause = document.getElementById('pause');
 pause.addEventListener("click", function () {
     socket.binary(false).emit("adminPlayerControl", "pause");
 });
-var play = document.getElementById('play');
 play.addEventListener("click", function () {
     socket.binary(false).emit("adminPlayerControl", "play");
 });
-
-var prev = document.getElementById('prev');
 prev.addEventListener("click", function () {
     socket.binary(false).emit("adminQueueControl", "prev");
 });
-var skip = document.getElementById('skip');
 skip.addEventListener("click", function () {
     socket.binary(false).emit("adminQueueControl", "skip");
 });
-
-var emptyPlaylist = document.getElementById('emptyPlaylist');
 emptyPlaylist.addEventListener("click", function () {
     socket.binary(false).emit("adminQueueControl", "empty");
 });
@@ -65,39 +87,19 @@ emptyPlaylist.addEventListener("click", function () {
 // })
 
 function send() {
+    btnVideoPush.setAttribute("disabled", "disabled");
+    frontendChangeMainSpinner(1, "Pushing video...");
     var val = document.getElementById("target").value;
     socket.binary(false).emit("adminNewVideo", { value: val, pass: true });
 }
 
 
 function sendAppend(data) {
-    // var val = document.getElementById("targetAppend").value;
-    // alert(data);
-    // var id = undefined;
-
-    // const regex = /(?:\.be\/(.*?)(?:\?|$)|watch\?v=(.*?)(?:\&|$|\n))/ig;
-    // let m;
-
-    // while ((m = regex.exec(val)) !== null) {
-    //     // This is necessary to avoid infinite loops with zero-width matches
-    //     if (m.index === regex.lastIndex) {
-    //         regex.lastIndex++;
-    //     }
-
-    //     // The result can be accessed through the `m`-variable.
-    //     m.forEach((match, groupIndex) => {
-    //         if (groupIndex == 0){
-    //             return;
-    //         }
-    //         if (match == undefined){
-    //             return;
-    //         }
-    //         // console.log(`Found match, group ${groupIndex}: ${match}`);
-    //         socket.binary(false).emit("targetAppend",{value: match, pass: document.getElementById("password").value});
-    //     });
-    // }
+    btnQueueAppend.setAttribute("disabled", "disabled");
+    frontendChangeMainSpinner(1, "Adding to queue...");
     socket.binary(false).emit("adminQueueAppend", { value: data });
 }
+
 
 function getTitle(data) {
     var feed = data.feed;
@@ -143,6 +145,8 @@ function speak() {
 socket.on("serverNewVideo", function (data) {
     // Show loading of thumbnail
     frontendChangeThumbnailSpinner(true);
+    btnVideoPush.removeAttribute("disabled");
+    frontendChangeMainSpinner(0);
 });
 
 // Recieved video details from the server
@@ -150,12 +154,7 @@ socket.on("serverCurrentVideo", function (video) {
     video = JSON.parse(video);
     console.log("Recieved video details from server");
     // console.log(JSON.parse(video));
-    let nowplayingTitleElement = document.getElementById("nowPlayingTitle");
-    let nowplayingChannelElement = document.getElementById("nowPlayingChannel");
-    let nowplayingThumbnail = document.getElementById("imgNowPlaying");
-    nowplayingThumbnail.src = getThumbnailSrc(video);
-    nowplayingTitleElement.innerText = video.title;
-    nowplayingChannelElement.innerText = video.channel;
+    changeMainThumbnail(video);
     frontendChangeThumbnailSpinner(false);
     // console.log(videoDetails);
 });
@@ -180,61 +179,85 @@ socket.on("serverClients", function (clients) {
 });
 
 socket.on("serverQueueVideos", function (queueData) {
-    // alert("oof");
-    // prompt("queue", JSON.stringify(queueData));
-    // queueData = JSON.parse(queueData);
-    // return;
-    // Get a reference to the table, and empty it
-    let tableRef = document.getElementById("playlist-table-body");
-    let upNextTitle = document.getElementById("videoTitleNext");
-    let upNextImage = document.getElementById("videoThumbnailNext");
-    tableRef.innerHTML = "";
-    // console.log(queueData);
-    var videos = queueData.videos;
-    if (videos.length > 0) {
-        var i = 1;
-        for (var video of videos) {
-            // prompt("", video);
-            // console.log(video);
-            var videoID = video.id;
-            // $('#playlist-table-body tr:last').after('<tr><td>'+ i +'</td><td>'+ video["id"] +'</td></tr>');
-            if (i == queueData.index + 1){
-                tableRef.innerHTML = tableRef.innerHTML + '<tr class="tr-active"><td>' + i + '</td><td>' + video.title + '</td><td>' + video.channel + '</td></tr>';
-            } else {
-                tableRef.innerHTML = tableRef.innerHTML + '<tr><td>' + i + '</td><td>' + video.title + '</td><td>' + video.channel + '</td></tr>';
-            }
-            
-            i++;
-        }
-        try {
-            // TODO: Handle the unavailability of a next video
-            upNextTitle.innerText = videos[queueData.index + 1].title;
-            upNextImage.src = getThumbnailSrc(videos[queueData.index + 1]);
-        } catch (error) {
-            
-        }
-            
-    }
+    frontendChangeMainSpinner(1, "Updating queue...");
+    queue.videos = queueData.videos;
+    queue.index = queueData.index;
+    queue.length = queueData.length;
 
-    if (videos.length > 0){
-        frontendChangeSkipButtons(undefined, true);
-        if (queueData.index > 0) {
-            frontendChangeSkipButtons(true, undefined);
-        } else {
-            frontendChangeSkipButtons(false, undefined);
-        }
-    } else if (videos.length == 0){
-        frontendChangeSkipButtons(false, false);
-    }
+    // Repopulate the table
+    repopulateQueueTable();
+    // Update the "next up" indicator
+    updateQueueFrontend();
 
     // queueUpdateStatus(queueData);
 });
+
+function repopulateQueueTable() {
+    tableWorker.postMessage(queue);
+}
+
+tableWorker.onmessage = function(e) {
+    tableRef.innerHTML = e.data;
+    console.log('Message received from worker');
+    btnQueueAppend.removeAttribute("disabled");
+    frontendChangeMainSpinner(0);
+}
+
+function updateQueueFrontend() {
+    if (queue.videos.length > 0){
+        try {
+            changeUpNextThumbnail(queue.videos[queue.index + 1]);
+        }
+        catch (error) { // If there's nothing up next, indicate this
+            changeUpNextThumbnail();
+        }
+
+        frontendChangeSkipButtons(undefined, true);
+        if (queue.index > 0) {
+            frontendChangeSkipButtons(true, undefined);
+        }
+        else {
+            frontendChangeSkipButtons(false, undefined);
+        }
+    } else if (queue.videos.length == 0){
+        frontendChangeSkipButtons(false, false);
+        changeUpNextThumbnail();  // If the queue's empty then there's nothing up next, indicate this
+    }
+}
+
+function changeMainThumbnail(video) {
+    if (video){
+        nowplayingThumbnail.src = getThumbnailSrc(video);
+        nowplayingTitleElement.innerText = video.title;
+        nowplayingChannelElement.innerText = video.channel;
+    } else {
+        nowplayingThumbnail.src = "branding/logo.png";
+        nowplayingTitleElement.innerText = "There's nothing playing right now";
+        nowplayingChannelElement.innerText = "Push a video to get started";
+    }
+}
+
+function changeUpNextThumbnail(video){
+    if (video){
+        upNextTitle.innerText = video.title;
+        upNextImage.src = getMQThumbnailSrc(video);
+    } else {
+        upNextTitle.innerText = "There's nothing up next just yet.";
+        upNextImage.removeAttribute("src");
+    }
+
+}
 
 function getThumbnailSrc(video) {
     return "https://i3.ytimg.com/vi/" + video.id + "/maxresdefault.jpg";
 }
 
+function getMQThumbnailSrc(video) {
+    return "https://i3.ytimg.com/vi/" + video.id + "/mqdefault.jpg";
+}
+
 function toggleShuffle(toggled) {
+    frontendChangeMainSpinner(1, "Shuffling queue...");
     var newState = (toggled == 'false');  // Invert boolean from DOM
     socket.binary(false).emit("adminQueueControl", "toggleShuffle");
 }
@@ -243,20 +266,34 @@ socket.on("serverQueueStatus", function (status) {
     queueUpdateStatus(status);
 });
 
+socket.on("serverQueueFinished", function () {
+    changeMainThumbnail();
+})
+
 function queueUpdateStatus(status) {
-    // alert(status);
-    // alert(JSON.stringify(status))
+    // Update the status
+    queue.shuffle = status.shuffle;
+    queue.index = status.index;
+    queue.length = status.length;
+
     if (status.shuffle == true) {
         checkQueueShuffle.checked = true;
     } else {
         checkQueueShuffle.checked = false;
     }
-}
 
-// // the client code
-// socket.on('ferret', (name, fn) => {
-//     fn('woot');
-// });
+    let activeTableRow = document.querySelector("#playlist-table-body > tr.tr-active");
+    let nextTableRow = document.getElementById("queue-table-video-" + (queue.index + 1));
+
+    if (activeTableRow == null && queue.length > 0) {
+        nextTableRow.classList.add("tr-active");
+    } else if (activeTableRow != null && activeTableRow.id.substring(0, 18) != (queue.index + 1)) {
+        activeTableRow.classList.remove("tr-active");
+        nextTableRow.classList.add("tr-active");
+    }
+    updateQueueFrontend();
+
+}
 
 socket.on("initFinished", function () {
     frontendChangeMainSpinner(0);
@@ -297,7 +334,7 @@ function frontendChangeConnectionIdentifier(connected) {
     return;
 }
 
-function frontendChangeMainSpinner(state) {
+function frontendChangeMainSpinner(state, message="Loading data...") {
     let frontendElementMainSpinner = document.getElementById("statusSpinner");
     let frontendElementMainSpinnerText = document.getElementById("statusLoading");
     switch (state) {
@@ -306,7 +343,7 @@ function frontendChangeMainSpinner(state) {
             break;
         case 1:  // Connected, loading data
             frontendElementMainSpinner.style.visibility = 'visible';
-            frontendElementMainSpinnerText.innerText = "Loading data...";
+            frontendElementMainSpinnerText.innerText = message;
             break;
         case 2:  // Connecting to server
             frontendElementMainSpinner.style.visibility = 'visible';

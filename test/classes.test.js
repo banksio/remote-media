@@ -6,9 +6,9 @@ const { event } = require("../web/js/event");
 const testHelpers = require('../src/test/setupFunctions');
 
 // Classes
-var classes = require('../web/js/classes');
+var classes = require('../src/rm/classes');
 const { queue } = require('jquery');
-const { Video, ServerVideo } = require('../web/js/classes');
+const { Video, ServerVideo } = require('../src/rm/classes');
 
 // Test video object ID parsing
 describe('Video object URL parsing test', function () {
@@ -812,7 +812,7 @@ describe('Server video timekeeping', function () {
         done();
     })
 
-    // TODO: Test callback when timestamp has been changed
+    // TODO Test: callback when timestamp has been changed
 
     it('Should get elapsed time', function () {
         let newServerVideo = new classes.ServerVideo("testID", "testTitle");
@@ -940,7 +940,9 @@ describe('Room transport tests', function () {
 
         let queueStatusTransportConstruct = room.transportConstructs.queueStatus();
         let expected = {
-            "shuffle": room.queue.shuffle
+            "shuffle": room.queue.shuffle,
+            "length": room.queue.length,
+            "index": room.queue.currentIndex
         }
 
         assert.deepStrictEqual(queueStatusTransportConstruct.data, expected);
@@ -983,7 +985,7 @@ describe('console.log spies for classes.js', function (){
             done();  // This should not be called
         })
 
-        let functionReturnCode = room.events.receiverVideoDetails(videoDetails, room.clients.fakeID1);
+        let functionReturnCode = room.incomingEvents.receiverVideoDetails(videoDetails, room.clients.fakeID1);
 
         assert.notStrictEqual(room.currentVideo.title, videoDetails.title);
         assert.notStrictEqual(room.currentVideo.channel, videoDetails.channel);
@@ -1001,7 +1003,7 @@ describe('console.log spies for classes.js', function (){
 
         let room = new classes.Room();
 
-        room.events.videoFinished();
+        room.incomingEvents.videoFinished();
 
         // assert that it logged the correct value
         assert.ok(console.log.getCall(0).args[0].includes(valueOfLogTest));
@@ -1081,7 +1083,7 @@ describe('Room event tests', function () {
             assert.deepStrictEqual(data, expected);
             done();
         })
-        room.events.videoStateChange(1);
+        room.incomingEvents.videoStateChange(1);
     })
 
     it('Should call back with video pause broadcast event', function (done) {
@@ -1094,7 +1096,7 @@ describe('Room event tests', function () {
             done();
         })
 
-        room.events.videoStateChange(2);
+        room.incomingEvents.videoStateChange(2);
     })
 
     it('Should call back with video pause broadcast event', function (done) {
@@ -1107,7 +1109,7 @@ describe('Room event tests', function () {
             done();
         })
 
-        room.events.videoStateChange(3);
+        room.incomingEvents.videoStateChange(3);
     })
 
     it('Should not call back as no video control required', function (done) {
@@ -1117,7 +1119,7 @@ describe('Room event tests', function () {
             done();  // Should not be called
         })
 
-        room.events.videoStateChange(5);
+        room.incomingEvents.videoStateChange(5);
         done();
     })
 
@@ -1128,7 +1130,7 @@ describe('Room event tests', function () {
             done();  // Should not be called
         })
 
-        room.events.videoStateChange(undefined);
+        room.incomingEvents.videoStateChange(undefined);
         done();
     })
 
@@ -1204,7 +1206,7 @@ describe('Room event tests', function () {
         room.clients.fakeID1.status.updatePreloading(true);
         let expected = false;
 
-        room.events.receiverPreloadingFinished(undefined, room.clients.fakeID1);
+        room.incomingEvents.receiverPreloadingFinished(undefined, room.clients.fakeID1);
 
         assert.strictEqual(room.clients.fakeID1.status.preloading, expected);
     });
@@ -1214,14 +1216,14 @@ describe('Room event tests', function () {
         room.clients.fakeID1.status.updatePreloading(true);
         // assert(false)
 
-        assert.throws(() => { room.events.receiverPreloadingFinished("wrongVideoID", room.clients.fakeID1) });
+        assert.throws(() => { room.incomingEvents.receiverPreloadingFinished("wrongVideoID", room.clients.fakeID1) });
     });
 
     it('Should set the client\'s nickname in the room', function (){
         let room = testHelpers.roomWithTwoClients();
         let expected = "testNick";
 
-        room.events.receiverNickname("testNick", room.clients.fakeID1);
+        room.incomingEvents.receiverNickname("testNick", room.clients.fakeID1);
 
         assert.strictEqual(room.clients.fakeID1.name, expected);
     });
@@ -1230,8 +1232,8 @@ describe('Room event tests', function () {
         let room = testHelpers.roomWithTwoClients();
         let expected = "testNick";
 
-        room.events.receiverNickname("testNick", room.clients.fakeID1);
-        let functionReturnValue = room.events.receiverNickname("testNick", room.clients.fakeID2);
+        room.incomingEvents.receiverNickname("testNick", room.clients.fakeID1);
+        let functionReturnValue = room.incomingEvents.receiverNickname("testNick", room.clients.fakeID2);
 
         assert.notStrictEqual(room.clients.fakeID2.name, expected);
         assert.strictEqual(functionReturnValue, "Duplicate Nickname Error");
@@ -1251,7 +1253,7 @@ describe('Room event tests', function () {
             done();
         })
 
-        room.events.receiverNickname("testNick", room.clients.fakeID1);
+        room.incomingEvents.receiverNickname("testNick", room.clients.fakeID1);
     });
 
     it('Should update the client\'s state as being ready but not call back with current video', function (done){
@@ -1266,7 +1268,7 @@ describe('Room event tests', function () {
             done();  // Should not be called
         })
 
-        let functionReturnCode = room.events.receiverReady(room.clients.fakeID1);
+        let functionReturnCode = room.incomingEvents.receiverReady(room.clients.fakeID1);
         assert.strictEqual(room.clients.fakeID1.status.state, expectedState);
         assert.strictEqual(room.clients.fakeID1.status.playerLoading, expectedPlayerLoadingState);
         assert.strictEqual(functionReturnCode, expectedReturnCode);
@@ -1297,7 +1299,7 @@ describe('Room event tests', function () {
             done();
         })
 
-        room.events.receiverReady(room.clients.fakeID1);
+        room.incomingEvents.receiverReady(room.clients.fakeID1);
     });
 
     it('Should update the client\'s state as being ready and call back with current video', function (done){
@@ -1317,38 +1319,31 @@ describe('Room event tests', function () {
             assert.strictEqual(room.clients.fakeID1.status.state, expectedState);
             assert.strictEqual(room.clients.fakeID1.status.playerLoading, expectedPlayerLoadingState);
             // console.log(JSON.stringify(room.clients.fakeID1))
-            // TODO: Look into why this doesn't work
+            // TODO Test: Look into why this doesn't work
             // assert.strictEqual(room.clients.fakeID1.status.requiresTimestamp, expectedRequiresTS);
             done();
         })
 
-        room.events.receiverReady(room.clients.fakeID1);
+        room.incomingEvents.receiverReady(room.clients.fakeID1);
     });
 
-    it('Should callback with the new timestamp', function (done){
+    it('Should callback with error as invalid video id', function (done){
         let room = testHelpers.roomWithTwoClients();
-        let expected = 5;
+        let expected = {
+            timestamp: 5,
+            videoID: "invalid"
+        };
 
         room.onRoomEvent(function (data, room) {
             assert.strictEqual(data.broadcastEvents.serverVideoTimestamp, expected);
             done();
         })
 
-        room.events.newTimestamp(expected);
+        room.incomingEvents.newTimestamp(expected, function(error){
+            assert.ok(error);
+            done();
+        });
     });
-
-    // TODO: Implement this. Need a consistent way of validating client video ID across many event handlers
-    // it('Should not callback with the new timestamp as invalid video id', function (done){
-    //     let room = testHelpers.roomWithTwoClients();
-    //     let expected = 5;
-
-    //     room.onRoomEvent(function (data, room) {
-    //         assert.strictEqual(data.broadcastEvents.serverVideoTimestamp, expected);
-    //         done();
-    //     })
-
-    //     room.events.newTimestamp(expected);
-    // });
 
     it('Should set the room\'s current video\'s details and call back', function (done){
         let room = testHelpers.roomWithTwoClients();
@@ -1367,18 +1362,18 @@ describe('Room event tests', function () {
             assert.deepStrictEqual(data, videoDetailsEvent);
             assert.strictEqual(room.currentVideo.title, videoDetails.title);
             assert.strictEqual(room.currentVideo.channel, videoDetails.channel);
-            assert.strictEqual(room.currentVideo.duration / 1000, videoDetails.duration);
+            assert.strictEqual(room.currentVideo.duration, videoDetails.duration);
             done();
         })
 
-        room.events.receiverVideoDetails(videoDetails, room.clients.fakeID1);
+        room.incomingEvents.receiverVideoDetails(videoDetails, room.clients.fakeID1);
     });
 
     it('Should pause the video', function () {
         let room = testHelpers.roomWithTwoClients();
         let spy = sinon.spy(room.currentVideo, "pauseVideo");
 
-        room.events.videoControl("pause");
+        room.incomingEvents.videoControl("pause");
 
         // Should have been called with false as not bufering
         assert.ok(spy.calledOnce);
@@ -1392,7 +1387,7 @@ describe('Room event tests', function () {
         let room = testHelpers.roomWithTwoClients();
         let spy = sinon.spy(room.currentVideo, "playVideo");
 
-        room.events.videoControl("play");
+        room.incomingEvents.videoControl("play");
 
         // Should have been called once
         assert.ok(spy.calledOnce);
@@ -1423,7 +1418,7 @@ describe('Room event tests', function () {
         let videoURL = "https://www.youtube.com/watch?v=FoSe_KAQEr8";
         let videoID = "FoSe_KAQEr8";
 
-        room.events.newVideo(videoURL);
+        room.incomingEvents.newVideo(videoURL);
 
         let expectedVideo = new Video(videoID);
 
@@ -1441,7 +1436,7 @@ describe('Room event tests', function () {
         let videoURL = "https://www.youtube.com/watch?v=FoSe_KAQEr8,https://www.youtube.com/watch?v=FoSe_KAQEr8";
         let videoID = "FoSe_KAQEr8";
 
-        room.events.newVideo(videoURL);
+        room.incomingEvents.newVideo(videoURL);
 
         // Should have been called once
         assert.ok(spy.notCalled);
@@ -1471,7 +1466,7 @@ describe('Room event tests', function () {
             done();
         })
 
-        room.events.queueAppend(videoURL);
+        room.incomingEvents.queueAppend(videoURL);
     })
 
     it('Should play the previous item in the queue and call back with the queue', function (done) {
@@ -1480,8 +1475,8 @@ describe('Room event tests', function () {
 
         room.onRoomEvent(function (data, room) {
             var queueControlResponse = new event();
-            let queue = room.transportConstructs.queue();
-            queueControlResponse.addBroadcastEventFromConstruct(queue);
+            let queueStatus = room.transportConstructs.queueStatus();
+            queueControlResponse.addBroadcastEventFromConstruct(queueStatus);
             assert.deepStrictEqual(data, queueControlResponse);
 
             // Should have been called once
@@ -1492,7 +1487,7 @@ describe('Room event tests', function () {
             done();
         })
 
-        room.events.queueControl("prev");
+        room.incomingEvents.queueControl("prev");
     })
 
     it('Should play the next item in the queue and call back with the queue', function (done) {
@@ -1501,8 +1496,8 @@ describe('Room event tests', function () {
 
         room.onRoomEvent(function (data, room) {
             var queueControlResponse = new event();
-            let queue = room.transportConstructs.queue();
-            queueControlResponse.addBroadcastEventFromConstruct(queue);
+            let queueStatus = room.transportConstructs.queueStatus();
+            queueControlResponse.addBroadcastEventFromConstruct(queueStatus);
             assert.deepStrictEqual(data, queueControlResponse);
             
             // Should have been called once
@@ -1513,7 +1508,7 @@ describe('Room event tests', function () {
             done();
         })
 
-        room.events.queueControl("skip");
+        room.incomingEvents.queueControl("skip");
 
     })
 
@@ -1535,7 +1530,7 @@ describe('Room event tests', function () {
             done();
         })
 
-        room.events.queueControl("empty");
+        room.incomingEvents.queueControl("empty");
     })
 
     it('Should toggle shuffle on the queue and call back with the queue', function (done) {
@@ -1558,7 +1553,7 @@ describe('Room event tests', function () {
             done();
         })
 
-        room.events.queueControl("toggleShuffle");
+        room.incomingEvents.queueControl("toggleShuffle");
     })
 
     it('Should only call back with the queue', function (done) {
@@ -1588,7 +1583,7 @@ describe('Room event tests', function () {
             done();
         })
 
-        room.events.queueControl("garbage");
+        room.incomingEvents.queueControl("garbage");
     })
 
     it('Should call back with the new client list', function (done) {
@@ -1603,7 +1598,7 @@ describe('Room event tests', function () {
             done();
         })
         // TODO Test: more thoroughly
-        room.events.disconnectClient(room.clients.fakeID1);
+        room.incomingEvents.disconnectClient(room.clients.fakeID1);
     })
 
     it('Should call back with all data including video', function (done) {
@@ -1639,7 +1634,7 @@ describe('Room event tests', function () {
             done();
         })
 
-        returnedClient = room.events.newClient(socketObjectMock);
+        returnedClient = room.incomingEvents.newClient(socketObjectMock);
     })
 
     it('Should return new client and call back with all data', function (done) {
@@ -1669,7 +1664,7 @@ describe('Room event tests', function () {
             done();
         })
 
-        returnedClient = room.events.newClient(socketObjectMock);
+        returnedClient = room.incomingEvents.newClient(socketObjectMock);
     })
 
     it('Should call back with clients after new status received', function (done) {
@@ -1694,7 +1689,7 @@ describe('Room event tests', function () {
             done();
         })
 
-        room.events.receiverPlayerStatus(stateJSON, room.clients.fakeID1);
+        room.incomingEvents.receiverPlayerStatus(stateJSON, room.clients.fakeID1);
     })
 
     it('Should set the video to state 3', function () {
@@ -1710,7 +1705,7 @@ describe('Room event tests', function () {
             }
         };
 
-        room.events.receiverPlayerStatus(stateJSON, room.clients.fakeID1);
+        room.incomingEvents.receiverPlayerStatus(stateJSON, room.clients.fakeID1);
         assert.strictEqual(room.currentVideo.state, 3);
     })
 
@@ -1727,7 +1722,7 @@ describe('Room event tests', function () {
             }
         };
 
-        let returnCode = room.events.receiverPlayerStatus(stateJSON, room.clients.fakeID1);
+        let returnCode = room.incomingEvents.receiverPlayerStatus(stateJSON, room.clients.fakeID1);
         assert.notStrictEqual(room.currentVideo.state, 3);
         assert.strictEqual(returnCode, 1);
     })
@@ -1745,7 +1740,7 @@ describe('Room event tests', function () {
             }
         };
 
-        room.events.receiverPlayerStatus(stateJSON, room.clients.fakeID1);
+        room.incomingEvents.receiverPlayerStatus(stateJSON, room.clients.fakeID1);
         assert.notStrictEqual(room.currentVideo.state, 3);
     })
 
@@ -1770,9 +1765,9 @@ describe('Room event tests', function () {
             }
         };
 
-        room.events.receiverPlayerStatus(stateJSON, room.clients.fakeID1);
+        room.incomingEvents.receiverPlayerStatus(stateJSON, room.clients.fakeID1);
         assert.strictEqual(room.currentVideo.state, 3);
-        room.events.receiverPlayerStatus(notBufferingStateJSON, room.clients.fakeID1);
+        room.incomingEvents.receiverPlayerStatus(notBufferingStateJSON, room.clients.fakeID1);
         assert.strictEqual(room.currentVideo.state, 1);
     })
 });
@@ -1791,7 +1786,7 @@ describe('Room time sensitive events', function () {
     it('Should callback with timestamp for client', function (done) {
         let room = testHelpers.roomWithTwoClients();
 
-        room.currentVideo.duration = 1;
+        room.currentVideo.duration = 1000;
         room.currentVideo.playVideo();
 
         room.clients.fakeID1.status.requiresTimestamp = true;
@@ -1811,7 +1806,7 @@ describe('Room time sensitive events', function () {
     it('Should not callback with timestamp for client as video finished', function (done) {
         let room = testHelpers.roomWithTwoClients();
 
-        room.currentVideo.duration = 1;
+        room.currentVideo.duration = 1000;
         room.currentVideo.state = 0;
 
         room.clients.fakeID1.status.requiresTimestamp = true;
@@ -1830,7 +1825,7 @@ describe('Room time sensitive events', function () {
     it('Should not callback with timestamp for client as not required', function (done) {
         let room = testHelpers.roomWithTwoClients();
 
-        room.currentVideo.duration = 1;
+        room.currentVideo.duration = 1000;
         room.currentVideo.playVideo();
 
         room.clients.fakeID1.status.requiresTimestamp = false;
@@ -1844,5 +1839,55 @@ describe('Room time sensitive events', function () {
 
         room.sendTimestampIfClientRequires(room.clients.fakeID1);
         done();
+    });
+
+    it('Should callback with current timestamp', function (done){
+        let room = testHelpers.roomWithTwoClients();
+        let ts = 100;
+        let data = {
+            videoID: undefined
+        }
+
+        room.currentVideo.duration = 1000;
+        room.currentVideo.playVideo();
+
+        this.clock.tick(ts);
+
+        room.incomingEvents.currentTimestampRequest(data, function(timestamp, error){
+            assert.strictEqual(timestamp, ts);
+            done();
+        });
+    })
+
+    it('Should callback with error as invalid ID', function (done){
+        let room = testHelpers.roomWithTwoClients();
+        let ts = 100;
+        let data = {
+            videoID: "invalid"
+        }
+
+        room.currentVideo.duration = 1000;
+        room.currentVideo.playVideo();
+
+        this.clock.tick(ts);
+
+        room.incomingEvents.currentTimestampRequest(data, function(timestamp, error){
+            assert.ok(error);
+            done();
+        });
+    })
+    it('Should callback with the new timestamp', function (done){
+        let room = testHelpers.roomWithTwoClients();
+        let expected = {
+            timestamp: 5000,
+            videoID: undefined
+        };
+
+        room.onRoomEvent(function (data, room) {
+            assert.strictEqual(data.broadcastEvents.serverVideoTimestamp, expected.timestamp);
+            done();
+        })
+
+        room.incomingEvents.newTimestamp(expected);
     });
 });

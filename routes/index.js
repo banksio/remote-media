@@ -1,10 +1,11 @@
+const logging = require('../src/rm/logging');
 var express = require('express');
 // var createError = require('http-errors');
 var router = express.Router();
 
 var pjson = require('../package.json');
-console.log(pjson.version);
 
+logging.debug("remote-media version " + pjson.version);
 
 /* GET room receiver */
 // router.get('/:room', function(req, res, next) {

@@ -31,17 +31,16 @@
 <body>
 
     <!--Testing-->
-    <!--pointer-events:none;-->
-    <div id="player" style="position:absolute;top:0;left:0;width:100%;height:100%;"></div>
+    <!-- pointer-events:none; -->
+    <div id="player"></div>
 
 
     <div style="overflow: hidden;">
         <div id="seekControlPanel" class="side-control-right d-flex flex-column text-light hidecontrol-right">
-            <div class="controlPanelButton d-flex flex-column" onclick="requestTimestampFromServer();">
+            <div id="seekControlPanel-btnResync" class="controlPanelButton d-flex flex-column">
                 <i class="fas fa-undo text-light"></i> Re sync
             </div>
-            <div class="controlPanelButton d-flex flex-column "
-                onclick="pushTimestampToServer(player.getCurrentTime());">
+            <div id="seekControlPanel-btnPushTS" class="controlPanelButton d-flex flex-column">
                 <i class="fas fa-sync text-light"></i> Sync others
             </div>
 
@@ -97,12 +96,11 @@
     </div>
 
     <div id="notificationBanner" class="banner hideBanner">
-        <!-- <div id="bannerReconnectingSpinner" class="d-none d-flex align-items-center">
-      <span class="text-warning">Reconnecting...</span>
-      <div id="spinnerConnection" class="spinner-border ml-auto text-warning" role="status" aria-hidden="true">
-      </div>
-    </div> -->
-        <span id="notificationText" class="text-light">Playing new video...</span>
+        <div class="d-flex align-items-center text-light">
+            <div id="notificationSpinner" class="spinner-border mr-2" role="status" aria-hidden="true"></div>
+            <span id="notificationText">Reconnecting...</span>
+            </div>
+        </div>
     </div>
 
 
@@ -115,6 +113,7 @@
                 <div class="modal-content">
                     <div class="modal-header text-center">
                         <h4 class="modal-title w-100 font-weight-bold">Enter Nickname</h4>
+                        <span id="nickModalSubmitSpinner" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                     </div>
                     <form class="needs-validation" id="nicknameForm" novalidate="true">
                         <div class="modal-body mx-2">
@@ -127,7 +126,10 @@
                             </div>
                             <div class="modal-footer">
                                 <a class="mr-3" href="/admin" target="_blank">Admin panel</a>
-                                <button type="submit" class="btn btn-success">Submit</button>
+                                <button type="submit" class="btn btn-success">
+                                    
+                                    Submit
+                                </button>
                             </div>
                         </div>
                     </form>
@@ -136,12 +138,8 @@
         </div>
     </div>
 
-    <script src="/js/dvd.js"></script>
-
-
     <!--Custom JS -->
-    <script src="/js/receiver.js"></script>
-    <script src="/js/player.js"></script>
+    <script src="/js/receiver/main.js" type="module"></script>
 
     <script src="/js/jquery.slim.min.js" integrity="sha256-4+XzXVhsDmqanXGHaHvgh1gMQKX40OUvDEBTu8JcmNs="></script>
     <script src="/js/bootstrap.bundle.min.js" integrity="sha256-9nt4LsWmLI/O24lTW89IzAKuBqEZ47l/4rh1+tH/NY8="></script>

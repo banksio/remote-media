@@ -1,4 +1,4 @@
-const classes = require('../../web/js/classes');
+const classes = require('../rm/classes');
 
 function roomWithTwoClients(io){
     var room = new classes.Room(io);

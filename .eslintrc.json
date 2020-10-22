@@ -4,7 +4,8 @@
         "commonjs": true,
         "es6": true,
         "node": true,
-        "mocha": true
+        "mocha": true,
+        "jquery": true
     },
     "extends": "eslint:recommended",
     "globals": {
@@ -12,7 +13,8 @@
         "SharedArrayBuffer": "readonly"
     },
     "parserOptions": {
-        "ecmaVersion": 10
+        "ecmaVersion": 10,
+        "sourceType": "module"
     },
     "rules": {
         "no-unused-vars":"warn",

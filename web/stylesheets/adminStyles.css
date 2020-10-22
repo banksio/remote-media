@@ -14,6 +14,7 @@
 
 .nowPlayingContainer {
     position: relative;
+    background-color: #000000;
 }
 
 .nowPlayingContainer .d-flex {
@@ -28,16 +29,17 @@
     padding: 5px;
     color: #FFFFFF;
     font-weight: bold;
+    align-items: center;
     transition: opacity 0.5s ease, display 0.5s;
 }
 
 .nowPlayingContainer .d-flex .spinner-border {
-    float: left;
+    /* float: left;
     position: absolute;
     top: calc(50% - 1rem);
     padding: 5px;
     color: #FFFFFF;
-    font-weight: bold;
+    font-weight: bold; */
 }
 
 .fadeOutDiv {

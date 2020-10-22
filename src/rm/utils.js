@@ -1,4 +1,4 @@
-var server = require('../../web/js/classes');
+var server = require('./classes');
 
 
 function setNicknameInRoom(client, nickname, room) {
@@ -43,7 +43,7 @@ function getIDFromURL(url) {
         });
     }
     if (id == undefined) {
-        throw Error;
+        throw new Error("No video ID found in URL.");
     }
     return id;
 }

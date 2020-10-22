@@ -1,7 +1,7 @@
 const socketio = require('socket.io');
 
 // Classes
-const server = require('../../web/js/classes');
+const server = require('./classes');
 const logging = require('./logging');
 const handlers = require("./handlers");
 
@@ -45,24 +45,24 @@ module.exports.start = function startServer(expressServer, cb) {
         });
 
         // The receiver has requested a timestamp
-        socket.on('receiverTimestampRequest', (fn) => {
-            handlers.ReceiverTimestampRequest(defaultRoom, currentClient, fn);
+        socket.on('receiverTimestampRequest', (data, fn) => {
+            handlers.ReceiverTimestampRequest(defaultRoom, currentClient, data, fn);
         });
 
-        socket.on("receiverTimestampSyncRequest", (timestamp) => {
-            handlers.ReceiverTimestampSyncRequest(defaultRoom, timestamp);
+        socket.on("receiverTimestampSyncRequest", (data, fn) => {
+            handlers.ReceiverTimestampSyncRequest(defaultRoom, data, fn);
         });
 
 
         // All admin panel stuff //
 
         // Get new video and send to receivers
-        socket.on("adminNewVideo", function (data) {
-            return handlers.AdminNewVideo(defaultRoom, data);
+        socket.on("adminNewVideo", function (data, callback) {
+            return handlers.AdminNewVideo(defaultRoom, data, callback);
         });
 
-        socket.on("adminQueueAppend", function (data) {
-            return handlers.AdminQueueAppend(defaultRoom, data);
+        socket.on("adminQueueAppend", function (data, callback) {
+            return handlers.AdminQueueAppend(defaultRoom, data, callback);
         });
 
         // Text to speech
