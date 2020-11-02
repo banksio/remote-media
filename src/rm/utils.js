@@ -20,7 +20,7 @@ function validateClientVideo(videoID, room) {
 function getIDFromURL(url) {
     let id;
 
-    const regex = /(?:\.be\/(.*?)(?:\?|$)|watch\?v=(.*?)(?:\&|$|\n))/ig;
+    const regex = /(?:\.be\/(.{11}?)(?:\?|$)|watch\?v=(.{11}?)(?:\&|$|\n))/ig;
     let m;
 
     while ((m = regex.exec(url)) !== null) {
