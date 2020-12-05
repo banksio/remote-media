@@ -326,7 +326,7 @@ class Room {
                     // sendPlayerControl("pause");
                     this.currentVideo.pauseVideo(true);
                     // defaultRoom.currentVideo.state = 3;
-                    logging.debug("[BufferMgnt] " + logging.prettyPrintClientID(client) + " is buffering. The video has been paused.");
+                    logging.info("[BufferMgnt] " + logging.prettyPrintClientID(client) + " is buffering. The video has been paused.");
                 // If client is playing
                 } else if (client.status.state == 1 && this.allPreloaded()) {
                     // If anyone was previously listed as buffering
@@ -1092,7 +1092,6 @@ class ServerVideo extends Video {
         this.startingTime = new Date().getTime() - (ts);
         this._pausedTime = 0;
         this._pausedSince = 0;
-        this.pauseVideo();
     }
     
     get duration() {

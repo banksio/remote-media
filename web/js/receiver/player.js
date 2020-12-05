@@ -116,9 +116,9 @@ export function serverPlayerControl(data) {
 //     skipToTimestamp(timestamp);
 // });
 
-export function skipToTimestamp(timestamp) {
+export function skipToTimestamp(timestamp, play=true) {
     timestamp = timestamp / 1000  // Must convert to seconds as this is what the YouTube API expects
-    player.playVideo();
+    if (play) player.playVideo();  // Don't play if we don't want to
     player.seekTo(timestamp);
 }
 
@@ -159,6 +159,8 @@ export function onPlayerStateChange(event) {
                 break;
         }
     }
+    // if (newState == 3) alert("BUFFERING");
+    // if (newState != 3) alert("NOT BUFFERING");
     eventNewStatus(newState, preloading, firstVideo, vid);  // For sending to server
     callbacks.onNewStatus(newState, preloading);  // Not for sending to server
 }

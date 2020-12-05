@@ -94,7 +94,7 @@ player.loadYouTubeIframeAPI();
 
 transmit.onServerPlayerControl((data) => player.serverPlayerControl(data));
 transmit.onServerNewVideo((data) => player.preloadVideo(data.value));
-transmit.onServerVideoTimestamp((ts) => player.skipToTimestamp(ts));
+transmit.onServerVideoTimestamp((ts) => player.skipToTimestamp(ts, false));
 
 frontendUI.initNicknameModal((nickname) => {
     checkNickname(nickname);
