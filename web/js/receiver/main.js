@@ -54,7 +54,7 @@ transmit.onServerBufferingClients((buffering) => {
 transmit.connectToSocket(window.location.href);
 
 player.onEvent((eventName, data) => {
-    console.log(eventName + ": " + data);
+    console.log(eventName + ": " + JSON.stringify(data));
     transmit.sendEvent(eventName, data);
 });
 
@@ -69,7 +69,7 @@ player.onNewStatus((status, preloading) => {
             default:
                 break;
         }
-    } else {
+    } else {  // Not preloading, playing normally
         switch (status) {
             case 0:
                 document.title = "Remote Media";
@@ -81,7 +81,11 @@ player.onNewStatus((status, preloading) => {
                 screensaver.stop();
             // break; // Fall through to next case
             case 2:
+                consoleLogWithTime("Big Status change")
                 compareWithServerTimestamp();
+                break;
+            default:
+                break;
         }
     }
 })
@@ -90,7 +94,7 @@ player.loadYouTubeIframeAPI();
 
 transmit.onServerPlayerControl((data) => player.serverPlayerControl(data));
 transmit.onServerNewVideo((data) => player.preloadVideo(data.value));
-transmit.onServerVideoTimestamp((ts) => player.skipToTimestamp(ts));
+transmit.onServerVideoTimestamp((ts) => player.skipToTimestamp(ts, false));
 
 frontendUI.initNicknameModal((nickname) => {
     checkNickname(nickname);
@@ -160,6 +164,7 @@ function compareWithServerTimestamp() {
             frontendUI.showNotificationBanner("Error getting server timestamp: " + error, false, false);
             return;
         }
+        consoleLogWithTime("Big ts compare")
         // If they're more than 2 seconds apart, show the menu
         if (compareTimestamps(player.getCurrentTimestamp(), timestamp)) {
             frontendUI.frontendShowSideControlPanel(true);
@@ -170,8 +175,9 @@ function compareWithServerTimestamp() {
 }
 
 function compareTimestamps(client, server) {
-    console.log("CLIENT " + client);
-    console.log("SERVER " + server);
+    // Print timestamps
+    consoleLogWithTime("CLIENT " + client);
+    consoleLogWithTime("SERVER " + server);
     if (client > server + 2000) {
         return true;
     } else if (client < server - 2000) {
@@ -191,4 +197,16 @@ function pushTimestampToServer(timestamp) {
             frontendUI.showNotificationBanner("Error syncing others: " + error, false, false);
         }
     });
+}
+
+//function to provide well formatted date for console messages
+function consoleLogWithTime(msg, date = new Date()) {
+    console.log(dateAndTime() + " " + msg);
+}
+
+function dateAndTime(date = new Date()) {
+    let year = new Intl.DateTimeFormat('en', { year: '2-digit' }).format(date);
+    let month = new Intl.DateTimeFormat('en', { month: '2-digit' }).format(date);
+    let day = new Intl.DateTimeFormat('en', { day: '2-digit' }).format(date);
+    return "[" + day + "/" + month + "/" + year + "]" + "[" + ('0' + date.getHours()).slice(-2) + ":" + ('0' + date.getMinutes()).slice(-2) + ":" + ('0' + date.getSeconds()).slice(-2) + "]";
 }

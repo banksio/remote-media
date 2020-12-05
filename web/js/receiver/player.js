@@ -4,6 +4,7 @@ var vid = 'pE49WK-oNjU';
 var firstVideo = true;
 // Preloading new videos
 var preloading = false;
+var finishingPreload = false;
 
 const callbacks = {};
 
@@ -18,20 +19,21 @@ export function loadYouTubeIframeAPI() {
 
 // This function creates an <iframe> (and YouTube player) after the API code downloads.
 export function onYouTubeIframeAPIReady() {
+    // eslint-disable-next-line no-undef
     player = new YT.Player('player', {
         // playerVars: {'autoplay': 1, 'controls': 1, 'rel' : 0, 'fs' : 0},
         playerVars: { 'autoplay': 1, 'controls': 1, 'disablekb': 0, 'fs': 0 },
         events: {
-            'onReady': onPlayerReady,
-            'onStateChange': onPlayerStateChange
+            'onReady': "onPlayerReady"
         }
     });
-
+    player.addEventListener('onStateChange', "onPlayerStateChange");
     var lastTime = -1;
     var interval = 1000;
 
     var checkPlayerTime = function () {
         if (lastTime != -1) {
+            // eslint-disable-next-line no-undef
             if (player.getPlayerState() == YT.PlayerState.PLAYING) {
                 var t = player.getCurrentTime();
 
@@ -114,9 +116,9 @@ export function serverPlayerControl(data) {
 //     skipToTimestamp(timestamp);
 // });
 
-export function skipToTimestamp(timestamp) {
+export function skipToTimestamp(timestamp, play=true) {
     timestamp = timestamp / 1000  // Must convert to seconds as this is what the YouTube API expects
-    player.playVideo();
+    if (play) player.playVideo();  // Don't play if we don't want to
     player.seekTo(timestamp);
 }
 
@@ -143,6 +145,7 @@ export function preloadVideo(id) {
 
 // When the player's state changes
 export function onPlayerStateChange(event) {
+    if (finishingPreload) return;  // Don't do anything whilst we're finishing the preload
     let newState = event.data;
     if (preloading) {  // If we're preloading
         switch (newState) {
@@ -185,7 +188,7 @@ export function onNewStatus(callback) {
 }
 
 function preloadFinisher() {
-    player.removeEventListener('onStateChange', onPlayerStateChange);
+    finishingPreload = true;
     console.log("Nearly preloaded.");
     player.pauseVideo();  // Pause the video
     player.seekTo(0); // Go back to the start
@@ -197,7 +200,7 @@ function preloadFinisher() {
     eventNewStatus(2, preloading, firstVideo, vid);
     callbacks.event("receiverPlayerPreloadingFinished", vid);
     // callbacks.playerPreloadingFinished(vid);
-    player.addEventListener('onStateChange', onPlayerStateChange);
+    finishingPreload = false;
 }
 
 export function onPlayerPreloadingFinished(callback){

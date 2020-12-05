@@ -123,3 +123,8 @@ body {
 .fadeOutDiv {
     opacity: 0%;
 }
+
+#notificationBannerAdminPanelLink {
+    position: absolute;
+    right: 16px;
+}
