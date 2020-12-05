@@ -159,8 +159,6 @@ export function onPlayerStateChange(event) {
                 break;
         }
     }
-    // if (newState == 3) alert("BUFFERING");
-    // if (newState != 3) alert("NOT BUFFERING");
     eventNewStatus(newState, preloading, firstVideo, vid);  // For sending to server
     callbacks.onNewStatus(newState, preloading);  // Not for sending to server
 }
