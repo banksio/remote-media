@@ -26,7 +26,7 @@ jobs:
       - name: Run Buildx
         run: |
           docker buildx build \
-            --platform linux/amd64,linux/arm64 \
+            --platform linux/amd64,linux/arm64,linux/ppc64le,linux/s390x,linux/arm/v7,linux/arm/v6 \
             -t banksio/remote-media:multiarch-experimental \
             .
             
@@ -44,7 +44,7 @@ jobs:
       - name: Run Buildx
         run: |
           docker buildx build \
-            --platform linux/amd64,linux/arm64 \
+            --platform linux/amd64,linux/arm64,linux/ppc64le,linux/s390x,linux/arm/v7,linux/arm/v6 \
             -t banksio/remote-media:multiarch-experimental \
             . \
             --push
