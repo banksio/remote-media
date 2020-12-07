@@ -174,9 +174,9 @@ export function updateQueueFrontend(queue) {
     const activeTableRow = document.querySelector("#playlist-table-body > tr.tr-active");
     const nextTableRow = document.getElementById("queue-table-video-" + (queue.index + 1));
 
-    if (activeTableRow == null && queue.length > 0 && nextTableRow != null) {
+    if (activeTableRow == null && nextTableRow != null && queue.length > 0) {
         nextTableRow.classList.add("tr-active");
-    } else if (activeTableRow != null && activeTableRow.id.substring(0, 18) != (queue.index + 1)) {
+    } else if (activeTableRow != null && nextTableRow != null && activeTableRow.id.substring(0, 18) != (queue.index + 1)) {
         activeTableRow.classList.remove("tr-active");
         nextTableRow.classList.add("tr-active");
     }
