@@ -1,16 +1,19 @@
-name: buildx-experimental
+name: docker-build-beta_tags
 
 on:
   push:
-    branches: multiarch
+    tags:
+      - v[0-9.]+-beta
 
 jobs:
   buildx:
     runs-on: ubuntu-latest
     steps:
-      # Get the repositery's code
+      # Get the repository's code
       - name: Checkout
         uses: actions/checkout@v2
+        with:
+          ref: ${ GITHUB_REF }  # Checkout the correct tag
       
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1.0.1
@@ -27,7 +30,7 @@ jobs:
         run: |
           docker buildx build \
             --platform linux/amd64,linux/arm64,linux/ppc64le,linux/s390x,linux/arm/v7,linux/arm/v6 \
-            -t banksio/remote-media:multiarch-experimental \
+            -t banksio/remote-media:beta -t banksio/remote-media:preview \
             .
             
       - name: Docker Login
@@ -45,6 +48,6 @@ jobs:
         run: |
           docker buildx build \
             --platform linux/amd64,linux/arm64,linux/ppc64le,linux/s390x,linux/arm/v7,linux/arm/v6 \
-            -t banksio/remote-media:multiarch-experimental \
+            -t banksio/remote-media:beta -t banksio/remote-media:preview \
             . \
             --push
