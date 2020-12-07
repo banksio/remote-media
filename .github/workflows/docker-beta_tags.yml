@@ -1,0 +1,53 @@
+name: docker-build-beta_tags
+
+on:
+  push:
+    tags:
+      - v[0-9.]+-beta
+
+jobs:
+  buildx:
+    runs-on: ubuntu-latest
+    steps:
+      # Get the repository's code
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          ref: ${ GITHUB_REF }  # Checkout the correct tag
+      
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1.0.1
+        
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1.0.3
+
+      - name: Available platforms
+        run: echo ${{ steps.buildx.outputs.platforms }}
+      
+      # Build the images, without pushing
+      - name: Run Buildx
+        run: |
+          docker buildx build \
+            --platform linux/amd64,linux/arm64,linux/ppc64le,linux/s390x,linux/arm/v7,linux/arm/v6 \
+            -t banksio/remote-media:beta -t banksio/remote-media:preview \
+            .
+            
+      - name: Docker Login
+        # You may pin to the exact commit or the version.
+        # uses: docker/login-action@adb73476b6e06caddec5db0bc1deacbec8cdd947
+        uses: docker/login-action@v1.6.0
+        with:
+          # Username used to log against the Docker registry
+          username: ${{ secrets.DOCKER_USERNAME }}
+          # Password or personal access token used to log against the Docker registry
+          password: ${{ secrets.DOCKER_TOKEN }}
+
+      # Reusing the cache, push the images
+      - name: Run Buildx
+        run: |
+          docker buildx build \
+            --platform linux/amd64,linux/arm64,linux/ppc64le,linux/s390x,linux/arm/v7,linux/arm/v6 \
+            -t banksio/remote-media:beta -t banksio/remote-media:preview \
+            . \
+            --push
