@@ -17,6 +17,7 @@ transmit.onConnected((socketID) => {
     console.log("Connected to " + socketID);
     frontendUI.changeConnectionIdentifier(true);
     frontendUI.changeMainSpinner(1);
+    frontendUI.changeMainThumbnail();
 })
 
 transmit.onDisonnected((socketID) => {
