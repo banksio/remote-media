@@ -1,4 +1,4 @@
-name: docker-build-beta_tags
+name: docker-build-manual
 
 on:
   workflow_dispatch:
