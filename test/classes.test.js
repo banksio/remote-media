@@ -8,7 +8,7 @@ const testHelpers = require('../src/test/setupFunctions');
 // Classes
 var classes = require('../src/rm/classes');
 const { queue } = require('jquery');
-const { Video, ServerVideo } = require('../src/rm/classes');
+const { Video, ServerVideo, Login } = require('../src/rm/classes');
 
 // Test video object ID parsing
 describe('Video object URL parsing test', function () {
@@ -1334,12 +1334,12 @@ describe('Room event tests', function () {
             videoID: "invalid"
         };
 
-        room.onRoomEvent(function (data, room) {
+        room.onNotClientEvent(function (data, room) {
             assert.strictEqual(data.broadcastEvents.serverVideoTimestamp, expected);
             done();
         })
 
-        room.incomingEvents.newTimestamp(expected, function(error){
+        room.incomingEvents.newTimestamp(expected, new Login(), function(error){
             assert.ok(error);
             done();
         });
@@ -1883,11 +1883,11 @@ describe('Room time sensitive events', function () {
             videoID: undefined
         };
 
-        room.onRoomEvent(function (data, room) {
+        room.onNotClientEvent(function (data, room) {
             assert.strictEqual(data.broadcastEvents.serverVideoTimestamp, expected.timestamp);
             done();
         })
 
-        room.incomingEvents.newTimestamp(expected);
+        room.incomingEvents.newTimestamp(expected, new Login());
     });
 });
