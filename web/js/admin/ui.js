@@ -36,15 +36,14 @@ const stateIcons = [
 ];
 
 export function changeSkipButtons(previous, next) {
-    //connected boolean
-    if (previous == true) {
+    if (previous) {
         previousButton.classList.remove("disabled");
-    } else if (previous == false) {
+    } else if (previous == false) {  // Explicitly check false
         previousButton.classList.add("disabled");
     }
-    if (next == true) {
+    if (next) {
         nextButton.classList.remove("disabled");
-    } else if (next == false) {
+    } else if (next == false) {  // Explicitly check false
         nextButton.classList.add("disabled");
     }
     return;
@@ -151,24 +150,25 @@ export function changeUpNextThumbnail(video,){
 }
 
 export function updateQueueFrontend(queue) {
-    if (queue.videos.length > 0){
+    console.log(queue)
+    // If there's a next video, change the up next thumbnail and enable the skip button
+    if (queue.length > 0){
         try {
             changeUpNextThumbnail(queue.videos[queue.index + 1]);
         }
         catch (error) { // If there's nothing up next, indicate this
             changeUpNextThumbnail();
         }
-
         changeSkipButtons(undefined, true);
-        if (queue.index > 0) {
-            changeSkipButtons(true, undefined);
-        }
-        else {
-            changeSkipButtons(false, undefined);
-        }
-    } else if (queue.videos.length == 0){
-        changeSkipButtons(false, false);
+    } else if (queue.length == 0){
+        changeSkipButtons(undefined, false);
         changeUpNextThumbnail();  // If the queue's empty then there's nothing up next, indicate this
+    }
+    // If there's a previous video, enable the previous button
+    if (queue.index > 0) {
+        changeSkipButtons(true, undefined);
+    } else {
+        changeSkipButtons(false, undefined);
     }
 
     const activeTableRow = document.querySelector("#playlist-table-body > tr.tr-active");
