@@ -13,7 +13,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
         with:
-          ref: ${ GITHUB_REF }  # Checkout the correct tag
+          ref: ${{ GITHUB_REF }}  # Checkout the correct tag
       
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1.0.1
