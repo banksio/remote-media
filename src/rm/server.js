@@ -50,7 +50,7 @@ module.exports.start = function startServer(expressServer, cb) {
         });
 
         socket.on("receiverTimestampSyncRequest", (data, fn) => {
-            handlers.ReceiverTimestampSyncRequest(defaultRoom, data, fn);
+            handlers.ReceiverTimestampSyncRequest(defaultRoom, data, currentClient, fn);
         });
 
 
@@ -109,6 +109,8 @@ module.exports.start = function startServer(expressServer, cb) {
     defaultRoom.onRoomEvent(handlers.onRoomEvent);
 
     defaultRoom.onClientEvent(handlers.onClientEvent);
+
+    defaultRoom.onNotClientEvent(handlers.onNotClientEvent);
 
     if (cb) return cb(socketIOServer);
     return socketIOServer;

@@ -94,7 +94,7 @@ player.loadYouTubeIframeAPI();
 
 transmit.onServerPlayerControl((data) => player.serverPlayerControl(data));
 transmit.onServerNewVideo((data) => player.preloadVideo(data.value));
-transmit.onServerVideoTimestamp((ts) => player.skipToTimestamp(ts, false));
+transmit.onServerVideoTimestamp((ts) => player.seekToTimestamp(ts, false));
 
 frontendUI.initNicknameModal((nickname) => {
     checkNickname(nickname);
@@ -152,7 +152,7 @@ export function requestTimestampFromServer() {
             return;
         } // args are sent in order to acknowledgement function
         // Skip to the correct time
-        player.skipToTimestamp(timestamp);
+        player.seekToTimestamp(timestamp);
     });
 }
 
@@ -187,6 +187,7 @@ function compareTimestamps(client, server) {
 }
 
 function pushTimestampToServer(timestamp) {
+    player.serverPlayerControl("pause");
     frontendUI.showNotificationBanner("Syncing others...", true, true);
     let data = {
         timestamp: timestamp,

@@ -22,6 +22,14 @@ function sendEventObject(io, clientID, eventObj) {
     }
 }
 
+function broadcastNotClientEventObject(io, clientID, eventObj) {
+    for (let [event, data] of Object.entries(eventObj.broadcastEvents)) {
+        JSON.stringify(data);  // This will catch and throw any circular references
+        logging.debug(chalk.magenta(`Broadcast (with exclusion) ${event}: ${data}`));
+        getSocketObjectFromServer(io, clientID).broadcast.emit(event, data);
+    }
+}
+
 function getSocketObjectFromServer(io, clientID) {
     return io.of("/").connected[clientID];
 }
@@ -30,5 +38,6 @@ module.exports = {
     broadcastConnectionManagement,
     broadcastEventObject,
     sendEventObject,
+    broadcastNotClientEventObject,
     getSocketObjectFromServer
 }

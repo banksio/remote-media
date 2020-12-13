@@ -6,6 +6,9 @@ var firstVideo = true;
 var preloading = false;
 var finishingPreload = false;
 
+var seekingToNewTS = false;  // For when we're skipping to a new TS
+var seekingTS = 0;
+
 const callbacks = {};
 
 export function loadYouTubeIframeAPI() {
@@ -116,10 +119,20 @@ export function serverPlayerControl(data) {
 //     skipToTimestamp(timestamp);
 // });
 
-export function skipToTimestamp(timestamp, play=true) {
+export function seekToTimestamp(timestamp, play=true) {
+    eventNewStatus(3, preloading, firstVideo, vid);  // Tell the server!
+    seekingToNewTS = true;
     timestamp = timestamp / 1000  // Must convert to seconds as this is what the YouTube API expects
-    if (play) player.playVideo();  // Don't play if we don't want to
-    player.seekTo(timestamp);
+    seekingTS = timestamp;  // Set to global
+    player.playVideo();  // Play the video so we can ensure we're not buffering
+    player.seekTo(seekingTS);
+}
+
+function seekFinisher(timestamp) {
+    player.pauseVideo();  // Buffered, so pause
+    player.seekTo(timestamp)  // Seek back to where we were meant to be
+    seekingToNewTS = false;  // Ready to go
+    eventNewStatus(2, preloading, firstVideo, vid);  // Tell the server
 }
 
 export function getVideoIDObj() {
@@ -135,6 +148,9 @@ export function onTimestampRequest(callback) {
 // Preloading new video once already played one video; mute the player and play the video
 export function preloadVideo(id) {
     console.log("Preloading..." + id);
+    // Clear old stuff
+    seekingToNewTS = false;  // For when we're skipping to a new TS
+    seekingTS = 0;
     // Set preloading true, send to 
     preloading = true;
     vid = id;
@@ -157,6 +173,15 @@ export function onPlayerStateChange(event) {
                 return;  // Don't continue or fire any more callbacks
             default:
                 break;
+        }
+    }
+    if (seekingToNewTS) {  // If we're seeking to a new TS
+        switch (newState) {
+            case 1:  // And the video is now playing
+                seekFinisher(seekingTS);  // Finish seeking
+                return;
+            default:
+                return;
         }
     }
     eventNewStatus(newState, preloading, firstVideo, vid);  // For sending to server

@@ -84,9 +84,9 @@ function ReceiverVideoDetails(room, client, videoDetails) {
 }
 
 
-function ReceiverTimestampSyncRequest(room, data, callback) {
+function ReceiverTimestampSyncRequest(room, data, client, callback) {
     // Call the newTimestamp event to set the video timestamp
-    room.incomingEvents.newTimestamp(data, callback);
+    room.incomingEvents.newTimestamp(data, client, callback);
 }
 
 
@@ -133,6 +133,11 @@ function onClientEvent(eventObj, room, client) {
     transmit.sendEventObject(room.io, client.id, eventObj);
 }
 
+function onNotClientEvent(eventObj, room, client) {
+    // Pass event and data to transmit, with client id for identifying client to exclude
+    transmit.broadcastNotClientEventObject(room.io, client.id, eventObj);
+}
+
 
 module.exports = {
     clientConnect,
@@ -151,5 +156,6 @@ module.exports = {
     ReceiverNickname,
     ReceiverPreloadingFinished,
     onRoomEvent,
-    onClientEvent
+    onClientEvent,
+    onNotClientEvent
 }

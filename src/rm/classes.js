@@ -4,15 +4,40 @@ const { event } = require("../../web/js/event");
 const utils = require('./utils');
 const rmErrors = require('./error');
 
+class ClientArray {
+    constructor(){
+        this.clients = {}
+    }
+
+    push(client) {
+        // Add client if not already existent
+        if (!this.clients[client.id]) {
+            this.clients[client.id] = client;
+        }
+    }
+
+    remove(client) {
+        // Remove client if existent
+        if (this.clients[client.id]) {
+            delete this.clients[client.id];
+        }
+    }
+
+    get length() {
+        return Object.keys(this.clients).length;
+    }
+}
+
 class Room {
     constructor(io) {
         this.queue = new NewQueue();
         this.clients = {};
         this._currentVideo = new ServerVideo();
-        this._bufferingClients = [];
+        this._bufferingClients = new ClientArray();
         this.io = io;
         this._cbEvent = () => {console.error("Callback not set.")}
         this._cbClientEvent = () => {console.error("Callback not set.")}
+        this._cbNotClientEvent = () => {console.error("Callback not set.")}
 
         this.transportConstructs = {
             clients: () => {
@@ -193,11 +218,12 @@ class Room {
                 videoDetailsEvent.addBroadcastEventFromConstruct(video);
                 this._cbEvent(videoDetailsEvent, this);
             },
-            newTimestamp: (data, callback) => {
+            newTimestamp: (data, client, callback) => {
                 let ts = data.timestamp;
                 if (utils.validateClientVideo(data.videoID, this)) {
                     this.currentVideo.timestamp = ts;
-                    this._cbEvent(new event("serverVideoTimestamp", ts), this);
+                    this._cbNotClientEvent(new event("serverVideoTimestamp", ts), this, client);
+                    this.currentVideo.pauseVideo(true, false);
                 } else {
                     callback("Invalid Video");
                 }
@@ -322,18 +348,18 @@ class Room {
                 // If the client is buffering and everyone is preloaded
                 if (client.status.state == 3 && this.allPreloaded()) {
                     // Add the socket to the array and pause all the clients
-                    this._bufferingClients.push(client.id);
+                    this._bufferingClients.push(client);
                     // sendPlayerControl("pause");
                     this.currentVideo.pauseVideo(true);
                     // defaultRoom.currentVideo.state = 3;
                     logging.info("[BufferMgnt] " + logging.prettyPrintClientID(client) + " is buffering. The video has been paused.");
                 // If client is playing
-                } else if (client.status.state == 1 && this.allPreloaded()) {
+                } else if ((client.status.state == 1 || client.status.state == 2) && this.allPreloaded()) {
                     // If anyone was previously listed as buffering
                     if (this._bufferingClients.length > 0) {
                         // Remove this client from the buffering array, they're ready
                         logging.debug("[BufferMgnt] " + logging.prettyPrintClientID(client) + " has stopped buffering.");
-                        this._bufferingClients.splice(this._bufferingClients.indexOf(client.id), 1);
+                        this._bufferingClients.remove(client)
                         // If that means no one is buffering now, resume everyone
                         if (this._bufferingClients.length == 0) {
                             logging.debug("[BufferMgnt] No one is buffering, resuming the video.");
@@ -398,8 +424,9 @@ class Room {
                 // }
                 this.broadcastBufferingIfClientNowReady(client.status);
             },
-            videoStateChange: (state) => {
+            videoStateChange: (state, action = true) => {
                 logging.debug(chalk.blueBright("[ServerVideo] State " + state));
+                if (action) {
                 switch (state) {
                     case 1:
                         this._cbEvent(new event("serverPlayerControl", "play"), this);
@@ -416,6 +443,8 @@ class Room {
                     default:
                         break;
                 }
+                }
+
             },
             videoStateDelay: (state) => {
                 this.broadcastBufferingClients();
@@ -633,6 +662,11 @@ class Room {
     onClientEvent(cb){
         logging.debug(chalk.green("Client event callback set"))
         this._cbClientEvent = cb.bind(this);
+    }
+
+    onNotClientEvent(cb){
+        logging.debug(chalk.green("Room excluding client event callback set"))
+        this._cbNotClientEvent = cb.bind(this);
     }
 }
 
@@ -1082,6 +1116,7 @@ class ServerVideo extends Video {
         else if (key == "cbStateDelayRoomRef") return undefined;
         else return value;
     }
+    
     set timestamp(ts) {
         logging.debug("[ServerVideo] Timestamp set to " + chalk.redBright(ts));
         if (ts < 0) {
@@ -1089,9 +1124,14 @@ class ServerVideo extends Video {
         }
         
         logging.debug(chalk.yellowBright("Received new timestamp of ") + ts)
-        this.startingTime = new Date().getTime() - (ts);
-        this._pausedTime = 0;
-        this._pausedSince = 0;
+        const timeNow = new Date().getTime();
+        this.startingTime = timeNow - (ts);  // Set time started in the past by number of ms the timestamp is
+        this._pausedTime = 0;  // This resets the video pause timer
+        if (this.state == 1) {  // If the video is playing
+            this._pausedSince = 0;  // This effectively sets the video as playing
+        } else if (this.state >= 2) { // If the video is paused
+            this._pausedSince = timeNow;
+        }
     }
     
     get duration() {
@@ -1148,6 +1188,25 @@ class ServerVideo extends Video {
         return;
     }
 
+    setState(newState, action = true) {
+        this._state = newState;
+        // No timing operations here
+        // If there's a delay callback set
+        if (this.cbStateDelay && this.state != 0) {
+            // After 2 seconds, if the video is not playing, call the delay callback
+            this._stateDelayInterval = setTimeout(() => {
+                if (this.state != 1) {
+                    return this.cbStateDelay(this.state);
+                }
+            }, 2000);
+            // clearInterval(1);
+        }
+        if (this._cbStateChange) {
+            return this._cbStateChange(this.state, action);
+        }
+        return;
+    }
+
     // Get the elapsed time of the video relative to the starting time
     getElapsedTime(currentTime = new Date().getTime()) {
         // this.elapsedTime = Math.round((currentTime - this.startingTime));
@@ -1200,7 +1259,7 @@ class ServerVideo extends Video {
             this.startingTime = new Date().getTime();  // Set the starting time of the video to now
         }
         // Play the video, use setter to trigger callbacks and timeouts
-        this.state = 1;
+        this.setState(1)
 
         let oof0 = this.title;  // Debugging stuff
 
@@ -1223,20 +1282,20 @@ class ServerVideo extends Video {
                 logging.debug("[ServerVideo] " + oof0 + " THE VIDEO HAS FINISHED");
                 logging.debug("[ServerVideo] " + oof0 + " OFFFFFFFFFFFFFFFFFFFFFFFFFOOOFFFFFFFFFFFFFFFFFFFFF" + ((new Date().getTime()) - this.oof2));
                 logging.debug("[ServerVideo] " + oof0 + " " + this.oof1);
-                this.state = 0;
+                this.setState(0);
                 return this._cbWhenFinished();  // Call the callback
             }, this._timeRemainingSinceLastResumed, oof0);
         }
     }
 
     // Function to pause the video
-    pauseVideo(buffer) {
+    pauseVideo(buffer, callback = true) {
         logging.debug("[ServerVideo] Video has been paused");
         this.pauseTimer();
         if (buffer) {
-            this.state = 3;
+            this.setState(3, callback)
         } else {
-            this.state = 2;
+            this.setState(2, callback)
         }
         return;
     }
