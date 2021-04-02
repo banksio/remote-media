@@ -30,14 +30,14 @@ export function disconnectFromSocket() {
 
 export function sendEvent(eventName, data){
     if (!data){
-        socket.binary(false).emit(eventName);
+        socket.emit(eventName);
     } else {
-        socket.binary(false).emit(eventName, data);
+        socket.emit(eventName, data);
     }
 }
 
 export function sendEventWithCallback(eventName, data, callback){
-    socket.binary(false).emit(eventName, data, callback);
+    socket.emit(eventName, data, callback);
 }
 
 export function onConnected(callback) {

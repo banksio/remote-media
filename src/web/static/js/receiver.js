@@ -24,7 +24,7 @@ socket.on('disconnect', () => {
 });
 
 // let name = prompt("Enter a name: ");
-// socket.binary(false).emit("receiverConnected", name);
+// socket.emit("receiverConnected", name);
 
 console.log("Waiting for server...");
 

@@ -68,7 +68,7 @@ export function onPlayerReady(event) {
 
     // Let the server know we're ready for some videos!
     callbacks.event("receiverPlayerReady");
-    // socket.binary(false).emit("receiverPlayerReady");
+    // socket.emit("receiverPlayerReady");
     // alert("ready");
 }
 
@@ -78,7 +78,7 @@ export function onPlayerReady(event) {
 
 // setTimeout(() => {
 //     const interval = setInterval(function() {
-//         socket.binary(false).emit("playerBuffered", { buffered: player.getVideoLoadedFraction(), socketID: socket.id, state: player.getPlayerState() });
+//         socket.emit("playerBuffered", { buffered: player.getVideoLoadedFraction(), socketID: socket.id, state: player.getPlayerState() });
 //     }, 5000);
 // }, 1000);
 
@@ -198,7 +198,7 @@ function eventNewStatus(state, preloading, firstVideo, currentVideoID) {
             "firstVideo": firstVideo
         }
     });
-    // socket.binary(false).emit("receiverPlayerStatus", {
+    // socket.emit("receiverPlayerStatus", {
     //     "videoID": currentVideoID,
     //     data: {
     //         "state": state,
@@ -220,8 +220,8 @@ function preloadFinisher() {
     player.unMute();  // Unmute the video ready for playing
     preloading = false;
     console.log("Preloading done.");
-    // socket.binary(false).emit("receiverPlayerStatus", { "state": state, "preloading": false });
-    // socket.binary(false).emit("receiverPlayerPreloadingFinished", vid);  Freshly deleted
+    // socket.emit("receiverPlayerStatus", { "state": state, "preloading": false });
+    // socket.emit("receiverPlayerPreloadingFinished", vid);  Freshly deleted
     eventNewStatus(2, preloading, firstVideo, vid);
     callbacks.event("receiverPlayerPreloadingFinished", vid);
     // callbacks.playerPreloadingFinished(vid);
@@ -255,7 +255,7 @@ function eventVideoDetails() {
         channel: videoDetails.author,
         duration: videoDuration * 1000
     })
-    // socket.binary(false).emit("receiverVideoDetails", {
+    // socket.emit("receiverVideoDetails", {
     //     id: videoDetails.video_id,
     //     title: videoDetails.title,
     //     channel: videoDetails.author,

@@ -1,11 +1,11 @@
-const logging = require('../src/rm/logging');
-var express = require('express');
-// var createError = require('http-errors');
-var router = express.Router();
+import { Router } from "express";
+import { debug } from "../../rm/logging";
 
-var pjson = require('../package.json');
 
-logging.debug("remote-media version " + pjson.version);
+const pjson = require('../../../package.json');
+debug("remote-media version " + pjson.version);
+
+const router = Router();
 
 /* GET room receiver */
 // router.get('/:room', function(req, res, next) {
@@ -19,4 +19,4 @@ router.get('/admin', function(req, res, next) {
   res.render('admin', { appversion: pjson.version })
 });
 
-module.exports = router;
+export default router;

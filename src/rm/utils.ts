@@ -1,7 +1,8 @@
-var server = require('./classes');
+import { Login } from "./client/client";
+import { Room } from "./room";
 
 
-function setNicknameInRoom(client, nickname, room) {
+export function setNicknameInRoom(client: Login, nickname: string, room: Room): void {
     if (room.getAllClientNames().includes(nickname) == true) {
         throw new Error("Duplicate Nickname Error");
     } else {
@@ -13,11 +14,11 @@ function setNicknameInRoom(client, nickname, room) {
 }
 
 // Ensure the client is on the same video as the room
-function validateClientVideo(videoID, room) {
+export function validateClientVideo(videoID: string, room: Room): boolean {
     return videoID == room.currentVideo.id;
 }
 
-function getIDFromURL(url) {
+export function getIDFromURL(url: string): string {
     let id;
 
     const regex = /(?:\.be\/(.{11}?)(?:\?|$)|watch\?v=(.{11}?)(?:\&|$|\n))/ig;
@@ -39,7 +40,7 @@ function getIDFromURL(url) {
             }
             // console.log(`Found match, group ${groupIndex}: ${match}`);
             id = match;
-
+            return "oof";
         });
     }
     if (id == undefined) {

@@ -1,19 +1,17 @@
-const socketio = require('socket.io');
+import { Server, Socket } from 'socket.io';
 
-// Classes
-const server = require('./classes');
-const logging = require('./logging');
-const handlers = require("./handlers");
+import * as handlers from './handlers';
+import { Room } from './room';
 
 //get socketio to listen to the webserver's connection
 //Create a callback function to deal with each connection.
 //The callback contains code to setup what happens whenever a named message is received
-module.exports.start = function startServer(expressServer, cb) {
-    var socketIOServer = socketio.listen(expressServer, { log: false });
+export function startServer(expressServer: any, cb?: CallableFunction) {
+    const socketIOServer = new Server(expressServer);
     //create blank logins array
-    var defaultRoom = new server.Room(socketIOServer);
+    var defaultRoom = new Room(socketIOServer);
 
-    defaultRoom.io.on('connection', function (socket) {
+    defaultRoom.io.on('connection', function (socket: Socket) {
         // A new connection from a client
 
         // Create a new Login object with the new socket's ID and add to the room

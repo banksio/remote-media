@@ -1,4 +1,4 @@
-class event {
+export class event {
     constructor(event, data){
         this.broadcastEvents = {};
         this.sendEvents = {};

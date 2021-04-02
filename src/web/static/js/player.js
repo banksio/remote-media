@@ -59,7 +59,7 @@ function onPlayerReady(event) {
     // muteVid();
 
     // Let the server know we're ready for some videos!
-    socket.binary(false).emit("receiverPlayerReady");
+    socket.emit("receiverPlayerReady");
     // alert("ready");
 }
 
@@ -69,7 +69,7 @@ function onPlayerReady(event) {
 
 // setTimeout(() => {
 //     const interval = setInterval(function() {
-//         socket.binary(false).emit("playerBuffered", { buffered: player.getVideoLoadedFraction(), socketID: socket.id, state: player.getPlayerState() });
+//         socket.emit("playerBuffered", { buffered: player.getVideoLoadedFraction(), socketID: socket.id, state: player.getPlayerState() });
 //     }, 5000);
 // }, 1000);
 
@@ -185,7 +185,7 @@ function onPlayerStateChange(event) {
 }
 
 function sendStatusToServer(state, preloading, firstVideo, currentVideoID) {
-    socket.binary(false).emit("receiverPlayerStatus", {
+    socket.emit("receiverPlayerStatus", {
         "videoID": currentVideoID,
         data: {
             "state": state,
@@ -202,8 +202,8 @@ function preloadFinisher() {
     player.unMute();  // Unmute the video ready for playing
     preloading = false;
     console.log("Preloading done.");
-    // socket.binary(false).emit("receiverPlayerStatus", { "state": state, "preloading": false });
-    socket.binary(false).emit("receiverPlayerPreloadingFinished", vid);
+    // socket.emit("receiverPlayerStatus", { "state": state, "preloading": false });
+    socket.emit("receiverPlayerPreloadingFinished", vid);
 }
 
 function compareWithServerTimestamp() {
@@ -241,7 +241,7 @@ function sendVideoDetails() {
     var videoDetails = player.getVideoData();
     var videoDuration = player.getDuration();
     console.log(videoDetails);
-    socket.binary(false).emit("receiverVideoDetails", {
+    socket.emit("receiverVideoDetails", {
         id: videoDetails.video_id,
         title: videoDetails.title,
         channel: videoDetails.author,

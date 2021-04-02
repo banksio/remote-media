@@ -61,43 +61,43 @@ socket.on('disconnect', () => {
 
 
 pause.addEventListener("click", function () {
-    socket.binary(false).emit("adminPlayerControl", "pause");
+    socket.emit("adminPlayerControl", "pause");
 });
 play.addEventListener("click", function () {
-    socket.binary(false).emit("adminPlayerControl", "play");
+    socket.emit("adminPlayerControl", "play");
 });
 prev.addEventListener("click", function () {
-    socket.binary(false).emit("adminQueueControl", "prev");
+    socket.emit("adminQueueControl", "prev");
 });
 skip.addEventListener("click", function () {
-    socket.binary(false).emit("adminQueueControl", "skip");
+    socket.emit("adminQueueControl", "skip");
 });
 emptyPlaylist.addEventListener("click", function () {
-    socket.binary(false).emit("adminQueueControl", "empty");
+    socket.emit("adminQueueControl", "empty");
 });
 
 // Not currently used
 // var mute = document.getElementById('1mute');
 // mute.addEventListener("click", function() {
-//   socket.binary(false).emit("playerControl", "mute");
+//   socket.emit("playerControl", "mute");
 // })
 // var unmute = document.getElementById('unmute');
 // unmute.addEventListener("click", function() {
-//   socket.binary(false).emit("playerControl", "unmute");
+//   socket.emit("playerControl", "unmute");
 // })
 
 function send() {
     btnVideoPush.setAttribute("disabled", "disabled");
     frontendChangeMainSpinner(1, "Pushing video...");
     var val = document.getElementById("target").value;
-    socket.binary(false).emit("adminNewVideo", { value: val, pass: true });
+    socket.emit("adminNewVideo", { value: val, pass: true });
 }
 
 
 function sendAppend(data) {
     btnQueueAppend.setAttribute("disabled", "disabled");
     frontendChangeMainSpinner(1, "Adding to queue...");
-    socket.binary(false).emit("adminQueueAppend", { value: data });
+    socket.emit("adminQueueAppend", { value: data });
 }
 
 
@@ -112,15 +112,15 @@ function getTitle(data) {
 }
 
 function vol() {
-    socket.binary(false).emit('volumeSend', volSlider.value);
+    socket.emit('volumeSend', volSlider.value);
 }
 
 function reloadClients() {
-    socket.binary(false).emit("adminConnectionManagement", "reload");
+    socket.emit("adminConnectionManagement", "reload");
 }
 
 function disconnectClients() {
-    socket.binary(false).emit("adminConnectionManagement", "discon");
+    socket.emit("adminConnectionManagement", "discon");
 }
 
 socket.on("volumeRecv", function (data) {
@@ -134,7 +134,7 @@ function muteVid() {
 
 function speak() {
     var val = document.getElementById("speechBox").value;
-    socket.binary(false).emit("adminTTSRequest", { value: val, pass: document.getElementById("password").value });
+    socket.emit("adminTTSRequest", { value: val, pass: document.getElementById("password").value });
 }
 
 // socket.on("playerinfo",function(data){
@@ -259,7 +259,7 @@ function getMQThumbnailSrc(video) {
 function toggleShuffle(toggled) {
     frontendChangeMainSpinner(1, "Shuffling queue...");
     var newState = (toggled == 'false');  // Invert boolean from DOM
-    socket.binary(false).emit("adminQueueControl", "toggleShuffle");
+    socket.emit("adminQueueControl", "toggleShuffle");
 }
 
 socket.on("serverQueueStatus", function (status) {
