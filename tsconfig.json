@@ -5,7 +5,8 @@
       "outDir": "build",
       "resolveJsonModule": true,
       "rootDir": ".",
-      "allowJs": true
+      "allowJs": true,
+      "strict": true
     },
     "include": [
       "src/**/*.ts",
