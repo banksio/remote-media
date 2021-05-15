@@ -1,148 +1,160 @@
-const assert = require('assert');
+const assert = require("assert");
 
-const testHelpers = require('../src/test/setupFunctions');
-const customAssert = require('../src/test/assertion');
-const transmit = require('../src/rm/socketTransmit');
-const classes = require('../src/rm/classes');
-const socketMock = require('../src/test/socketMock');
-const { event } = require("../web/js/event")
+const testHelpers = require("../src/test/setupFunctions");
+const customAssert = require("../src/test/assertion");
+const transmit = require("../src/rm/socketTransmit");
+const classes = require("../src/rm/classes");
+const socketMock = require("../src/test/socketMock");
+const { event } = require("../web/js/event");
 // const remotemedia = require('../src/rm/server');
 
-const io = require('socket.io-client');
-const { Video } = require('../src/rm/classes');
+const io = require("socket.io-client");
+const { Video } = require("../src/rm/classes");
 const ioOptions = {
-    transports: ['websocket'],
+    transports: ["websocket"],
     forceNew: true,
-    reconnection: false
+    reconnection: false,
 };
 
-describe("transmit.js tests", function () {
-    var socketIOServer;
+describe("transmit.js tests", () => {
+    let socketIOServer;
 
-    beforeEach(function (done) {
+    beforeEach(done => {
         socketIOServer = socketMock.start(() => {
             done();
-        })
-    })
-    afterEach(function (done) {
-        socketIOServer.close(() => {
-            done()
         });
-    })
+    });
+    afterEach(done => {
+        socketIOServer.close(() => {
+            done();
+        });
+    });
 
-    before(async () => {
+    before(async () => {});
 
-    })
-
-    after(async () => {
-
-    })
+    after(async () => {});
 
     // Connection management
-    it("Should broadcast the connection management command to all clients", function (done) {
-        var client1 = io.connect("http://localhost:3000", ioOptions);
-        var client2 = io.connect("http://localhost:3000", ioOptions);
-        var room = testHelpers.roomWithTwoClients(socketIOServer);
+    it("Should broadcast the connection management command to all clients", done => {
+        const client1 = io.connect("http://localhost:3000", ioOptions);
+        const client2 = io.connect("http://localhost:3000", ioOptions);
+        const room = testHelpers.roomWithTwoClients(socketIOServer);
 
-        var clientInRoom1 = new classes.Login("testID1", undefined, "testName1");
-        var clientInRoom2 = new classes.Login("testID2", undefined, "testName2");
+        const clientInRoom1 = new classes.Login(
+            "testID1",
+            undefined,
+            "testName1"
+        );
+        const clientInRoom2 = new classes.Login(
+            "testID2",
+            undefined,
+            "testName2"
+        );
 
         room.addClient(clientInRoom1);
         room.addClient(clientInRoom2);
-        let expected = "testString";
+        const expected = "testString";
 
-        var results = new customAssert.AssertMultiple(2, expected, () => { done(); });
-        var socketCount = new customAssert.SocketCounter(2, () => { transmit.broadcastConnectionManagement(room, expected); });
+        const results = new customAssert.AssertMultiple(2, expected, () => {
+            done();
+        });
+        const socketCount = new customAssert.SocketCounter(2, () => {
+            transmit.broadcastConnectionManagement(room, expected);
+        });
 
-        client1.once("serverConnectionManagement", function (actual) {
+        client1.once("serverConnectionManagement", actual => {
             try {
-                results.strictEqual(actual)
+                results.strictEqual(actual);
             } catch (error) {
                 return done(error);
             }
-        })
+        });
 
-        client2.once("serverConnectionManagement", function (actual) {
+        client2.once("serverConnectionManagement", actual => {
             try {
-                results.strictEqual(actual)
+                results.strictEqual(actual);
             } catch (error) {
                 return done(error);
             }
-        })
+        });
 
         room.io.on("connection", () => {
             socketCount.incrementCount();
-        })
-    })
+        });
+    });
 
     // Transport object
-    it("Should send the transport object to client", function (done) {
-        var room = testHelpers.roomWithTwoClients(socketIOServer);
+    it("Should send the transport object to client", done => {
+        const room = testHelpers.roomWithTwoClients(socketIOServer);
 
-        let expected = {
-            "data": "shouldbethis",
-            "testArray": ["should", "contain", "this"],
-            "testObj": {
-                "recursive": 1
-            }
-        }
+        const expected = {
+            data: "shouldbethis",
+            testArray: ["should", "contain", "this"],
+            testObj: {
+                recursive: 1,
+            },
+        };
 
-        let eventObj = new event();
-        eventObj.addSendEvent("test", expected)
+        const eventObj = new event();
+        eventObj.addSendEvent("test", expected);
 
-        room.io.on("connection", (socket) => {
+        room.io.on("connection", socket => {
             transmit.sendEventObject(room.io, socket.id, eventObj);
-        })
-        var client1 = io.connect("http://localhost:3000", ioOptions);
+        });
+        const client1 = io.connect("http://localhost:3000", ioOptions);
 
-        client1.once("test", function (actual) {
+        client1.once("test", actual => {
             try {
-                assert.deepStrictEqual(actual, expected)
+                assert.deepStrictEqual(actual, expected);
             } catch (error) {
                 return done(error);
             }
             done();
-        })
-    })
+        });
+    });
 
     // Connection management
-    it("Should broadcast the transport object to all clients", function (done) {
-        var client1 = io.connect("http://localhost:3000", ioOptions);
-        var client2 = io.connect("http://localhost:3000", ioOptions);
-        var room = testHelpers.roomWithTwoClients(socketIOServer);
+    it("Should broadcast the transport object to all clients", done => {
+        const client1 = io.connect("http://localhost:3000", ioOptions);
+        const client2 = io.connect("http://localhost:3000", ioOptions);
+        const room = testHelpers.roomWithTwoClients(socketIOServer);
 
-        let expected = {
-            "data": "shouldbethis",
-            "testArray": ["should", "contain", "this"],
-            "testObj": {
-                "recursive": 1
-            }
-        }
+        const expected = {
+            data: "shouldbethis",
+            testArray: ["should", "contain", "this"],
+            testObj: {
+                recursive: 1,
+            },
+        };
 
-        let eventObj = new event();
-        eventObj.addBroadcastEvent("test", expected)
+        const eventObj = new event();
+        eventObj.addBroadcastEvent("test", expected);
 
-        var results = new customAssert.AssertMultiple(2, expected, () => { done(); });
-        var socketCount = new customAssert.SocketCounter(2, () => { transmit.broadcastEventObject(room.io, eventObj); });
+        const results = new customAssert.AssertMultiple(2, expected, () => {
+            done();
+        });
+        const socketCount = new customAssert.SocketCounter(2, () => {
+            transmit.broadcastEventObject(room.io, eventObj);
+        });
 
-        client1.once("test", function (actual) {
+        client1.once("test", actual => {
             try {
-                results.deepStrictEqual(actual)
+                results.deepStrictEqual(actual);
             } catch (error) {
                 return done(error);
             }
-        })
+        });
 
-        client2.once("test", function (actual) {
+        client2.once("test", actual => {
             try {
-                results.deepStrictEqual(actual)
+                results.deepStrictEqual(actual);
             } catch (error) {
                 return done(error);
             }
-        })
+        });
 
         room.io.on("connection", () => {
             socketCount.incrementCount();
-        })
-    })
+        });
+    });
 });

@@ -1,42 +1,42 @@
-var socket;
+export var socket;
 
 const callbacks = {};
 
-export function connectToSocket(href){
-    var url = href;
-    var arr = url.split("/");
-    var result = arr[0] + "//" + arr[2];
+export function connectToSocket(href) {
+    const url = href;
+    const arr = url.split("/");
+    const result = arr[0] + "//" + arr[2];
     // eslint-disable-next-line no-undef
     socket = io(result + "/");
 
     // On connection
-    socket.on('connect', () => callbacks.onConnected(socket.id));
+    socket.on("connect", () => callbacks.onConnected(socket.id));
 
     // On loss of connection
-    socket.on('disconnect', () => callbacks.onDisconnected(socket.id));
+    socket.on("disconnect", () => callbacks.onDisconnected(socket.id));
 
-    socket.on("initFinished", (data) => callbacks.onInitFinished(data));
-    socket.on("serverQueueFinished", (data) => callbacks.onServerQueueFinished(data));
-    socket.on("serverQueueStatus", (data) => callbacks.onServerQueueStatus(data));
-    socket.on("serverQueueVideos", (data) => callbacks.onServerQueueVideos(data));
-    socket.on("serverClients", (data) => callbacks.onServerClients(data));
-    socket.on("serverCurrentVideo", (data) => callbacks.onServerCurrentVideo(data));
-    socket.on("serverNewVideo", (data) => callbacks.onServerNewVideo(data));
+    socket.on("initFinished", data => callbacks.onInitFinished(data));
+    socket.on("serverQueueFinished", data => callbacks.onServerQueueFinished(data));
+    socket.on("serverQueueStatus", data => callbacks.onServerQueueStatus(data));
+    socket.on("serverQueueVideos", data => callbacks.onServerQueueVideos(data));
+    socket.on("serverClients", data => callbacks.onServerClients(data));
+    socket.on("serverCurrentVideo", data => callbacks.onServerCurrentVideo(data));
+    socket.on("serverNewVideo", data => callbacks.onServerNewVideo(data));
 }
 
 export function disconnectFromSocket() {
     socket.disconnect();
 }
 
-export function sendEvent(eventName, data){
-    if (!data){
+export function sendEvent(eventName, data) {
+    if (!data) {
         socket.emit(eventName);
     } else {
         socket.emit(eventName, data);
     }
 }
 
-export function sendEventWithCallback(eventName, data, callback){
+export function sendEventWithCallback(eventName, data, callback) {
     socket.emit(eventName, data, callback);
 }
 

@@ -1,26 +1,34 @@
-import express from 'express';
-import staticRouter from './web/routes/static'
-import indexRouter from './web/routes/index'
-import { info } from './rm/logging';
-import { startServer } from './rm/server';
+import express from "express";
+import staticRouter from "./web/routes/static";
+import indexRouter from "./web/routes/index";
+import roomRouter from "./web/routes/room";
+import roomAPIRouter from "./web/routes/roomAPI";
+import { info } from "./rm/logging";
+import { startServer } from "./transport/transport-socket";
+import { Room } from "./rm/room";
+import { addRoom } from "./rm/roomManager";
 
-// Constants 
+// Constants
 const port = 3694;
 
+// Logging
 info("Starting remote-media...");
 info("Starting express...");
 
-// Create express object
+// Create express object and routers
 const expApp = express();
-expApp.set('view engine', 'ejs')
-expApp.set('views', './src/web/views');
-expApp.use(indexRouter);
-expApp.use('/static', staticRouter);
+expApp.set("view engine", "ejs");
+expApp.set("views", "./src/web/views");
+expApp.use("/", indexRouter);
+expApp.use("/static", staticRouter);
+expApp.use("/api", roomAPIRouter);
+// expApp.use('/room', roomRouter);
 
-
-//use it to serve pages from the web folder
-expApp.use(express.static('./src/web/static'));
+// Serve static web content
+// expApp.use(express.static('./src/web/static'));
 
 const web = expApp.listen(port);
 
-startServer(web);
+const defaultRoom = addRoom("default");
+
+export const transport = startServer(web);

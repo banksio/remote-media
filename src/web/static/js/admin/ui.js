@@ -15,7 +15,7 @@ const nowplayingTitleElement = document.getElementById("nowPlayingTitle");
 const nowplayingChannelElement = document.getElementById("nowPlayingChannel");
 const nowplayingThumbnail = document.getElementById("imgNowPlaying");
 
-const checkQueueShuffle = document.getElementById('shuffleCheck');
+const checkQueueShuffle = document.getElementById("shuffleCheck");
 
 // Buttons
 const btnQueueAppend = document.querySelector("#queue > div.input-group > div > button");
@@ -31,26 +31,28 @@ const stateIcons = [
     '<i class="fas fa-play"></i>',
     '<i class="fas fa-pause"></i>',
     '<div class="spinner-border spinner-border-sm"></div>',
-    'Unknown',
-    '<i class="fas fa-check"></i>'
+    "Unknown",
+    '<i class="fas fa-check"></i>',
 ];
 
 export function changeSkipButtons(previous, next) {
     if (previous) {
         previousButton.classList.remove("disabled");
-    } else if (previous == false) {  // Explicitly check false
+    } else if (previous == false) {
+        // Explicitly check false
         previousButton.classList.add("disabled");
     }
     if (next) {
         nextButton.classList.remove("disabled");
-    } else if (next == false) {  // Explicitly check false
+    } else if (next == false) {
+        // Explicitly check false
         nextButton.classList.add("disabled");
     }
     return;
 }
 
 export function changeConnectionIdentifier(connected) {
-    //connected boolean
+    // connected boolean
     if (connected) {
         connectionStatusText.innerText = "Connected";
         connectionStatusText.classList.remove("text-warning");
@@ -65,17 +67,17 @@ export function changeConnectionIdentifier(connected) {
     return;
 }
 
-export function changeMainSpinner(state, message="Loading data...") {
+export function changeMainSpinner(state, message = "Loading data...") {
     switch (state) {
-        case 0:  // No loading, hide spinner
-            mainSpinner.style.visibility = 'hidden';
+        case 0: // No loading, hide spinner
+            mainSpinner.style.visibility = "hidden";
             break;
-        case 1:  // Connected, loading data
-            mainSpinner.style.visibility = 'visible';
+        case 1: // Connected, loading data
+            mainSpinner.style.visibility = "visible";
             mainSpinnerText.innerText = message;
             break;
-        case 2:  // Connecting to server
-            mainSpinner.style.visibility = 'visible';
+        case 2: // Connecting to server
+            mainSpinner.style.visibility = "visible";
             mainSpinnerText.innerText = "Connecting...";
             break;
         default:
@@ -114,55 +116,66 @@ export function updateClientsTable(clients) {
 
     // console.log(clients);
 
-    for (let [id, client] of Object.entries(clients)) {
+    for (const [id, client] of Object.entries(clients)) {
         if (client.status.state == "Admin") {
             continue;
         }
         if (client.status.preloading) {
-            clientsTable.innerHTML = clientsTable.innerHTML + '<tr><td>' + client._name + '</td><td><span class=\'text-warning\'>' + stateIcons[client.status.state + 1] + '</span></td></tr>';
+            clientsTable.innerHTML =
+                clientsTable.innerHTML +
+                "<tr><td>" +
+                client._name +
+                "</td><td><span class='text-warning'>" +
+                stateIcons[client.status.state + 1] +
+                "</span></td></tr>";
             continue;
         }
-        clientsTable.innerHTML = clientsTable.innerHTML + '<tr><td>' + client._name + '</td><td>' + stateIcons[client.status.state + 1] + '</td></tr>';
+        clientsTable.innerHTML =
+            clientsTable.innerHTML +
+            "<tr><td>" +
+            client._name +
+            "</td><td>" +
+            stateIcons[client.status.state + 1] +
+            "</td></tr>";
     }
 }
 
 export function changeMainThumbnail(video) {
-    if (video){
+    if (video) {
         nowplayingThumbnail.src = getThumbnailSrc(video);
         nowplayingTitleElement.innerText = video.title;
         nowplayingChannelElement.innerText = video.channel;
     } else {
-        nowplayingThumbnail.src = "branding/logo.png";
+        nowplayingThumbnail.src = "/static/branding/logo.png";
         nowplayingTitleElement.innerText = "There's nothing playing right now";
         nowplayingChannelElement.innerText = "Push a video to get started";
     }
 }
 
-export function changeUpNextThumbnail(video,){
-    if (video){
+export function changeUpNextThumbnail(video) {
+    if (video) {
         upNextTitle.innerText = video.title;
         upNextImage.src = getMQThumbnailSrc(video);
     } else {
         upNextTitle.innerText = "There's nothing up next just yet.";
         upNextImage.removeAttribute("src");
     }
-
 }
 
 export function updateQueueFrontend(queue) {
-    console.log(queue)
+    console.log(queue);
     // If there's a next video, change the up next thumbnail and enable the skip button
-    if (queue.length > 0){
+    if (queue.length > 0) {
         try {
             changeUpNextThumbnail(queue.videos[queue.index + 1]);
-        }
-        catch (error) { // If there's nothing up next, indicate this
+        } catch (error) {
+            // If there's nothing up next, indicate this
             changeUpNextThumbnail();
         }
         changeSkipButtons(undefined, true);
-    } else if (queue.length == 0){
+    } else if (queue.length == 0) {
         changeSkipButtons(undefined, false);
-        changeUpNextThumbnail();  // If the queue's empty then there's nothing up next, indicate this
+        changeUpNextThumbnail(); // If the queue's empty then there's nothing up next, indicate this
     }
     // If there's a previous video, enable the previous button
     if (queue.index > 0) {
@@ -176,7 +189,11 @@ export function updateQueueFrontend(queue) {
 
     if (activeTableRow == null && nextTableRow != null && queue.length > 0) {
         nextTableRow.classList.add("tr-active");
-    } else if (activeTableRow != null && nextTableRow != null && activeTableRow.id.substring(0, 18) != (queue.index + 1)) {
+    } else if (
+        activeTableRow != null &&
+        nextTableRow != null &&
+        activeTableRow.id.substring(0, 18) != queue.index + 1
+    ) {
         activeTableRow.classList.remove("tr-active");
         nextTableRow.classList.add("tr-active");
     }

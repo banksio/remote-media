@@ -1,31 +1,93 @@
+/* eslint-disable eqeqeq */ // TODO: Remove
 import chalk from "chalk";
 import SocketIO from "socket.io";
-import { event } from "../web/static/js/event";
-import { Login } from "./client/client";
+import { event } from "./event/event";
+import { Client } from "./client/client";
 import { State } from "./client/state";
 import { debug, info, prettyPrintClientID } from "./logging";
 import { NewQueue } from "./queue/queue";
 import { setNicknameInRoom, validateClientVideo } from "./utils";
 import { ServerVideo, Video } from "./video";
+import { RoomVideo } from "./roomVideo";
 
-class ClientArray {
-    clients: any;
+/**
+ * The Room class.
+ * Keeps a group of clients together.
+ */
+export class Room {
+    public name: string;
+    public clients: ClientArray;
+    public video: RoomVideo | undefined;
 
-    constructor(){
-        this.clients = {}
+    constructor(name: string) {
+        this.name = name;
+        this.clients = new ClientArray();
     }
 
-    push(client: Login) {
+    addClient(client: Client) {
+        this.clients.push(client);
+    }
+
+    removeClient(clientID: string) {
+        this.clients.remove(clientID);
+    }
+
+    preloadVideo(video: Video) {
+        const roomVideo = new RoomVideo(video);
+    }
+}
+
+export class ClientArray {
+    private clients: { [clientID: string]: Client };
+    private nicknames: Set<string>;
+
+    constructor() {
+        this.clients = {};
+        this.nicknames = new Set();
+    }
+
+    push(client: Client) {
         // Add client if not already existent
         if (!this.clients[client.id]) {
             this.clients[client.id] = client;
+        } else {
+            throw new Error("The client already exists.");
         }
     }
 
-    remove(client: Login) {
+    remove(clientID: string) {
         // Remove client if existent
-        if (this.clients[client.id]) {
-            delete this.clients[client.id];
+        if (this.clients[clientID]) {
+            // Get the client and remove the existing nickname
+            const client = this.get(clientID); // This will throw if not found
+            if (client.name) this.nicknames.delete(client.name);
+            delete this.clients[clientID];
+        } else {
+            throw new Error("The client does not exist.");
+        }
+    }
+
+    get(clientID: string): Client {
+        return this.clients[clientID];
+    }
+
+    getAll() {
+        return this.clients;
+    }
+
+    setClientNickname(clientID: string, nickname: string) {
+        // Stops injection by replacing '<' & '>' with html code
+        const newNickname = nickname.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+        if (this.nicknames.has(nickname)) {
+            throw new Error("Duplicate Nickname Error");
+        } else {
+            // Get the client and remove the existing nickname
+            const client = this.get(clientID); // This will throw if not found
+            if (client.name) this.nicknames.delete(client.name);
+
+            client.name = newNickname;
+            this.nicknames.add(newNickname);
         }
     }
 
@@ -34,7 +96,10 @@ class ClientArray {
     }
 }
 
-export class Room {
+/**
+ * A complete mess
+ */
+export class OldRoom {
     queue: NewQueue;
     clients: any;
     private _currentVideo: ServerVideo;
@@ -45,87 +110,94 @@ export class Room {
     private _cbNotClientEvent: CallableFunction;
     transportConstructs: any;
     incomingEvents: any;
-    events: { queueStatus: () => void; };
+    events: { queueStatus: () => void };
     private _cbAnyClientStateChange: any;
 
     constructor(io: SocketIO.Server) {
         this.queue = new NewQueue();
         this.clients = {};
-        this._currentVideo = new ServerVideo();
+        this._currentVideo = new ServerVideo("oof");
         this._bufferingClients = new ClientArray();
         this.io = io;
-        this._cbEvent = () => {console.error("Callback not set.")}
-        this._cbClientEvent = () => {console.error("Callback not set.")}
-        this._cbNotClientEvent = () => {console.error("Callback not set.")}
+        this._cbEvent = () => {
+            console.error("Callback not set.");
+        };
+        this._cbClientEvent = () => {
+            console.error("Callback not set.");
+        };
+        this._cbNotClientEvent = () => {
+            console.error("Callback not set.");
+        };
 
-        this.transportConstructs = {
+        const newLocal = {
             clients: () => {
-                let data = {
-                    "event": "serverClients",
-                    "data": this.clientsWithoutCircularReferences()
-                }
+                const data = {
+                    event: "serverClients",
+                    data: this.clientsWithoutCircularReferences(),
+                };
                 return data;
             },
             bufferingClients: () => {
-                let data = {
-                    "event": "serverBufferingClients",
-                    "data": this.getBuffering()
-                }
+                const data = {
+                    event: "serverBufferingClients",
+                    data: this.getBuffering(),
+                };
                 return data;
             },
             queue: () => {
-                let queue = {
+                const queue = {
                     videos: this.queue.videos,
                     length: this.queue.length,
-                    index: this.queue.currentIndex
+                    index: this.queue.currentIndex,
                 };
 
-                let data = {
-                    "event": "serverQueueVideos",
-                    "data": queue
-                }
+                const data = {
+                    event: "serverQueueVideos",
+                    data: queue,
+                };
                 return data;
             },
             queueStatus: () => {
-                let queueStatus = {
+                const queueStatus = {
                     shuffle: this.queue.shuffle,
                     length: this.queue.length,
-                    index: this.queue.currentIndex
+                    index: this.queue.currentIndex,
                 };
 
-                let data = {
-                    "event": "serverQueueStatus",
-                    "data": queueStatus
-                }
+                const data = {
+                    event: "serverQueueStatus",
+                    data: queueStatus,
+                };
                 return data;
             },
             newVideo: (videoObj: Video) => {
-                let newID = { "value": videoObj.id };
-                let data = {
-                    "event": "serverNewVideo",
-                    "data": newID
-                }
+                const newID = { value: videoObj.id };
+                const data = {
+                    event: "serverNewVideo",
+                    data: newID,
+                };
                 return data;
             },
             currentVideo: () => {
-                let data = {
-                    "event": "serverCurrentVideo",
-                    "data": JSON.stringify(this.currentVideo, this.currentVideo.cyclicReplacer)
-                }
+                const data = {
+                    event: "serverCurrentVideo",
+                    data: JSON.stringify(this.currentVideo, this.currentVideo.cyclicReplacer),
+                };
                 return data;
-            }
-        }
+            },
+        };
+        this.transportConstructs = newLocal;
 
         this.incomingEvents = {
             newClient: (socket: SocketIO.Socket) => {
-                let newClient = this.addClient(new Login(socket.id, socket, socket.id));
+                const newClient = this.addClient(new Client("oof"));
                 info(chalk.green("[CliMgnt] New Client " + newClient.id));
 
-                var newClientResponse = new event();
-                let queue = this.transportConstructs.queue();
-                let queueStatus = this.transportConstructs.queueStatus();
-                let video = this.transportConstructs.currentVideo();
-                let clients = this.transportConstructs.clients();
+                const newClientResponse = new event();
+                const queue = this.transportConstructs.queue();
+                const queueStatus = this.transportConstructs.queueStatus();
+                const video = this.transportConstructs.currentVideo();
+                const clients = this.transportConstructs.clients();
                 newClientResponse.addBroadcastEventFromConstruct(clients);
                 newClientResponse.addSendEventFromConstruct(queue);
                 newClientResponse.addSendEventFromConstruct(queueStatus);
@@ -139,14 +211,14 @@ export class Room {
                 this._cbClientEvent(newClientResponse, this, newClient);
                 return newClient;
             },
-            disconnectClient: (client: Login) => {
+            disconnectClient: (client: Client) => {
                 // Log removal
                 info(chalk.cyan("[CliMgnt] " + prettyPrintClientID(client) + " has disconnected."));
                 // Remove client
                 this.removeClient(client);
-                
-                var removeClientResponse = new event();
-                let clients = this.transportConstructs.clients();
+
+                const removeClientResponse = new event();
+                const clients = this.transportConstructs.clients();
                 removeClientResponse.addBroadcastEventFromConstruct(clients);
                 this._cbEvent(removeClientResponse, this);
 
@@ -156,7 +228,7 @@ export class Room {
             queueControl: (data: any) => {
                 let queueStatus;
 
-                let queueControlResponse = new event();
+                const queueControlResponse = new event();
 
                 switch (data) {
                     case "prev":
@@ -179,28 +251,28 @@ export class Room {
                         break;
                 }
                 // Broadcast the queue after any changes have been made
-                let queue = this.transportConstructs.queue();
+                const queue = this.transportConstructs.queue();
                 queueControlResponse.addBroadcastEventFromConstruct(queue);
                 this._cbEvent(queueControlResponse, this);
             },
             queueAppend: (data: any) => {
                 try {
-                    this.queue.addVideosCombo(data);  // Add videos to queue
+                    this.queue.addVideosCombo(data); // Add videos to queue
                 } catch (error) {
                     return error.message;
                 }
-                
+
                 // Generate event for broadcasting to clients
-                let queueAppendResponse = new event();
-                let queue = this.transportConstructs.queue();
+                const queueAppendResponse = new event();
+                const queue = this.transportConstructs.queue();
                 queueAppendResponse.addBroadcastEventFromConstruct(queue);
                 this._cbEvent(queueAppendResponse, this);
             },
             newVideo: (inputData: string) => {
-                var urlArray = inputData.split(',');
+                const urlArray = inputData.split(",");
                 // If there's only one URL
                 if (urlArray.length == 1) {
-                    let newVideo = new Video();
+                    const newVideo = new Video("oof");
                     try {
                         newVideo.setIDFromURL(urlArray[0]);
                     } catch (error) {
@@ -212,16 +284,17 @@ export class Room {
             videoControl: (data: string) => {
                 if (data == "pause") {
                     this.currentVideo.pauseVideo(false);
-                }
-                else if (data == "play") {
+                } else if (data == "play") {
                     this.currentVideo.playVideo();
                 }
                 debug("[VideoControl] Video Control: " + data);
             },
-            receiverVideoDetails: (videoDetails: any, client: Login) => {
+            receiverVideoDetails: (videoDetails: any, client: Client) => {
                 // If the video ID is not valid then return
                 if (!validateClientVideo(videoDetails.id, this)) {
-                    debug(chalk.yellow("[ServerVideo] Recieved invalid video details from " + prettyPrintClientID(client)));
+                    debug(
+                        chalk.yellow("[ServerVideo] Recieved invalid video details from " + prettyPrintClientID(client))
+                    );
                     return;
                 }
                 // Assign the video details
@@ -232,13 +305,13 @@ export class Room {
                 debug("The video duration is " + videoDetails.duration);
 
                 // Trigger event callback
-                var videoDetailsEvent = new event();
-                let video = this.transportConstructs.currentVideo();
+                const videoDetailsEvent = new event();
+                const video = this.transportConstructs.currentVideo();
                 videoDetailsEvent.addBroadcastEventFromConstruct(video);
                 this._cbEvent(videoDetailsEvent, this);
             },
-            newTimestamp: (data: any, client: Login, callback: CallableFunction) => {
-                let ts = data.timestamp;
+            newTimestamp: (data: any, client: Client, callback: CallableFunction) => {
+                const ts = data.timestamp;
                 if (validateClientVideo(data.videoID, this)) {
                     this.currentVideo.timestamp = ts;
                     this._cbNotClientEvent(new event("serverVideoTimestamp", ts), this, client);
@@ -255,7 +328,7 @@ export class Room {
                     callback(undefined, "Invalid Video");
                 }
             },
-            receiverReady: (client: Login) => {
+            receiverReady: (client: Client) => {
                 debug(chalk.cyan("[CliMgnt] " + prettyPrintClientID(client) + " is ready. "));
                 // Update the state in our server
                 client.status.playerLoading = false;
@@ -265,8 +338,8 @@ export class Room {
                 // If there is, we should send it to the client.
                 if (this.currentVideo.state != 0) {
                     // There is a video playing, so the client will need to preload it and then go to the timestamp
-                    let newPreload = new event();
-                    let transportNewVideo = this.transportConstructs.newVideo(this.currentVideo);
+                    const newPreload = new event();
+                    const transportNewVideo = this.transportConstructs.newVideo(this.currentVideo);
                     newPreload.addSendEventFromConstruct(transportNewVideo);
                     this._cbClientEvent(newPreload, this, client);
                     // This client needs a timestamp ASAP, this should be picked up by the status checking function
@@ -276,7 +349,7 @@ export class Room {
                     return 1;
                 }
             },
-            receiverNickname: (nick: string, client: Login) => {
+            receiverNickname: (nick: string, client: Client) => {
                 // Set the nickname
                 try {
                     setNicknameInRoom(client, nick, this);
@@ -286,21 +359,27 @@ export class Room {
                         return error.message;
                     }
                 }
-                
+
                 // Update clients for admin panels
-                var nicknameSetResponse = new event();
-                let clients = this.transportConstructs.clients();
+                const nicknameSetResponse = new event();
+                const clients = this.transportConstructs.clients();
                 nicknameSetResponse.addBroadcastEventFromConstruct(clients);
                 this._cbEvent(nicknameSetResponse, this);
 
                 info(chalk.cyan("[CliNick] " + prettyPrintClientID(client) + " has set their nickname."));
                 return;
             },
-            receiverPreloadingFinished: (videoID: string, client: Login) => {
+            receiverPreloadingFinished: (videoID: string, client: Client) => {
                 // TODO: Needs further testing/refactoring
                 // Ignore if it's the wrong video
                 if (!validateClientVideo(videoID, this)) {
-                    debug(chalk.yellow("[ClientVideo] " + prettyPrintClientID(client) + " has finished preloading, but is on the wrong video."));
+                    debug(
+                        chalk.yellow(
+                            "[ClientVideo] " +
+                                prettyPrintClientID(client) +
+                                " has finished preloading, but is on the wrong video."
+                        )
+                    );
                     throw new Error("Wrong video");
                 }
 
@@ -312,13 +391,12 @@ export class Room {
                     return 0; // Don't continue with this function
 
                     // If the server is already playing a video
-                }
-                else if (this.sendTimestampIfClientRequires(client) == 0) {
+                } else if (this.sendTimestampIfClientRequires(client) == 0) {
                     return 0;
                 }
                 return 0;
             },
-            receiverPlayerStatus: (data: any, client: Login) => {
+            receiverPlayerStatus: (data: any, client: Client) => {
                 // If the socket's not initialised, skip it
                 // if (client.socket.id == undefined) {
                 //     return -1;
@@ -326,38 +404,57 @@ export class Room {
 
                 // If the client's on the wrong video, ignore this interaction
                 if (!validateClientVideo(data.videoID, this)) {
-                    debug(chalk.yellow("[receiver Status] Recieved status from " + prettyPrintClientID(client) + " but wrong video."));
+                    debug(
+                        chalk.yellow(
+                            "[receiver Status] Recieved status from " +
+                                prettyPrintClientID(client) +
+                                " but wrong video."
+                        )
+                    );
                     return;
                 }
 
                 // Don't crash out if we can't get the current timestamp
                 try {
-                    debug(chalk.blueBright("[ServerVideo] The current video timestamp is " + this.currentVideo.getElapsedTime()));
-                }
-                catch (error) {
+                    debug(
+                        chalk.blueBright(
+                            "[ServerVideo] The current video timestamp is " + this.currentVideo.getElapsedTime()
+                        )
+                    );
+                } catch (error) {
                     console.error(error);
                 }
 
                 // Get the current state and use for logic
-                let previousStatusState = client.status.state;
+                const previousStatusState = client.status.state;
 
                 // Debugging
                 debug("[ClientStatus]" + JSON.stringify(data));
 
                 // Save the state and the preloading state
-                let state = data.data.state;
-                let preloading = data.data.preloading;
+                const state = data.data.state;
+                const preloading = data.data.preloading;
 
                 client.status.updateState(state);
                 client.status.updatePreloading(preloading);
-                
+
                 // Call a clients event, broadcast to all clients
-                var clientsEvent = new event();
-                let clients = this.transportConstructs.clients();
+                const clientsEvent = new event();
+                const clients = this.transportConstructs.clients();
                 clientsEvent.addBroadcastEventFromConstruct(clients);
                 this._cbEvent(clientsEvent, this);
 
-                debug(chalk.cyan("[CliStatus] " + prettyPrintClientID(client) + " has new status:" + " status: " + state + " preloading:" + preloading));
+                debug(
+                    chalk.cyan(
+                        "[CliStatus] " +
+                            prettyPrintClientID(client) +
+                            " has new status:" +
+                            " status: " +
+                            state +
+                            " preloading:" +
+                            preloading
+                    )
+                );
 
                 // If the client is preloading, don't continue with this function
                 if (preloading == true) {
@@ -372,13 +469,13 @@ export class Room {
                     this.currentVideo.pauseVideo(true);
                     // defaultRoom.currentVideo.state = 3;
                     info("[BufferMgnt] " + prettyPrintClientID(client) + " is buffering. The video has been paused.");
-                // If client is playing
+                    // If client is playing
                 } else if ((client.status.state == 1 || client.status.state == 2) && this.allPreloaded()) {
                     // If anyone was previously listed as buffering
                     if (this._bufferingClients.length > 0) {
                         // Remove this client from the buffering array, they're ready
                         debug("[BufferMgnt] " + prettyPrintClientID(client) + " has stopped buffering.");
-                        this._bufferingClients.remove(client)
+                        // this._bufferingClients.remove(client); commented because TS code changed
                         // If that means no one is buffering now, resume everyone
                         if (this._bufferingClients.length == 0) {
                             debug("[BufferMgnt] No one is buffering, resuming the video.");
@@ -388,7 +485,7 @@ export class Room {
                         }
                     }
                 }
-        
+
                 // if (previousStatusState == 3 && status.state != 3){
                 //     broadcastBufferingClients(defaultRoom);
                 // }
@@ -446,49 +543,51 @@ export class Room {
             videoStateChange: (state: number, action = true) => {
                 debug(chalk.blueBright("[ServerVideo] State " + state));
                 if (action) {
-                switch (state) {
-                    case 1:
-                        this._cbEvent(new event("serverPlayerControl", "play"), this);
-                        break;
-                    case 2:
-    
-                    // break; Fall through
-                    case 3:
-                        this._cbEvent(new event("serverPlayerControl", "pause"), this);
-                        break;
-                    case 5:
-    
-                        break;
-                    default:
-                        break;
-                }
-                }
+                    switch (state) {
+                        case 1:
+                            this._cbEvent(new event("serverPlayerControl", "play"), this);
+                            break;
+                        case 2:
 
+                        // break; Fall through
+                        case 3:
+                            this._cbEvent(new event("serverPlayerControl", "pause"), this);
+                            break;
+                        case 5:
+                            break;
+                        default:
+                            break;
+                    }
+                }
             },
             videoStateDelay: (state: any) => {
                 this.broadcastBufferingClients();
             },
             videoFinished: () => {
                 // Video has finished.
-                debug(chalk.blueBright("[ServerVideo] The video has finished. Elapsed time: " + this.currentVideo.getElapsedTime()));
+                debug(
+                    chalk.blueBright(
+                        "[ServerVideo] The video has finished. Elapsed time: " + this.currentVideo.getElapsedTime()
+                    )
+                );
                 // TODO: Test that this works
                 // Try and play the next video in the queue
                 // If there isn't a next video in the queue, tell the admin panel
-                if (this.playNextInQueue() == undefined){
+                if (this.playNextInQueue() == undefined) {
                     this._cbEvent(new event("serverQueueFinished", "data"), this);
                 }
-            }
-        }
+            },
+        };
 
         this.events = {
             queueStatus: () => {
                 // Send the new queue index etc.
-                let queueControlResponse = new event();
-                let queueStatus = this.transportConstructs.queueStatus();
+                const queueControlResponse = new event();
+                const queueStatus = this.transportConstructs.queueStatus();
                 queueControlResponse.addBroadcastEventFromConstruct(queueStatus);
                 this._cbEvent(queueControlResponse, this);
-            }
-        }
+            },
+        };
     }
 
     cyclicReplacer(key: any, value: any) {
@@ -498,10 +597,10 @@ export class Room {
     }
 
     clientsWithoutCircularReferences() {
-        return JSON.parse(JSON.stringify(this.clients, this.cyclicReplacer))
+        return JSON.parse(JSON.stringify(this.clients, this.cyclicReplacer));
     }
 
-    addClient(client: Login) {
+    addClient(client: Client) {
         // Only add a new client if it has a valid id
         if (client.id != undefined) {
             this.clients[client.id] = client;
@@ -514,7 +613,7 @@ export class Room {
 
     allPreloaded() {
         // If any clients are preloading then return false
-        for (var i in this.clients) {
+        for (const i in this.clients) {
             if (this.clients[i].status.preloading == true) {
                 return false;
             }
@@ -524,8 +623,8 @@ export class Room {
 
     getBuffering() {
         // If any clients are buffering then return false
-        let bufferingClients = [];
-        for (var i in this.clients) {
+        const bufferingClients = [];
+        for (const i in this.clients) {
             if (this.clients[i].status.state > 2) {
                 bufferingClients.push(JSON.parse(JSON.stringify(this.clients[i], this.cyclicReplacer)));
             }
@@ -533,7 +632,7 @@ export class Room {
         return bufferingClients;
     }
 
-    removeClient(client: Login) {
+    removeClient(client: Client) {
         // var clientIndex = this.clients.indexOf(client);
         // this.clients.splice(clientIndex, 1);
         delete this.clients[client.id];
@@ -555,32 +654,35 @@ export class Room {
             if (this.allPreloaded()) {
                 if (this.currentVideo.duration == 0) {
                     debug("[Preload] Video details not recieved, cannot play video.");
-                    return 2;  // Error
+                    return 2; // Error
                 }
                 // Set all the receivers playing
                 // sendPlayerControl("play");
-                debug("[Preload] Everyone has finished preloading, playing the video. allPreloaded: " + this.allPreloaded());
+                debug(
+                    "[Preload] Everyone has finished preloading, playing the video. allPreloaded: " +
+                        this.allPreloaded()
+                );
                 // Set the server's video instance playing
                 this.currentVideo.playVideo();
                 // room.currentVideo.state = 1;
                 // room.currentVideo.startingTime = new Date().getTime();
             }
-        // No video cued
+            // No video cued
         } else {
-            return 1;  // We're not trying to start a video, so don't continue with this function
+            return 1; // We're not trying to start a video, so don't continue with this function
         }
-        return 0;  // We have started the video, all is good
+        return 0; // We have started the video, all is good
     }
 
     // Set a new video playing on the server
     preloadNewVideoInRoom(videoObj: Video) {
         // transmit.broadcastPreloadVideo(this, videoObj);
-        let newPreload = new event();
-        let transportNewVideo = this.transportConstructs.newVideo(videoObj)
+        const newPreload = new event();
+        const transportNewVideo = this.transportConstructs.newVideo(videoObj);
         newPreload.addBroadcastEventFromConstruct(transportNewVideo);
         this._cbEvent(newPreload, this);
 
-        this.currentVideo = new ServerVideo();
+        this.currentVideo = new ServerVideo("oof");
         Object.assign(this.currentVideo, videoObj);
         this.currentVideo.onPlayDelay(this.incomingEvents.videoStateDelay);
         this.currentVideo.state = 5;
@@ -588,24 +690,28 @@ export class Room {
         this.currentVideo.whenFinished(this.incomingEvents.videoFinished);
     }
 
-    sendTimestampIfClientRequires(client: Login) {
+    sendTimestampIfClientRequires(client: Client) {
         // ? Would clients start playing at ts 0 when they shouldn't be playing yet (e.g. others still waiting)?
         if (this.currentVideo.state != 0 && client.status.requiresTimestamp) {
             // We'll send the client a timestamp so it can sync with the server
             client.status.requiresTimestamp = false;
-            debug(chalk.cyan("[ClientVideo] " + prettyPrintClientID(client) + " requires a timestamp. Sending one to it now."));
+            debug(
+                chalk.cyan(
+                    "[ClientVideo] " + prettyPrintClientID(client) + " requires a timestamp. Sending one to it now."
+                )
+            );
             debug(chalk.cyan("[CliMgnt] " + prettyPrintClientID(client) + " has been sent a timestamp."));
             try {
-                let timestampForClient = new event();
+                const timestampForClient = new event();
                 timestampForClient.addSendEvent("serverVideoTimestamp", this.currentVideo.getElapsedTime());
                 this._cbClientEvent(timestampForClient, this, client);
             } catch (error) {
                 console.error(error);
             }
         } else {
-            return 1;  // The client doesn't need a timestamp
+            return 1; // The client doesn't need a timestamp
         }
-        return 0;  // Don't continue with this function
+        return 0; // Don't continue with this function
     }
 
     broadcastBufferingIfClientNowReady(status: State) {
@@ -618,21 +724,20 @@ export class Room {
     }
 
     broadcastBufferingClients() {
-        let bufferingClients = new event();
-        let bufferingClientsConstruct = this.transportConstructs.bufferingClients();
+        const bufferingClients = new event();
+        const bufferingClientsConstruct = this.transportConstructs.bufferingClients();
         bufferingClients.addBroadcastEventFromConstruct(bufferingClientsConstruct);
         this._cbEvent(bufferingClients, this);
     }
 
     queueShuffleToggle() {
-        let queue = this.queue;
+        const queue = this.queue;
         queue.shuffle = !queue.shuffle;
         return queue.shuffle;
     }
-    
 
     playNextInQueue() {
-        let nextVideo = this.queue.nextVideo();
+        const nextVideo = this.queue.nextVideo();
         if (nextVideo != undefined) {
             this.preloadNewVideoInRoom(nextVideo);
         }
@@ -641,10 +746,9 @@ export class Room {
 
         return nextVideo;
     }
-    
-    
+
     playPrevInQueue() {
-        let nextVideo = this.queue.previousVideo();
+        const nextVideo = this.queue.previousVideo();
         if (nextVideo != undefined) {
             this.preloadNewVideoInRoom(nextVideo);
         }
@@ -655,8 +759,8 @@ export class Room {
     }
 
     getAllClientNames() {
-        let ClientNames = [];
-        for (var i in this.clients) {
+        const ClientNames = [];
+        for (const i in this.clients) {
             ClientNames.push(this.clients[i].name);
             // console.log("Client: " + this.clients[i].name);
         }
@@ -666,25 +770,25 @@ export class Room {
     stateChangeOfClient() {
         // console.log(chalk.cyan("[classes.js][Room] A client's state in the room has changed."));
         if (this._cbAnyClientStateChange) return this._cbAnyClientStateChange(this);
-        return
+        return;
     }
 
     // AnyClientStateChange(cb) {
     //     this._cbAnyClientStateChange = cb;
     // }
 
-    onRoomEvent(cb: CallableFunction){
-        debug(chalk.green("Room event callback set"))
+    onRoomEvent(cb: CallableFunction) {
+        debug(chalk.green("Room event callback set"));
         this._cbEvent = cb.bind(this);
     }
 
-    onClientEvent(cb: CallableFunction){
-        debug(chalk.green("Client event callback set"))
+    onClientEvent(cb: CallableFunction) {
+        debug(chalk.green("Client event callback set"));
         this._cbClientEvent = cb.bind(this);
     }
 
-    onNotClientEvent(cb: CallableFunction){
-        debug(chalk.green("Room excluding client event callback set"))
+    onNotClientEvent(cb: CallableFunction) {
+        debug(chalk.green("Room excluding client event callback set"));
         this._cbNotClientEvent = cb.bind(this);
     }
 }

@@ -1,68 +1,67 @@
-var player, state;
-var vid = 'pE49WK-oNjU';
+let player, state;
+let vid = "pE49WK-oNjU";
 
-var firstVideo = true;
+const firstVideo = true;
 // Preloading new videos
-var preloading = false;
-var finishingPreload = false;
+let preloading = false;
+let finishingPreload = false;
 
-var seekingToNewTS = false;  // For when we're skipping to a new TS
-var seekingTS = 0;
+let seekingToNewTS = false; // For when we're skipping to a new TS
+let seekingTS = 0;
 
 const callbacks = {};
 
 export function loadYouTubeIframeAPI() {
     // Create a script tag with the source as the YouTube IFrame API, and insert it into the document
-    var tag = document.createElement('script');
+    const tag = document.createElement("script");
     tag.src = "https://www.youtube.com/iframe_api";
-    var firstScriptTag = document.getElementsByTagName('script')[0];
+    const firstScriptTag = document.getElementsByTagName("script")[0];
     firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 }
-
 
 // This function creates an <iframe> (and YouTube player) after the API code downloads.
 export function onYouTubeIframeAPIReady() {
     // eslint-disable-next-line no-undef
-    player = new YT.Player('player', {
+    player = new YT.Player("player", {
         // playerVars: {'autoplay': 1, 'controls': 1, 'rel' : 0, 'fs' : 0},
-        playerVars: { 'autoplay': 1, 'controls': 1, 'disablekb': 0, 'fs': 0 },
+        playerVars: { autoplay: 1, controls: 1, disablekb: 0, fs: 0 },
         events: {
-            'onReady': "onPlayerReady"
-        }
+            onReady: "onPlayerReady",
+        },
     });
-    player.addEventListener('onStateChange', "onPlayerStateChange");
-    var lastTime = -1;
-    var interval = 1000;
+    player.addEventListener("onStateChange", "onPlayerStateChange");
+    let lastTime = -1;
+    const interval = 1000;
 
     var checkPlayerTime = function () {
         if (lastTime != -1) {
             // eslint-disable-next-line no-undef
             if (player.getPlayerState() == YT.PlayerState.PLAYING) {
-                var t = player.getCurrentTime();
+                const t = player.getCurrentTime();
 
-                //console.log(Math.abs(t - lastTime -1));
+                // console.log(Math.abs(t - lastTime -1));
 
-                ///expecting 1 second interval , with 500 ms margin
+                // /expecting 1 second interval , with 500 ms margin
                 if (Math.abs(t - lastTime - 1) > 0.5) {
                     // there was a seek occuring
-                    console.log("seek"); /// fire your event here !
+                    console.log("seek"); // / fire your event here !
                 }
             }
         }
         lastTime = player.getCurrentTime();
-        setTimeout(checkPlayerTime, interval); /// repeat function call in 1 second
-    }
-    setTimeout(checkPlayerTime, interval); /// initial call delayed 
+        setTimeout(checkPlayerTime, interval); // / repeat function call in 1 second
+    };
+    setTimeout(checkPlayerTime, interval); // / initial call delayed
 }
 
-//The API will call this function when the video player is ready.
+// The API will call this function when the video player is ready.
 export function onPlayerReady(event) {
     player = event.target;
     console.log("YouTube player ready.");
 
-    //iframe = $('#player');
+    // iframe = $('#player');
     // preloadVideo(vid);
-    //$("player").keydown(false);
+    // $("player").keydown(false);
     // player.cueVideoById(vid);
     // muteVid();
 
@@ -119,26 +118,26 @@ export function serverPlayerControl(data) {
 //     skipToTimestamp(timestamp);
 // });
 
-export function seekToTimestamp(timestamp, play=true) {
-    eventNewStatus(3, preloading, firstVideo, vid);  // Tell the server!
+export function seekToTimestamp(timestamp, play = true) {
+    eventNewStatus(3, preloading, firstVideo, vid); // Tell the server!
     seekingToNewTS = true;
-    timestamp = timestamp / 1000  // Must convert to seconds as this is what the YouTube API expects
-    seekingTS = timestamp;  // Set to global
-    player.playVideo();  // Play the video so we can ensure we're not buffering
+    timestamp = timestamp / 1000; // Must convert to seconds as this is what the YouTube API expects
+    seekingTS = timestamp; // Set to global
+    player.playVideo(); // Play the video so we can ensure we're not buffering
     player.seekTo(seekingTS);
 }
 
 function seekFinisher(timestamp) {
-    player.pauseVideo();  // Buffered, so pause
-    player.seekTo(timestamp)  // Seek back to where we were meant to be
-    seekingToNewTS = false;  // Ready to go
-    eventNewStatus(2, preloading, firstVideo, vid);  // Tell the server
+    player.pauseVideo(); // Buffered, so pause
+    player.seekTo(timestamp); // Seek back to where we were meant to be
+    seekingToNewTS = false; // Ready to go
+    eventNewStatus(2, preloading, firstVideo, vid); // Tell the server
 }
 
 export function getVideoIDObj() {
     return {
-        videoID: vid
-    }
+        videoID: vid,
+    };
 }
 
 export function onTimestampRequest(callback) {
@@ -149,54 +148,56 @@ export function onTimestampRequest(callback) {
 export function preloadVideo(id) {
     console.log("Preloading..." + id);
     // Clear old stuff
-    seekingToNewTS = false;  // For when we're skipping to a new TS
+    seekingToNewTS = false; // For when we're skipping to a new TS
     seekingTS = 0;
-    // Set preloading true, send to 
+    // Set preloading true, send to
     preloading = true;
     vid = id;
-    eventNewStatus(player.getPlayerState(), true, vid, vid)
+    eventNewStatus(player.getPlayerState(), true, vid, vid);
     player.mute();
     player.loadVideoById(vid);
 }
 
 // When the player's state changes
 export function onPlayerStateChange(event) {
-    if (finishingPreload) return;  // Don't do anything whilst we're finishing the preload
-    let newState = event.data;
-    if (preloading) {  // If we're preloading
+    if (finishingPreload) return; // Don't do anything whilst we're finishing the preload
+    const newState = event.data;
+    if (preloading) {
+        // If we're preloading
         switch (newState) {
-            case 1:  // And the video is now playing
-                eventNewStatus(newState, preloading, firstVideo, vid);  // For sending to server
-                callbacks.onNewStatus(newState, preloading);  // Not for sending to server
-                eventVideoDetails();  // Send the server the video details
-                preloadFinisher();  // Finish preloading
-                return;  // Don't continue or fire any more callbacks
+            case 1: // And the video is now playing
+                eventNewStatus(newState, preloading, firstVideo, vid); // For sending to server
+                callbacks.onNewStatus(newState, preloading); // Not for sending to server
+                eventVideoDetails(); // Send the server the video details
+                preloadFinisher(); // Finish preloading
+                return; // Don't continue or fire any more callbacks
             default:
                 break;
         }
     }
-    if (seekingToNewTS) {  // If we're seeking to a new TS
+    if (seekingToNewTS) {
+        // If we're seeking to a new TS
         switch (newState) {
-            case 1:  // And the video is now playing
-                seekFinisher(seekingTS);  // Finish seeking
+            case 1: // And the video is now playing
+                seekFinisher(seekingTS); // Finish seeking
                 return;
             default:
                 return;
         }
     }
-    eventNewStatus(newState, preloading, firstVideo, vid);  // For sending to server
-    callbacks.onNewStatus(newState, preloading);  // Not for sending to server
+    eventNewStatus(newState, preloading, firstVideo, vid); // For sending to server
+    callbacks.onNewStatus(newState, preloading); // Not for sending to server
 }
 
 // Main.js
 function eventNewStatus(state, preloading, firstVideo, currentVideoID) {
     callbacks.event("receiverPlayerStatus", {
-        "videoID": currentVideoID,
+        videoID: currentVideoID,
         data: {
-            "state": state,
-            "preloading": preloading,
-            "firstVideo": firstVideo
-        }
+            state: state,
+            preloading: preloading,
+            firstVideo: firstVideo,
+        },
     });
     // socket.emit("receiverPlayerStatus", {
     //     "videoID": currentVideoID,
@@ -215,9 +216,9 @@ export function onNewStatus(callback) {
 function preloadFinisher() {
     finishingPreload = true;
     console.log("Nearly preloaded.");
-    player.pauseVideo();  // Pause the video
+    player.pauseVideo(); // Pause the video
     player.seekTo(0); // Go back to the start
-    player.unMute();  // Unmute the video ready for playing
+    player.unMute(); // Unmute the video ready for playing
     preloading = false;
     console.log("Preloading done.");
     // socket.emit("receiverPlayerStatus", { "state": state, "preloading": false });
@@ -228,12 +229,12 @@ function preloadFinisher() {
     finishingPreload = false;
 }
 
-export function onPlayerPreloadingFinished(callback){
+export function onPlayerPreloadingFinished(callback) {
     callbacks.playerPreloadingFinished = callback;
 }
 
 export function getCurrentTimestamp() {
-    return player.getCurrentTime() * 1000;  // Must multiply by 1000 as the server expects milliseconds
+    return player.getCurrentTime() * 1000; // Must multiply by 1000 as the server expects milliseconds
 }
 
 export function getCurrentVideoID() {
@@ -246,15 +247,15 @@ export function getCurrentVideoData() {
 
 // main.js
 function eventVideoDetails() {
-    let videoDetails = player.getVideoData();
-    let videoDuration = player.getDuration();
+    const videoDetails = player.getVideoData();
+    const videoDuration = player.getDuration();
     console.log(videoDetails);
     callbacks.event("receiverVideoDetails", {
         id: videoDetails.video_id,
         title: videoDetails.title,
         channel: videoDetails.author,
-        duration: videoDuration * 1000
-    })
+        duration: videoDuration * 1000,
+    });
     // socket.emit("receiverVideoDetails", {
     //     id: videoDetails.video_id,
     //     title: videoDetails.title,
@@ -264,7 +265,7 @@ function eventVideoDetails() {
 }
 
 export function onEvent(callback) {
-    callbacks.event = callback
+    callbacks.event = callback;
 }
 
 // startScreensaver();

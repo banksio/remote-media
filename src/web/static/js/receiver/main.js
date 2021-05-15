@@ -3,6 +3,7 @@ import * as transmit from "./socketTransmit.js";
 import * as frontendUI from "./ui.js";
 import * as clickHandlers from "./uiEvents.js";
 import * as screensaver from "./dvd.js";
+import { putNickname } from "./fetch.js";
 
 const receiverDetails = {};
 
@@ -12,21 +13,21 @@ window.onPlayerStateChange = player.onPlayerStateChange;
 
 screensaver.start();
 
-transmit.onConnected((socketID) => {
+transmit.onConnected(socketID => {
     console.log("Connected to server with socket ID " + socketID);
     frontendUI.frontendChangeConnectionIdentifier(1);
     // If there's a nickname set, then try and set this with the server again
     if (receiverDetails.nickname) {
         checkNickname(receiverDetails.nickname);
     }
-})
+});
 
 transmit.onDisonnected(() => {
     frontendUI.frontendChangeConnectionIdentifier(0);
-})
+});
 
 // When the server sends a client connection management command
-transmit.onServerConnectionManagement((data) => {
+transmit.onServerConnectionManagement(data => {
     switch (data) {
         case "reload":
             location.reload();
@@ -38,17 +39,16 @@ transmit.onServerConnectionManagement((data) => {
         default:
             console.log("Unknown site command.");
     }
-})
+});
 
 // When clients are buffering
-transmit.onServerBufferingClients((buffering) => {
+transmit.onServerBufferingClients(buffering => {
     if (buffering.length == 0) {
         return frontendUI.showNotificationBanner("Everyone's ready", false);
     }
-    let names = formatBufferingClientNames(buffering);
+    const names = formatBufferingClientNames(buffering);
     frontendUI.showNotificationBanner(names, true, true);
-})
-
+});
 
 // * Connect to the socket
 transmit.connectToSocket(window.location.href);
@@ -59,17 +59,19 @@ player.onEvent((eventName, data) => {
 });
 
 player.onNewStatus((status, preloading) => {
-    if (preloading) {  // If we're preloading
+    if (preloading) {
+        // If we're preloading
         document.title = "Remote Media";
         switch (status) {
-            case 1:  // And the video is now playing
+            case 1: // And the video is now playing
                 // Update the tab title with the current Video ID
                 document.title = player.getCurrentVideoData().title + " - Remote Media";
                 break;
             default:
                 break;
         }
-    } else {  // Not preloading, playing normally
+    } else {
+        // Not preloading, playing normally
         switch (status) {
             case 0:
                 document.title = "Remote Media";
@@ -81,41 +83,41 @@ player.onNewStatus((status, preloading) => {
                 screensaver.stop();
             // break; // Fall through to next case
             case 2:
-                consoleLogWithTime("Big Status change")
+                consoleLogWithTime("Big Status change");
                 compareWithServerTimestamp();
                 break;
             default:
                 break;
         }
     }
-})
+});
 
 player.loadYouTubeIframeAPI();
 
-transmit.onServerPlayerControl((data) => player.serverPlayerControl(data));
-transmit.onServerNewVideo((data) => player.preloadVideo(data.value));
-transmit.onServerVideoTimestamp((ts) => player.seekToTimestamp(ts, false));
+transmit.onServerPlayerControl(data => player.serverPlayerControl(data));
+transmit.onServerNewVideo(data => player.preloadVideo(data.value));
+transmit.onServerVideoTimestamp(ts => player.seekToTimestamp(ts, false));
 
-frontendUI.initNicknameModal((nickname) => {
+frontendUI.initNicknameModal(nickname => {
     checkNickname(nickname);
 });
 
 clickHandlers.onResyncClick(() => {
     requestTimestampFromServer();
-})
+});
 
 clickHandlers.onPushTSClick(() => {
     pushTimestampToServer(player.getCurrentTimestamp());
-})
+});
 
 function formatBufferingClientNames(buffering) {
     let names = "Waiting for ";
 
     while (buffering.length > 2) {
-        names += (buffering.pop()._name + ", ");
+        names += buffering.pop()._name + ", ";
     }
     while (buffering.length > 1) {
-        names += (buffering.pop()._name + " and ");
+        names += buffering.pop()._name + " and ";
     }
     while (buffering.length > 0) {
         names += buffering.pop()._name;
@@ -126,27 +128,29 @@ function formatBufferingClientNames(buffering) {
 
 // Ask the server to validate the nickname and get the response
 function checkNickname(nick) {
-    transmit.sendEventWithCallback('receiverNickname', nick, (error) => { // Async callback with server's validation response
-        // If response is undefined, we're good - hide the modal
-        if (error === null) {
+    const url = window.location.href;
+    const arr = url.split("/");
+    const result = arr[0] + "//" + arr[2];
+    putNickname(result + "/api/nickname?client=" + transmit.socket.id, { name: nick })
+        .then(() => {
             receiverDetails.nickname = nick;
             frontendUI.hideNicknameModal();
             frontendUI.showNotificationBanner("Set nickname: " + receiverDetails.nickname, false, false);
             return;
-        }
-        frontendUI.showNicknameModal();
-        // If response is anything else, there's been an error
-        alert("Setting nickname has been encountered an error: " + error);
-        return error;
-    });
+        })
+        .catch(error => {
+            frontendUI.showNicknameModal();
+            // If response is anything else, there's been an error
+            alert("Setting nickname has been encountered an error: " + error.message);
+            return error;
+        });
 }
-
 
 export function requestTimestampFromServer() {
     frontendUI.showNotificationBanner("Re syncing...", true, true);
-    let data = player.getVideoIDObj();
+    const data = player.getVideoIDObj();
     // Ask the server for the current timestamp
-    transmit.sendEventWithCallback('receiverTimestampRequest', data, (timestamp, error) => {
+    transmit.sendEventWithCallback("receiverTimestampRequest", data, (timestamp, error) => {
         if (error) {
             frontendUI.showNotificationBanner("Error getting server timestamp: " + error, false, false);
             return;
@@ -157,14 +161,15 @@ export function requestTimestampFromServer() {
 }
 
 function compareWithServerTimestamp() {
-    let data = player.getVideoIDObj();
+    const data = player.getVideoIDObj();
     // Ask the server for the current timestamp
-    transmit.sendEventWithCallback('receiverTimestampRequest', data, (timestamp, error) => { // args are sent in order to acknowledgement function
+    transmit.sendEventWithCallback("receiverTimestampRequest", data, (timestamp, error) => {
+        // args are sent in order to acknowledgement function
         if (error) {
             frontendUI.showNotificationBanner("Error getting server timestamp: " + error, false, false);
             return;
         }
-        consoleLogWithTime("Big ts compare")
+        consoleLogWithTime("Big ts compare");
         // If they're more than 2 seconds apart, show the menu
         if (compareTimestamps(player.getCurrentTimestamp(), timestamp)) {
             frontendUI.frontendShowSideControlPanel(true);
@@ -189,25 +194,40 @@ function compareTimestamps(client, server) {
 function pushTimestampToServer(timestamp) {
     player.serverPlayerControl("pause");
     frontendUI.showNotificationBanner("Syncing others...", true, true);
-    let data = {
+    const data = {
         timestamp: timestamp,
-        videoID: player.getCurrentVideoID()
-    }
-    transmit.sendEventWithCallback("receiverTimestampSyncRequest", data, (error) => {
+        videoID: player.getCurrentVideoID(),
+    };
+    transmit.sendEventWithCallback("receiverTimestampSyncRequest", data, error => {
         if (error) {
             frontendUI.showNotificationBanner("Error syncing others: " + error, false, false);
         }
     });
 }
 
-//function to provide well formatted date for console messages
+// function to provide well formatted date for console messages
 function consoleLogWithTime(msg, date = new Date()) {
     console.log(dateAndTime() + " " + msg);
 }
 
 function dateAndTime(date = new Date()) {
-    let year = new Intl.DateTimeFormat('en', { year: '2-digit' }).format(date);
-    let month = new Intl.DateTimeFormat('en', { month: '2-digit' }).format(date);
-    let day = new Intl.DateTimeFormat('en', { day: '2-digit' }).format(date);
-    return "[" + day + "/" + month + "/" + year + "]" + "[" + ('0' + date.getHours()).slice(-2) + ":" + ('0' + date.getMinutes()).slice(-2) + ":" + ('0' + date.getSeconds()).slice(-2) + "]";
+    const year = new Intl.DateTimeFormat("en", { year: "2-digit" }).format(date);
+    const month = new Intl.DateTimeFormat("en", { month: "2-digit" }).format(date);
+    const day = new Intl.DateTimeFormat("en", { day: "2-digit" }).format(date);
+    return (
+        "[" +
+        day +
+        "/" +
+        month +
+        "/" +
+        year +
+        "]" +
+        "[" +
+        ("0" + date.getHours()).slice(-2) +
+        ":" +
+        ("0" + date.getMinutes()).slice(-2) +
+        ":" +
+        ("0" + date.getSeconds()).slice(-2) +
+        "]"
+    );
 }

@@ -1,60 +1,60 @@
-//This code loads the IFrame Player API code asynchronously.
-var tag = document.createElement('script');
+// This code loads the IFrame Player API code asynchronously.
+const tag = document.createElement("script");
 
 tag.src = "https://www.youtube.com/iframe_api";
-var firstScriptTag = document.getElementsByTagName('script')[0];
+const firstScriptTag = document.getElementsByTagName("script")[0];
 firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
 var player, iframe, vid, state;
-var vid = 'pE49WK-oNjU';
-var $ = document.querySelector.bind(document);
+var vid = "pE49WK-oNjU";
+const $ = document.querySelector.bind(document);
 
-var firstVideo = true;
+const firstVideo = true;
 // Preloading new videos
-var preloading = false;
+let preloading = false;
 
 // This function creates an <iframe> (and YouTube player) after the API code downloads.
 function onYouTubeIframeAPIReady() {
-    player = new YT.Player('player', {
+    player = new YT.Player("player", {
         // playerVars: {'autoplay': 1, 'controls': 1, 'rel' : 0, 'fs' : 0},
-        playerVars: { 'autoplay': 1, 'controls': 1, 'disablekb': 1, 'fs': 0 },
+        playerVars: { autoplay: 1, controls: 1, disablekb: 1, fs: 0 },
         events: {
-            'onReady': onPlayerReady,
-            'onStateChange': onPlayerStateChange
-        }
+            onReady: onPlayerReady,
+            onStateChange: onPlayerStateChange,
+        },
     });
 
-    var lastTime = -1;
-    var interval = 1000;
+    let lastTime = -1;
+    const interval = 1000;
 
     var checkPlayerTime = function () {
         if (lastTime != -1) {
             if (player.getPlayerState() == YT.PlayerState.PLAYING) {
-                var t = player.getCurrentTime();
+                const t = player.getCurrentTime();
 
-                //console.log(Math.abs(t - lastTime -1));
+                // console.log(Math.abs(t - lastTime -1));
 
-                ///expecting 1 second interval , with 500 ms margin
+                // /expecting 1 second interval , with 500 ms margin
                 if (Math.abs(t - lastTime - 1) > 0.5) {
                     // there was a seek occuring
-                    console.log("seek"); /// fire your event here !
+                    console.log("seek"); // / fire your event here !
                 }
             }
         }
         lastTime = player.getCurrentTime();
-        setTimeout(checkPlayerTime, interval); /// repeat function call in 1 second
-    }
-    setTimeout(checkPlayerTime, interval); /// initial call delayed 
+        setTimeout(checkPlayerTime, interval); // / repeat function call in 1 second
+    };
+    setTimeout(checkPlayerTime, interval); // / initial call delayed
 }
 
-//The API will call this function when the video player is ready.
+// The API will call this function when the video player is ready.
 function onPlayerReady(event) {
     player = event.target;
     console.log("YouTube player ready.");
 
-    //iframe = $('#player');
+    // iframe = $('#player');
     // preloadVideo(vid);
-    //$("player").keydown(false);
+    // $("player").keydown(false);
     // player.cueVideoById(vid);
     // muteVid();
 
@@ -73,10 +73,8 @@ function onPlayerReady(event) {
 //     }, 5000);
 // }, 1000);
 
-
-
 // Control the player when instructed by the server
-socket.on('serverPlayerControl', function (data) {
+socket.on("serverPlayerControl", data => {
     state = player.getPlayerState();
     switch (data) {
         case "pause":
@@ -97,10 +95,8 @@ socket.on('serverPlayerControl', function (data) {
     }
 });
 
-
-
 // When a new video comes in, preload the video
-socket.on("serverNewVideo", function (data) {
+socket.on("serverNewVideo", data => {
     // if (firstVideo == false) {
     //     firstVideo = true;
     // }
@@ -108,7 +104,7 @@ socket.on("serverNewVideo", function (data) {
 });
 
 // Adjust the timestamp of the player to sync with the server
-socket.on("serverVideoTimestamp", function (timestamp) {
+socket.on("serverVideoTimestamp", timestamp => {
     console.log("playingFirst" + timestamp);
     // firstVideo = false;
     skipToTimestamp(timestamp);
@@ -119,14 +115,13 @@ function skipToTimestamp(timestamp) {
     player.seekTo(timestamp);
 }
 
-
 function requestTimestampFromServer() {
     frontendShowNotificationBanner("Re syncing...", true, true);
-    let data = {
-        videoID: vid
-    }
+    const data = {
+        videoID: vid,
+    };
     // Ask the server for the current timestamp
-    socket.emit('receiverTimestampRequest', data, (timestamp, error) => {
+    socket.emit("receiverTimestampRequest", data, (timestamp, error) => {
         if (error) {
             frontendShowNotificationBanner("Error getting server timestamp: " + error, false, false);
             return;
@@ -139,26 +134,27 @@ function requestTimestampFromServer() {
 // Preloading new video once already played one video; mute the player and play the video
 function preloadVideo(id) {
     console.log("Preloading..." + id);
-    // Set preloading true, send to 
+    // Set preloading true, send to
     preloading = true;
     vid = id;
-    sendStatusToServer(state, true, vid, vid)
+    sendStatusToServer(state, true, vid, vid);
     player.mute();
     player.loadVideoById(vid);
 }
 
 // When the player's state changes
 function onPlayerStateChange(event) {
-    let newState = event.data;
+    const newState = event.data;
     console.log(newState);
-    if (preloading) {  // If we're preloading
+    if (preloading) {
+        // If we're preloading
         document.title = "Remote Media";
         switch (newState) {
-            case 1:  // And the video is now playing
+            case 1: // And the video is now playing
                 // Update the tab title with the current Video ID
                 document.title = player.getVideoData().title + " - Remote Media";
-                sendVideoDetails();  // Send the server the video details
-                preloadFinisher();  // Finish preloading
+                sendVideoDetails(); // Send the server the video details
+                preloadFinisher(); // Finish preloading
                 break;
             case 2:
                 // preloadingDone();
@@ -186,20 +182,20 @@ function onPlayerStateChange(event) {
 
 function sendStatusToServer(state, preloading, firstVideo, currentVideoID) {
     socket.emit("receiverPlayerStatus", {
-        "videoID": currentVideoID,
+        videoID: currentVideoID,
         data: {
-            "state": state,
-            "preloading": preloading,
-            "firstVideo": firstVideo
-        }
+            state: state,
+            preloading: preloading,
+            firstVideo: firstVideo,
+        },
     });
 }
 
 function preloadFinisher() {
     console.log("Nearly preloaded.");
-    player.pauseVideo();  // Pause the video
+    player.pauseVideo(); // Pause the video
     player.seekTo(0); // Go back to the start
-    player.unMute();  // Unmute the video ready for playing
+    player.unMute(); // Unmute the video ready for playing
     preloading = false;
     console.log("Preloading done.");
     // socket.emit("receiverPlayerStatus", { "state": state, "preloading": false });
@@ -208,11 +204,12 @@ function preloadFinisher() {
 
 function compareWithServerTimestamp() {
     console.log("checking TS");
-    let data = {
-        videoID: vid
-    }
+    const data = {
+        videoID: vid,
+    };
     // Ask the server for the current timestamp
-    socket.emit('receiverTimestampRequest', data, (timestamp, error) => { // args are sent in order to acknowledgement function
+    socket.emit("receiverTimestampRequest", data, (timestamp, error) => {
+        // args are sent in order to acknowledgement function
         if (error) {
             frontendShowNotificationBanner("Error getting server timestamp: " + error, false, false);
             return;
@@ -238,14 +235,14 @@ function compareTimestamps(client, server) {
 }
 
 function sendVideoDetails() {
-    var videoDetails = player.getVideoData();
-    var videoDuration = player.getDuration();
+    const videoDetails = player.getVideoData();
+    const videoDuration = player.getDuration();
     console.log(videoDetails);
     socket.emit("receiverVideoDetails", {
         id: videoDetails.video_id,
         title: videoDetails.title,
         channel: videoDetails.author,
-        duration: videoDuration
+        duration: videoDuration,
     });
 }
 

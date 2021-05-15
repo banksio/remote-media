@@ -1,12 +1,12 @@
 {
   "name": "remote-media",
-  "version": "1.0.0-beta.4",
+  "version": "2.0.0-alpha.1",
   "description": "A small app to control other client's media remotely.",
   "main": "server.js",
   "scripts": {
     "start": "node build/src/index.js",
     "start:dev": "nodemon --config nodemon.json",
-    "compile": "tsc",
+    "compile": "tsc -b",
     "lint": "gts lint",
     "clean": "gts clean",
     "fix": "gts fix",
@@ -33,6 +33,7 @@
   "devDependencies": {
     "@types/app-root-path": "^1.2.4",
     "@types/express": "^4.17.11",
+    "@types/node": "^14.11.2",
     "eslint": "^7.15.0",
     "gts": "^3.1.0",
     "mocha": "^8.2.1",

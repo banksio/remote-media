@@ -1,22 +1,24 @@
 export class State {
-    state: number | string;
-    previousState: number | string;
+    state: number;
+    previousState: number;
     preloading: boolean;
     previousPreloading: boolean;
     requiresTimestamp: boolean;
     playerLoading: boolean;
     _cbStateChangeToClient: CallableFunction | undefined;
+    isAdmin: boolean;
 
-    constructor(state = "Admin", preloading = false) {
+    constructor(state = 0, preloading = false, isAdmin = true) {
         this.state = state;
         this.previousState = state;
         this.preloading = preloading;
         this.previousPreloading = preloading;
         this.requiresTimestamp = false;
         this.playerLoading = true;
+        this.isAdmin = isAdmin;
     }
 
-    updateState(state: number | string) {
+    updateState(state: number) {
         this.previousState = this.state;
         this.state = state;
         if (this._cbStateChangeToClient) return this._cbStateChangeToClient();
@@ -43,5 +45,4 @@ export class State {
     set stateChangeCallback(cb: CallableFunction) {
         this._cbStateChangeToClient = cb;
     }
-
 }
