@@ -1,0 +1,28 @@
+{
+  "extends": "../node_modules/gts/tsconfig-google.json",
+  "compilerOptions": {
+    "esModuleInterop": true,
+    "outDir": "build",
+    "resolveJsonModule": true,
+    "moduleResolution": "Node",
+    "rootDir": ".",
+    "allowJs": true,
+    "strict": true,
+    "lib": ["ES2021"],
+    "target": "ES2021",
+    "types": []
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*",
+  ],
+  "exclude": [
+    "src/web/static/**/*",
+    "../node_modules/**/*"
+  ],
+  // "references": [
+  //   {
+  //     "path": "./src/web/static"
+  //   }
+  // ]
+}

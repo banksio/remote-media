@@ -1,0 +1,9 @@
+// tsconfig.build.json
+{
+    "compilerOptions": {
+      "module": "commonjs",
+      "target": "ESNext",
+      "sourceMap": true
+    },
+    "exclude": ["node_modules", "dist"]
+  }

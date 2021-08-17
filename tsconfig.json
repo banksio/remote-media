@@ -1,23 +1,13 @@
+// tsconfig.json
 {
-  "extends": "./node_modules/gts/tsconfig-google.json",
-  "compilerOptions": {
-    "esModuleInterop": true,
-    "outDir": "build",
-    "resolveJsonModule": true,
-    "rootDir": ".",
-    "allowJs": true,
-    "strict": true,
-  },
-  "include": [
-    "src/**/*.ts",
-    "src/**/*",
-  ],
-  "exclude": [
-    "src/web/static/**/*"
-  ],
-  "references": [
-    {
-      "path": "./src/web/static"
+    "extends": "./tsconfig.build.json",
+    "compilerOptions": {
+      "baseUrl": ".",
+      "paths": {
+        "@remote-media/frontend": ["packages/*/src"],
+        "@remote-media/server": ["packages/*/src"]
+      },
+      "esModuleInterop": true,
+      "skipLibCheck": true
     }
-  ]
-}
+  }
