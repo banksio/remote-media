@@ -4,14 +4,14 @@ import { getIDFromURL } from "../utils";
 import { preloadVideo, roomClients } from "./events";
 import { Video } from "../video";
 import { transport } from "../..";
-import { playVideo } from "./videoEvents";
+import { playVideoEvent } from "./videoEvents";
 
 export const videoPlay = async (roomName: string, clientID: string): Promise<void> => {
     const room = getRoom(roomName);
 
     const promises = [];
     for (const clientID of Object.keys(room.clients.getAll())) {
-        promises.push(transport.sendClientEventWithCallback(clientID, playVideo()));
+        promises.push(transport.sendClientEventWithCallback(clientID, playVideoEvent()));
     }
 
     return Promise.all(promises)

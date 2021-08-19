@@ -34,6 +34,7 @@ export const videoForcePush = async (
 
         Promise.all(promises)
             .then(results => {
+                console.log("Got the results!");
                 console.log(results);
             })
             .catch(err => console.error(err));

@@ -33,7 +33,7 @@ export function onYouTubeIframeAPIReady() {
     let lastTime = -1;
     const interval = 1000;
 
-    var checkPlayerTime = function () {
+    const checkPlayerTime = function () {
         if (lastTime != -1) {
             // eslint-disable-next-line no-undef
             if (player.getPlayerState() == YT.PlayerState.PLAYING) {

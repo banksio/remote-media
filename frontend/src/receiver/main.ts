@@ -109,7 +109,10 @@ player.onNewStatus((status: number, preloading: boolean) => {
 player.loadYouTubeIframeAPI();
 
 transmit.onServerPlayerControl((data: string) => player.serverPlayerControl(data));
-transmit.onServerNewVideo((data: any) => player.preloadVideo(data.value));
+transmit.onServerNewVideo((data: any, callback: any) => {
+    player.preloadVideo(data.value);
+    callback("test")
+});
 transmit.onServerVideoTimestamp((ts: number) => player.seekToTimestamp(ts, false));
 
 frontendUI.initNicknameModal((nickname: string) => {

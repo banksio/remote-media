@@ -16,7 +16,8 @@
     "node/no-unsupported-features/es-syntax": [
       "error",
       { "ignores": ["modules"] }
-    ]
+    ],
+    "prettier/prettier": 0
   },
   "parserOptions": {
     "ecmaVersion": 2021,

@@ -1,5 +1,5 @@
 import { put } from "../httpTransport";
-import * as transmit from "./socketTransmit.js";
+import * as transmit from "./socketTransmit";
 
 export const putVideo = async (videoID: string) => {
     const url = window.location.href;

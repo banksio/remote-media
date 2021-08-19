@@ -8,7 +8,7 @@ const callbacks = {
     onServerConnectionManagement: (data: any) => {},
     onServerBufferingClients: (data: any) => {},
     onServerPlayerControl: (data: any) => {},
-    onServerNewVideo: (data: any) => {},
+    onServerNewVideo: (data: any, callback: any) => {},
     onServerVideoTimestamp: (data: any) => {},
 };
 
@@ -16,8 +16,6 @@ export function connectToSocket(href: string) {
     const url = href;
     const arr = url.split("/");
     const result = arr[0] + "//" + arr[2].split(":")[0];
-    // eslint-disable-next-line no-undef
-    
     socket = io(result + ":3694/");
 
     // On connection
@@ -73,7 +71,7 @@ export function onServerPlayerControl(callback: (data: string) => void) {
     callbacks.onServerPlayerControl = callback;
 }
 
-export function onServerNewVideo(callback: (data: any) => void) {
+export function onServerNewVideo(callback: (data: any, callback: any) => void) {
     callbacks.onServerNewVideo = callback;
 }
 

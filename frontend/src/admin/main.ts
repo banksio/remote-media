@@ -1,8 +1,8 @@
 import { putVideo } from "./fetch";
-import * as transmit from "./socketTransmit.js";
+import * as transmit from "./socketTransmit";
 import * as frontendUI from "./ui.js";
 import * as clickHandlers from "./uiEvents.js";
-import TableWorker from './worker?worker'
+import TableWorker from "./worker?worker";
 
 import "popper.js";
 
@@ -82,7 +82,7 @@ function queueUpdateStatus(status: any) {
     queue.index = status.index;
     queue.length = status.length;
 
-    if (status.shuffle == true) {
+    if (status.shuffle === true) {
         frontendUI.checkPlaylistShuffleBox(true);
     } else {
         frontendUI.checkPlaylistShuffleBox(false);
