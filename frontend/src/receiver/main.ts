@@ -1,4 +1,4 @@
-import * as player from "./player.js";
+import * as player from "./player";
 import * as transmit from "./socketTransmit";
 import * as frontendUI from "./ui.js";
 import * as clickHandlers from "./uiEvents.js";
@@ -10,6 +10,7 @@ import "popper.js";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "@fortawesome/fontawesome-free/css/all.css";
 import "../../stylesheets/receiverStyles.css";
+import { consoleErrorWithTime, consoleLogWithTime } from "./debug";
 
 const receiverDetails: { nickname?: string } = {};
 
@@ -28,7 +29,7 @@ window.onPlayerStateChange = player.onPlayerStateChange;
 screensaver.start();
 
 transmit.onConnected((socketID: string) => {
-    console.log("Connected to server with socket ID " + socketID);
+    consoleLogWithTime("[Connected] Server socket ID: " + socketID);
     frontendUI.frontendChangeConnectionIdentifier(1);
     // If there's a nickname set, then try and set this with the server again
     if (receiverDetails.nickname) {
@@ -51,7 +52,7 @@ transmit.onServerConnectionManagement((data: string) => {
             frontendUI.frontendChangeConnectionIdentifier(2);
             break;
         default:
-            console.log("Unknown site command.");
+            consoleErrorWithTime("Received unknown site command.");
     }
 });
 
@@ -110,8 +111,7 @@ player.loadYouTubeIframeAPI();
 
 transmit.onServerPlayerControl((data: string) => player.serverPlayerControl(data));
 transmit.onServerNewVideo((data: any, callback: any) => {
-    player.preloadVideo(data.value);
-    callback("test")
+    player.preloadVideo(data.value).then(videoID => callback(videoID));
 });
 transmit.onServerVideoTimestamp((ts: number) => player.seekToTimestamp(ts, false));
 
@@ -240,31 +240,4 @@ function pushTimestampToServer(timestamp: number) {
             frontendUI.showNotificationBanner("Error syncing others: " + error, false, false);
         }
     });
-}
-
-// function to provide well formatted date for console messages
-function consoleLogWithTime(msg: string, date = new Date()) {
-    console.log(dateAndTime() + " " + msg);
-}
-
-function dateAndTime(date = new Date()) {
-    const year = new Intl.DateTimeFormat("en", { year: "2-digit" }).format(date);
-    const month = new Intl.DateTimeFormat("en", { month: "2-digit" }).format(date);
-    const day = new Intl.DateTimeFormat("en", { day: "2-digit" }).format(date);
-    return (
-        "[" +
-        day +
-        "/" +
-        month +
-        "/" +
-        year +
-        "]" +
-        "[" +
-        ("0" + date.getHours()).slice(-2) +
-        ":" +
-        ("0" + date.getMinutes()).slice(-2) +
-        ":" +
-        ("0" + date.getSeconds()).slice(-2) +
-        "]"
-    );
 }

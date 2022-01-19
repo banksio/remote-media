@@ -27,7 +27,7 @@ export function connectToSocket(href: string) {
     socket.on("serverConnectionManagement", data => callbacks.onServerConnectionManagement(data));
     socket.on("serverBufferingClients", data => callbacks.onServerBufferingClients(data));
     socket.on("serverPlayerControl", data => callbacks.onServerPlayerControl(data));
-    socket.on("serverNewVideo", data => callbacks.onServerNewVideo(data));
+    socket.on("serverNewVideo", (data, callback) => callbacks.onServerNewVideo(data, callback));
     socket.on("serverVideoTimestamp", data => callbacks.onServerVideoTimestamp(data));
 }
 

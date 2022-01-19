@@ -2,7 +2,6 @@ let x = Math.floor(Math.random() * window.innerWidth);
 let y = Math.floor(Math.random() * window.innerHeight);
 let xSpeed = 120;
 let ySpeed = 120;
-let vewPoint;
 const colours = [
     "rgb(0, 0, 255)",
     "rgb(0, 255, 0)",
@@ -17,17 +16,15 @@ let shown = false;
 let lastTS;
 
 const logoImg = document.getElementById("screensaver-logo");
+const vewPoint = document.getElementById("screensaver");
+vewPoint.appendChild(logoImg);
 
-logoImg.onload = function () {
-    vewPoint = document.getElementById("screensaver");
-    vewPoint.appendChild(logoImg);
-};
 
 logoImg.style.cssText = "width:20%; position:absolute; left:0px; top:0px;";
 logoImg.style.fill = colours[Math.floor(Math.random() * colours.length)];
 
 // Animate the logo
-var logoAnimate = function (timestamp) {
+const logoAnimate = function (timestamp) {
     if (lastTS === undefined) {
         lastTS = timestamp;
     }
@@ -68,7 +65,7 @@ export function start() {
 }
 
 export function stop() {
-    if (shown == false) return; // Don't run if already animating out
+    if (shown === false) return; // Don't run if already animating out
 
     // Hide and stop the animation
     shown = false;

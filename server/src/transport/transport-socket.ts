@@ -31,7 +31,7 @@ export class socketioTransport extends transport {
 
         for (const [event, data] of Object.entries(eventObj.sendEvents)) {
             JSON.stringify(data); // This will catch and throw any circular references
-            debug(chalk.magenta(`Send ${event}: ${data}`));
+            debug(chalk.magenta(`Send ${event} to client ${clientID} with data: ${data}`));
             socket.emit(event, data);
         }
     }
@@ -41,7 +41,7 @@ export class socketioTransport extends transport {
 
         for (const [event, data] of Object.entries(eventObj.broadcastEvents)) {
             JSON.stringify(data); // This will catch and throw any circular references
-            debug(chalk.magenta(`Broadcast (with exclusion) ${event}: ${data}`));
+            debug(chalk.magenta(`Broadcast (except to client ${clientID}) ${event}: ${data}`));
             socket.broadcast.emit(event, data);
         }
     }
@@ -55,9 +55,10 @@ export class socketioTransport extends transport {
         return new Promise<any>((resolve, reject) => {
             const socket = this.getSocketByClientID(clientID);
 
-            debug(chalk.magenta(`Send ${event.event}: ${event.data}`));
-            socket.emit(event.event, event.data, (data: any) => {
-                resolve(data);
+            debug(chalk.magenta(`Send ${event.event} to client ${clientID} with callback. Data: ${event.data}`));
+            socket.emit(event.event, event.data, (callbackData: any) => {
+                console.log("Callback recieved");
+                resolve(callbackData);
             });
         });
     }

@@ -5,6 +5,8 @@ import { preloadVideo, roomClients } from "./events";
 import { Video } from "../video";
 import { transport } from "../..";
 import { videoPlay } from "./videoPlay";
+import { info } from "../logging";
+import chalk from "chalk";
 
 export const videoForcePush = async (
     roomName: string,
@@ -28,26 +30,20 @@ export const videoForcePush = async (
         resolve(newPreload);
 
         const promises = [];
-        for (const clientID of Object.keys(room.clients.getAll())) {
-            promises.push(transport.sendClientEventWithCallback(clientID, transportNewVideo));
+        for (const clientID of Object.keys(room.clients.getRecievers())) {
+            const clientPreloaded = transport.sendClientEventWithCallback(clientID, transportNewVideo).then(videoID => {
+                console.log(`Client ${clientID} finished preloading.`);
+                if (videoID !== getIDFromURL(videoURL)) throw new Error("Client preloaded incorrect video ID");
+            })
+            promises.push(clientPreloaded);
         }
-
         Promise.all(promises)
-            .then(results => {
-                console.log("Got the results!");
-                console.log(results);
+            .then(_ => {
+                info(chalk.green("All receivers preloaded, playing video"));
+                videoPlay(roomName, clientID).then(() => {
+                    info(`Video (${getIDFromURL(videoURL)}) playing`)
+                });
             })
             .catch(err => console.error(err));
-
-        setTimeout(() => {
-            videoPlay(roomName, clientID).then(() => {});
-        }, 2000);
-
-        // this.currentVideo = new ServerVideo("oof");
-        // Object.assign(this.currentVideo, videoObj);
-        // this.currentVideo.onPlayDelay(this.incomingEvents.videoStateDelay);
-        // this.currentVideo.state = 5;
-        // this.currentVideo.onStateChange(this.incomingEvents.videoStateChange);
-        // this.currentVideo.whenFinished(this.incomingEvents.videoFinished);
     });
 };

@@ -3,7 +3,7 @@ import { event } from "./event";
 import { Client } from "../client/client";
 import { info } from "../logging";
 import { getRoom } from "../roomManager";
-import { roomClients } from "./events";
+import { roomClients as roomClientsEvent } from "./events";
 
 export const newClient = async (roomName: string, clientID: string): Promise<event> => {
     const room = getRoom(roomName);
@@ -17,7 +17,7 @@ export const newClient = async (roomName: string, clientID: string): Promise<eve
     // let queue = room.transportConstructs.queue();
     // let queueStatus = room.transportConstructs.queueStatus();
     // let video = room.transportConstructs.currentVideo();
-    const clients = roomClients(roomName);
+    const clients = roomClientsEvent(roomName);
     newClientResponse.addBroadcastEventFromConstruct(clients);
     // newClientResponse.addSendEventFromConstruct(queue);
     // newClientResponse.addSendEventFromConstruct(queueStatus);

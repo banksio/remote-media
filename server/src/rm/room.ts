@@ -75,6 +75,12 @@ export class ClientArray {
         return this.clients;
     }
 
+    // TODO: Provide a better check
+    // ! Improvement requires dependency improvements (e.g. client admin boolean)
+    getRecievers(): { [clientID: string]: Client } {
+        return Object.fromEntries(Object.entries(this.clients).filter(([_, value]) => value.name && value.name?.length < 10));
+    }
+
     setClientNickname(clientID: string, nickname: string) {
         // Stops injection by replacing '<' & '>' with html code
         const newNickname = nickname.replace(/</g, "&lt;").replace(/>/g, "&gt;");

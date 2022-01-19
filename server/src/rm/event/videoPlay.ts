@@ -11,7 +11,16 @@ export const videoPlay = async (roomName: string, clientID: string): Promise<voi
 
     const promises = [];
     for (const clientID of Object.keys(room.clients.getAll())) {
-        promises.push(transport.sendClientEventWithCallback(clientID, playVideoEvent()));
+        // Create a promise for each of the clients to preload the video
+        // Check to ensure they have preloaded itt
+        const clientPreloaded = transport.sendClientEventWithCallback(clientID, playVideoEvent()).then(data => {
+            console.log("Callback recieved here!");
+            // if (data) => {
+
+            // }
+            console.log(data);
+        })
+        promises.push(clientPreloaded);
     }
 
     return Promise.all(promises)
