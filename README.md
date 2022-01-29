@@ -27,7 +27,7 @@ docker pull banksio/remote-media
 docker run --publish 3694:3694 --detach --name remotemedia banksio/remote-media:latest
 ```
 
-With docker-compose (you don't have to use `curl`):
+With docker-compose (you can use something other than `curl` if you wish):
 
 ```bash
 mkdir remote-media
