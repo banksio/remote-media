@@ -27,11 +27,12 @@ docker pull banksio/remote-media
 docker run --publish 3694:3694 --detach --name remotemedia banksio/remote-media:latest
 ```
 
-With docker-compose:
+With docker-compose (you don't have to use `curl`):
 
 ```bash
-git clone https://github.com/banksio/remote-media.git
+mkdir remote-media
 cd remote-media
+curl https://raw.githubusercontent.com/banksio/remote-media/master/docker-compose.yml -o docker-compose.yml
 docker-compose up
 ```
 
