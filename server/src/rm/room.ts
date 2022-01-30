@@ -263,7 +263,7 @@ export class OldRoom {
             queueAppend: (data: any) => {
                 try {
                     this.queue.addVideosCombo(data); // Add videos to queue
-                } catch (error) {
+                } catch (error: any) {
                     return error.message;
                 }
 
@@ -280,7 +280,7 @@ export class OldRoom {
                     const newVideo = new Video("oof");
                     try {
                         newVideo.setIDFromURL(urlArray[0]);
-                    } catch (error) {
+                    } catch (error: any) {
                         return error.message;
                     }
                     this.preloadNewVideoInRoom(newVideo);
@@ -358,7 +358,7 @@ export class OldRoom {
                 // Set the nickname
                 try {
                     setNicknameInRoom(client, nick, this);
-                } catch (error) {
+                } catch (error: any) {
                     if (error.message === "Duplicate Nickname Error") {
                         console.error(error);
                         return error.message;
