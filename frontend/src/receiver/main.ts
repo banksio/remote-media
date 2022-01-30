@@ -32,8 +32,13 @@ transmit.onConnected((socketID: string) => {
     consoleLogWithTime("[Connected] Server socket ID: " + socketID);
     frontendUI.frontendChangeConnectionIdentifier(1);
     // If there's a nickname set, then try and set this with the server again
+    // If not, prompt for one
     if (receiverDetails.nickname) {
         setNickname(receiverDetails.nickname);
+    } else {
+        frontendUI.initNicknameModal((nickname: string) => {
+            setNickname(nickname);
+        });
     }
 });
 
@@ -114,10 +119,6 @@ transmit.onServerNewVideo((data: any, callback: any) => {
     player.preloadVideo(data.value).then(videoID => callback(videoID));
 });
 transmit.onServerVideoTimestamp((ts: number) => player.seekToTimestamp(ts, false));
-
-frontendUI.initNicknameModal((nickname: string) => {
-    setNickname(nickname);
-});
 
 clickHandlers.onResyncClick(() => {
     requestTimestampFromServer();
