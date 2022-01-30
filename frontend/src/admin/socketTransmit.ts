@@ -21,7 +21,7 @@ const callbacks = {
 export function connectToSocket(href: string) {
     const url = href;
     const arr = url.split("/");
-    const result = arr[0] + "//" + arr[2].split(":")[0];
+    const result = arr[0] + "//" + arr[2];
     socket = io(result + "/", {
         query: {
             clientType: "1"
