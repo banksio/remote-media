@@ -21,13 +21,13 @@ export class event {
     sendEvents: eventDict;
     events: eventDict;
 
-    constructor(event?: string, data?: any) {
+    constructor(broadcastEvent?: string, eventData?: any) {
         this.broadcastEvents = {};
         this.sendEvents = {};
         this.events = {};
 
-        if (event && data) {
-            this.addBroadcastEvent(event, data);
+        if (broadcastEvent && eventData) {
+            this.addBroadcastEvent(broadcastEvent, eventData);
         }
     }
 
