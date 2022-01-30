@@ -11,7 +11,7 @@ const router = Router();
 /* GET room receiver */
 // router.get('/:room', function(req, res, next) {
 router.get("/", (req, res, next) => {
-    res.sendFile(path.join(routerRoot.toString(), "/build/dist/index.html"));
+    res.sendFile(path.join(routerRoot.toString(), "/build/index.html"));
 });
 
 /* GET room admin */

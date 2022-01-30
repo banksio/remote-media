@@ -4,7 +4,7 @@ const { resolve } = require('path')
  * @type {import('vite').UserConfig}
  */
 const config = {
-    base: "/dist/",
+    base: "/",
     server: {
         proxy: {
             '/api': 'http://localhost:3694',

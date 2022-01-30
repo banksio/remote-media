@@ -5,7 +5,6 @@ import routerRoot from "app-root-path";
 
 const router = Router();
 
-// TODO: Change this path
-router.use("/", express.static("./build/dist"));
+router.use("/", express.static(path.join(routerRoot.toString(), "/dist")));
 
 export default router;

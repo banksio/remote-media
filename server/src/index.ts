@@ -17,11 +17,8 @@ info("Starting express...");
 
 // Create express object and routers
 const expApp = express();
-expApp.set("view engine", "ejs");
-expApp.set("views", "./src/web/views");
-expApp.use("/", indexRouter);
-expApp.use("/dist", staticRouter);
 expApp.use("/api", roomAPIRouter);
+expApp.use("/", staticRouter);
 // expApp.use('/room', roomRouter);
 
 // Serve static web content
