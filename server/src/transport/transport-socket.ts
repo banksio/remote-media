@@ -78,7 +78,7 @@ export function startServer(expressServer: Express.Application) {
 
     socketIOServer.server.on("connection", (socket: Socket) => {
         // A new connection from a client
-        clientConnect("default", socket.id);
+        clientConnect("default", socket.id, socket.handshake.query["clientType"]);
 
         socket.on("disconnect", () => {
             clientDisconnect("default", socket.id);

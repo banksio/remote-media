@@ -1,19 +1,22 @@
 import { Video } from "../video";
 import { State } from "./state";
 
+export enum ClientType {Receiver, Admin}
+
 export class Client {
     public id: string;
     private _name: string | undefined;
     public status: State;
+    private _type: ClientType;
     // private _pingHistory: Array<any>;
     // private _cbStateChangeToRoom: CallableFunction | undefined;
 
-    constructor(id: string, name: string | undefined = undefined) {
+    constructor(id: string, type: ClientType | undefined = ClientType.Receiver) {
         this.id = id;
-        this._name = name ? name : id;
+        this._name = id;
         this.status = new State();
         // this._pingHistory = [];
-
+        this._type = type;
         // this.status.stateChangeCallback = this.stateChangeCallbackToRoom.bind(this);
     }
 
@@ -44,7 +47,9 @@ export class Client {
         this._name = name;
     }
 
-
+    public get type() {
+        return this._type
+    }
 
     // public set stateChangeCallback(cb: CallableFunction) {
     //     this._cbStateChangeToRoom = cb;

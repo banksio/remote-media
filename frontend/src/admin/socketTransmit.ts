@@ -22,7 +22,11 @@ export function connectToSocket(href: string) {
     const url = href;
     const arr = url.split("/");
     const result = arr[0] + "//" + arr[2].split(":")[0];
-    socket = io(result + "/");
+    socket = io(result + "/", {
+        query: {
+            clientType: "1"
+        }
+    });
 
     // On connection
     socket.on("connect", () => callbacks.onConnected(socket.id));

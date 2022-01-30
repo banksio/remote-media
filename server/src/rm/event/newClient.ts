@@ -1,15 +1,15 @@
 import chalk from "chalk";
 import { event } from "./event";
-import { Client } from "../client/client";
+import { Client, ClientType } from "../client/client";
 import { info } from "../logging";
 import { getRoom } from "../roomManager";
 import { roomClients as roomClientsEvent } from "./events";
 
-export const newClient = async (roomName: string, clientID: string): Promise<event> => {
+export const newClient = async (roomName: string, clientID: string, clientType: ClientType): Promise<event> => {
     const room = getRoom(roomName);
 
-    const newClient = new Client(clientID);
-    info(chalk.green("[CliMgnt] New Client " + newClient.id));
+    const newClient = new Client(clientID, clientType);
+    info(chalk.cyan(`[CliMgnt] New client, type ${clientType}. ID: ${newClient.id}`));
 
     room.addClient(newClient);
 

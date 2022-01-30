@@ -12,11 +12,13 @@ import { setReceiverNickname } from "./event/receiverNickname";
 import { removeClient } from "./event/removeClient";
 import { videoForcePush } from "./event/videoForcePush";
 
-export function clientConnect(roomName: string, clientID: string): void {
-    // Call the newClient event to add a new client
-    newClient(roomName, clientID).then(event => {
-        transport.handleEvent(clientID, event);
-    });
+export function clientConnect(roomName: string, clientID: string, clientType: string | string[] | undefined): void {
+    if (typeof clientType === "string") {
+        // Call the newClient event to add a new client
+        newClient(roomName, clientID, parseInt(clientType)).then(event => {
+            transport.handleEvent(clientID, event);
+        });
+    }
 }
 
 export function clientDisconnect(roomName: string, clientID: string): void {

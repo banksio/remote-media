@@ -2,7 +2,7 @@
 import chalk from "chalk";
 import SocketIO from "socket.io";
 import { event } from "./event/event";
-import { Client } from "./client/client";
+import { Client, ClientType } from "./client/client";
 import { State } from "./client/state";
 import { debug, info, prettyPrintClientID } from "./logging";
 import { NewQueue } from "./queue/queue";
@@ -75,10 +75,9 @@ export class ClientArray {
         return this.clients;
     }
 
-    // TODO: Provide a better check
-    // ! Improvement requires dependency improvements (e.g. client admin boolean)
+    // Todo: This could be split into a separate array
     getRecievers(): { [clientID: string]: Client } {
-        return Object.fromEntries(Object.entries(this.clients).filter(([_, value]) => value.name && value.name?.length < 10));
+        return Object.fromEntries(Object.entries(this.clients).filter(([_, value]) => value.type === ClientType.Receiver));
     }
 
     setClientNickname(clientID: string, nickname: string) {
