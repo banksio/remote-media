@@ -21,7 +21,7 @@ export class socketioTransport extends transport {
     broadcastEvent(eventObj: event): void {
         for (const [event, data] of Object.entries(eventObj.broadcastEvents)) {
             JSON.stringify(data); // This will catch and throw any circular references
-            debug(chalk.magentaBright(`Broadcast ${event}: ${data}`));
+            debug(chalk.magenta(`Broadcast ${event}: ${data}`));
             this.server.emit(event, data);
         }
     }
@@ -57,7 +57,7 @@ export class socketioTransport extends transport {
 
             debug(chalk.magenta(`Send ${event.event} to client ${clientID} with callback. Data: ${event.data}`));
             socket.emit(event.event, event.data, (callbackData: any) => {
-                console.log("Callback recieved");
+                debug(chalk.magentaBright(`Callback recieved from client ${clientID}.`));
                 resolve(callbackData);
             });
         });
