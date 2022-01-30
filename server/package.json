@@ -6,7 +6,7 @@
     "main": "server.js",
     "scripts": {
         "start": "node build/src/index.js",
-        "start:dev": "nodemon src/index.ts",
+        "dev": "nodemon src/index.ts",
         "compile": "tsc",
         "lint": "gts lint",
         "clean": "gts clean",
