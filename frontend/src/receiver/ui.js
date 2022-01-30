@@ -70,6 +70,7 @@ export function frontendChangeConnectionStatusText(show, connected = true) {
 
 export function showNotificationBanner(notification, persist, spinner = false) {
     console.log("Banner shown");
+    notificationBanner.classList.remove("hidden");  // Arbitrary hidden class for first load
     switch (spinner) {
         case true: // Don't hide after showing
             // Show the spinner

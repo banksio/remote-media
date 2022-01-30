@@ -54,6 +54,10 @@ body {
     float: left;
 }
 
+.hidden {
+    visibility: hidden;
+}
+
 .hideBanner {
     transition-delay: 1s;
     transform: translate3d(0, -100%, 0);

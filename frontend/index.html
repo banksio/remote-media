@@ -72,18 +72,18 @@
 
     <!-- Loading overlay -->
     <div id="connectionBanner" class="banner">
-        <div id="bannerReconnectingSpinner" class="d-none d-flex align-items-center">
-            <span class="text-warning">Reconnecting...</span>
+        <div id="bannerReconnectingSpinner" class="d-flex align-items-center">
+            <span class="text-warning">Connecting...</span>
             <div id="spinnerConnection" class="spinner-border ml-auto text-warning" role="status" aria-hidden="true">
             </div>
         </div>
         <span id="statusConnection" class="text-success d-none">Connected</span>
     </div>
 
-    <div id="notificationBanner" class="banner hideBanner">
+    <div id="notificationBanner" class="banner hideBanner hidden">
         <div class="d-flex align-items-center text-light">
             <div id="notificationSpinner" class="spinner-border mr-2" role="status" aria-hidden="true"></div>
-            <span id="notificationText">Reconnecting...</span>
+            <span id="notificationText">Connecting...</span>
             <a href="admin" target="_blank" id="notificationBannerAdminPanelLink">Admin panel</a>
         </div>
     </div>
