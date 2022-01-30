@@ -15,31 +15,31 @@ export const videoForcePush = async (
 ): Promise<event> => {
     return new Promise<event>((resolve, reject) => {
         const room = getRoom(roomName);
-
+        let videoID: string;
         // Check the name
         try {
-            const videoID = getIDFromURL(videoURL);
+            videoID = getIDFromURL(videoURL);
         } catch (error) {
-            reject(error);
+            return reject(error);
         }
 
         // transmit.broadcastPreloadVideo(this, videoObj);
         const newPreload = new event();
-        const transportNewVideo = preloadVideo(new Video(getIDFromURL(videoURL)));
+        const transportNewVideo = preloadVideo(new Video(videoID));
         newPreload.addBroadcastEventFromConstruct(transportNewVideo);
         resolve(newPreload);
 
         const promises = [];
         for (const clientID of Object.keys(room.clients.getRecievers())) {
-            const clientPreloaded = transport.sendClientEventWithCallback(clientID, transportNewVideo).then(videoID => {
-                console.log(`Client ${clientID} finished preloading.`);
-                if (videoID !== getIDFromURL(videoURL)) throw new Error("Client preloaded incorrect video ID");
+            const clientPreloaded = transport.sendClientEventWithCallback(clientID, transportNewVideo).then(clientReportedVideoID => {
+                info(chalk.green(`Client ${clientID} finished preloading.`));
+                if (clientReportedVideoID !== videoID) throw new Error("Client preloaded incorrect video ID");
             })
             promises.push(clientPreloaded);
         }
         Promise.all(promises)
             .then(_ => {
-                info(chalk.green("All receivers preloaded, playing video"));
+                info(chalk.greenBright("All receivers preloaded, playing video"));
                 videoPlay(roomName, clientID).then(() => {
                     info(`Video (${getIDFromURL(videoURL)}) playing`)
                 });
