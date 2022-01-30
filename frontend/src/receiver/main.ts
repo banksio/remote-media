@@ -33,7 +33,7 @@ transmit.onConnected((socketID: string) => {
     frontendUI.frontendChangeConnectionIdentifier(1);
     // If there's a nickname set, then try and set this with the server again
     if (receiverDetails.nickname) {
-        checkNickname(receiverDetails.nickname);
+        setNickname(receiverDetails.nickname);
     }
 });
 
@@ -116,7 +116,7 @@ transmit.onServerNewVideo((data: any, callback: any) => {
 transmit.onServerVideoTimestamp((ts: number) => player.seekToTimestamp(ts, false));
 
 frontendUI.initNicknameModal((nickname: string) => {
-    checkNickname(nickname);
+    setNickname(nickname);
 });
 
 clickHandlers.onResyncClick(() => {
@@ -144,7 +144,7 @@ function formatBufferingClientNames(buffering: any[]) {
 }
 
 // Ask the server to validate the nickname and get the response
-function checkNickname(nick: string) {
+function setNickname(nick: string) {
     const url = window.location.href;
     const arr = url.split("/");
     const result = arr[0] + "//" + arr[2];
@@ -162,7 +162,7 @@ function checkNickname(nick: string) {
         .catch(error => {
             frontendUI.showNicknameModal();
             // If response is anything else, there's been an error
-            alert("Setting nickname has been encountered an error: " + error.message);
+            alert("Cannot set nickname: " + error.message);
             return error;
         });
 }
