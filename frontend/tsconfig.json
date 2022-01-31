@@ -20,6 +20,6 @@
     "node_modules/@types"
   ],
   "types": [
-    "youtube"
+    "./src/receiver/youtube.d.ts"
   ]
 }
