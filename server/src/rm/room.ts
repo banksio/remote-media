@@ -9,6 +9,7 @@ import { NewQueue } from "./queue/queue";
 import { setNicknameInRoom, validateClientVideo } from "./utils";
 import { ServerVideo, Video } from "./video";
 import { RoomVideo } from "./roomVideo";
+import { VideoOrchestrator } from "./videoOrchestrator";
 
 /**
  * The Room class.
@@ -18,10 +19,12 @@ export class Room {
     public name: string;
     public clients: ClientArray;
     public video: RoomVideo | undefined;
+    public videoOrchestrator: VideoOrchestrator;
 
     constructor(name: string) {
         this.name = name;
         this.clients = new ClientArray();
+        this.videoOrchestrator = new VideoOrchestrator(this);
     }
 
     addClient(client: Client) {
