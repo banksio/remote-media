@@ -43,8 +43,8 @@ router.put("/video", json(), (req, res, next): void => {
     handleVideoForcePush("default", clientID, (req.body as putVideoBody).videoID)
         .then(() => res.sendStatus(200))
         .catch(error => {
-            if (error.message === "No video ID found in URL") {
-                res.sendStatus(400);
+            if (error.message === "No video ID found in URL.") {
+                res.status(400).send(error.message);
             } else {
                 next(error);
             }

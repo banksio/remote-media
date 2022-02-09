@@ -40,6 +40,6 @@ export function getIDFromURL(url: string): string {
             return;
         });
     }
-    if (id === undefined) throw new Error("No video ID found in URL");
+    if (id === undefined) throw new Error("No video ID found in URL.");
     return id;
 }

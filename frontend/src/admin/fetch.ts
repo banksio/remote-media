@@ -6,10 +6,10 @@ export const putVideo = async (videoID: string) => {
     const arr = url.split("/");
     const result = arr[0] + "//" + arr[2];
     return put(result + "/api/video?client=" + transmit.socket.id, { videoID: videoID }).then(
-        response => {
+        async response => {
             if (!response.ok) {
-                if (response.status === 409) {
-                    throw new Error("Name already taken.");
+                if (response.status === 400) {
+                    throw new Error(await response.text());
                 }
                 throw new Error("Unhandled exception.");
             } else {

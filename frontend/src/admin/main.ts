@@ -95,12 +95,12 @@ function pushNewVideo(videoID: string) {
     frontendUI.changeNewVideoButtonEnabled(false);
     frontendUI.changeMainSpinner(1, "Pushing video...");
     putVideo(videoID)
-        .then(() => {
-            frontendUI.changeNewVideoButtonEnabled(true);
-            frontendUI.changeMainSpinner(0);
-        })
         .catch(error => {
             alert(error);
+        })
+        .finally(() => {
+            frontendUI.changeNewVideoButtonEnabled(true);
+            frontendUI.changeMainSpinner(0);
         });
 }
 

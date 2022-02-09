@@ -29,7 +29,7 @@ export class VideoOrchestrator {
         this._room = room;
     }
 
-    public async preloadVideo(videoID: string) {
+    public async preloadVideo(videoID: string): Promise<void> {
         // Generate the preload event to send to the clients
         const newPreload = new event();
         const transportNewVideo = preloadVideo(new Video(videoID));
@@ -52,10 +52,6 @@ export class VideoOrchestrator {
                 });
             })
             .catch(err => console.error(err));
-
-
-        // TODO: Change this to return something different
-        return newPreload;
     }
 
     /**
