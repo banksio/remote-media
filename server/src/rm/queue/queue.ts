@@ -27,7 +27,7 @@ export class NewQueue {
     }
 
     cyclicReplacer(key: any, value: any) {
-        if (key == "_currentVideo") return undefined;
+        if (key === "_currentVideo") return undefined;
         else return value;
     }
 
@@ -66,7 +66,7 @@ export class NewQueue {
             this._lengthUnplayed = this._videos.length - this._currentIndex - 1;
             this._lengthPlayed = this._videos.length - this._lengthUnplayed;
             // Set the next nextIndex if there are videos left after the current one
-            if (this._lengthUnplayed != 0) this._nextIndex = this._currentIndex + 1;
+            if (this._lengthUnplayed !== 0) this._nextIndex = this._currentIndex + 1;
         } else if (oldShuffle === false && this._shuffle === true) {
             // If shuffle has been switched on
             this._generateShuffled();
@@ -77,7 +77,7 @@ export class NewQueue {
             this._lengthUnplayed = this._videosShuffled.length - this._currentIndex - 1;
             this._lengthPlayed = 1;
             // Set the next nextIndex if there are videos left after the current one
-            if (this._lengthUnplayed != 0) this._nextIndex = this._currentIndex + 1;
+            if (this._lengthUnplayed !== 0) this._nextIndex = this._currentIndex + 1;
         }
     }
 
@@ -86,7 +86,7 @@ export class NewQueue {
     }
 
     get videos() {
-        if (this._shuffle == true) return this._videosShuffled;
+        if (this._shuffle === true) return this._videosShuffled;
         else return this._videos;
     }
 
@@ -95,7 +95,7 @@ export class NewQueue {
         this._videos.push(video);
         this._lengthUnplayed += 1;
 
-        if (this._videosShuffled.length == 0) {
+        if (this._videosShuffled.length === 0) {
             this._videosShuffled.push(video);
         } else {
             const randomIndex = Math.floor(Math.random() * this._videosShuffled.length);
@@ -103,13 +103,13 @@ export class NewQueue {
         }
     }
 
-    addVideoFromID(id: string) {
+    private addVideoFromID(id: string) {
         // Generate a new video object and call addVideo
         const newVideo = new OldVideo(id);
         this.addVideo(newVideo);
     }
 
-    addVideosFromURLs(urlArray: string[]) {
+    private addVideosFromURLs(urlArray: string[]) {
         // // Split the comma-separated list
         // var urlArray = urls.split(',');
         // // console.log("LENGTH" + urlArray.length);
@@ -125,11 +125,11 @@ export class NewQueue {
         // Once all the videos are added, shuffle if needs be
     }
 
-    addVideosFromCSV(csv: string) {
+    private addVideosFromCSV(csv: string) {
         // // Split the comma-separated list
         const urlArray = csv.split(",");
         // console.log("LENGTH" + urlArray.length);
-        if (urlArray.length == 1) {
+        if (urlArray.length === 1) {
             // If there's only one url in the list then don't add anything
             return;
         }
@@ -137,7 +137,7 @@ export class NewQueue {
     }
 
     addVideosCombo(inputData: string) {
-        if (inputData.substring(0, 8) == "RMPLYLST") {
+        if (inputData.substring(0, 8) === "RMPLYLST") {
             // If we've got a playlist JSON on our hands
             const playlistJSON = JSON.parse(inputData.substring(8));
             for (const [url, details] of Object.entries(playlistJSON)) {
@@ -169,12 +169,12 @@ export class NewQueue {
 
     nextVideo() {
         // Ensure there are videos left to queue
-        if (this._lengthUnplayed == 0) {
+        if (this._lengthUnplayed === 0) {
             console.error("No videos left.");
             return undefined;
             // throw Error;
         }
-        if (this._shuffle == false) {
+        if (this._shuffle === false) {
             // If we're not shuffling
             this._currentVideo = new OldVideo(
                 this._videos[this._nextIndex].id,
@@ -182,7 +182,7 @@ export class NewQueue {
                 this._videos[this._nextIndex].channel
             );
             // this._currentVideo = JSON.parse(JSON.stringify(this._videos[this._nextIndex]));  // Current video is the next video
-        } else if (this._shuffle == true) {
+        } else if (this._shuffle === true) {
             // If we're shuffling
             this._currentVideo = new OldVideo(
                 this._videosShuffled[this._nextIndex].id,
@@ -221,7 +221,7 @@ export class NewQueue {
             return undefined;
             // throw Error;
         }
-        if (this._shuffle == false) {
+        if (this._shuffle === false) {
             // If we're not shuffling
             this._currentVideo = new OldVideo(
                 this._videos[this._currentIndex - 1].id,
@@ -229,7 +229,7 @@ export class NewQueue {
                 this._videos[this._currentIndex - 1].channel
             );
             // this._currentVideo = JSON.parse(JSON.stringify(this._videos[this._nextIndex]));  // Current video is the next video
-        } else if (this._shuffle == true) {
+        } else if (this._shuffle === true) {
             // If we're shuffling
             this._currentVideo = new OldVideo(
                 this._videosShuffled[this._currentIndex - 1].id,
@@ -260,7 +260,7 @@ export class NewQueue {
     private _generateShuffled() {
         this._videosShuffled = this._videos.slice(this._nextIndex);
         this._videosShuffled = shuffle(this._videosShuffled);
-        if (this._currentIndex != -1) {
+        if (this._currentIndex !== -1) {
             this._videosShuffled = [this._videos[this._currentIndex]].concat(this._videosShuffled);
         }
     }
