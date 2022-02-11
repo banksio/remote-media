@@ -3,11 +3,38 @@ import { ValueError } from "./error";
 import { debug, info } from "./logging";
 import { getIDFromURL } from "./utils";
 
+export interface VideoDetails {
+    id: string;
+    title: string;
+    channel: string;
+    duration: number;
+}
+
 export class Video {
-    public id: string;
-    public title: string;
-    public channel: string;
-    public duration: number;
+    readonly id: string;
+    readonly title: string;
+    readonly channel: string;
+    readonly duration: number;
+
+    constructor(id: string, title: string, channel: string, duration: number) {
+        this.id = id;
+        this.title = title ? title : id;
+        this.channel = channel;
+        this.duration = duration;
+    }
+
+    // setIDFromURL(url: string) {
+    //     this.id = getIDFromURL(url);
+    //     this.title = this.title ? this.title : this.id;
+    // }
+}
+
+
+export class OldVideo {
+    id: string;
+    title: string;
+    channel: string;
+    duration: number;
 
     constructor(id: string, title?: string, channel = "Unknown", duration = 0) {
         this.id = id;
@@ -22,7 +49,9 @@ export class Video {
     }
 }
 
-export class ServerVideo extends Video {
+
+
+export class ServerVideo extends OldVideo {
     private _state: number;
     startingTime: number;
     private _elapsedTime: number;

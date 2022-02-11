@@ -1,4 +1,3 @@
-import { Video } from "../video";
 import { State } from "./state";
 
 export enum ClientType {Receiver, Admin}

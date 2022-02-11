@@ -7,7 +7,7 @@ import { State } from "./client/state";
 import { debug, info, prettyPrintClientID } from "./logging";
 import { NewQueue } from "./queue/queue";
 import { setNicknameInRoom, validateClientVideo } from "./utils";
-import { ServerVideo, Video } from "./video";
+import { ServerVideo, OldVideo } from "./video";
 import { RoomVideo } from "./roomVideo";
 import { VideoOrchestrator } from "./videoOrchestrator";
 
@@ -35,7 +35,7 @@ export class Room {
         this.clients.remove(clientID);
     }
 
-    preloadVideo(video: Video) {
+    preloadVideo(video: OldVideo) {
         const roomVideo = new RoomVideo(video);
     }
 }
@@ -178,7 +178,7 @@ export class OldRoom {
                 };
                 return data;
             },
-            newVideo: (videoObj: Video) => {
+            newVideo: (videoObj: OldVideo) => {
                 const newID = { value: videoObj.id };
                 const data = {
                     event: "serverNewVideo",
@@ -280,7 +280,7 @@ export class OldRoom {
                 const urlArray = inputData.split(",");
                 // If there's only one URL
                 if (urlArray.length == 1) {
-                    const newVideo = new Video("oof");
+                    const newVideo = new OldVideo("oof");
                     try {
                         newVideo.setIDFromURL(urlArray[0]);
                     } catch (error: any) {
@@ -683,7 +683,7 @@ export class OldRoom {
     }
 
     // Set a new video playing on the server
-    preloadNewVideoInRoom(videoObj: Video) {
+    preloadNewVideoInRoom(videoObj: OldVideo) {
         // transmit.broadcastPreloadVideo(this, videoObj);
         const newPreload = new event();
         const transportNewVideo = this.transportConstructs.newVideo(videoObj);

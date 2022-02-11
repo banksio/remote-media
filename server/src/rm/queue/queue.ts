@@ -1,13 +1,13 @@
 import { debug } from "../logging";
 import { getIDFromURL } from "../utils";
-import { Video } from "../video";
+import { OldVideo } from "../video";
 import { shuffle } from "./shuffle";
 
 export class NewQueue {
-    private _videos: Video[];
-    private _videosShuffled: Video[];
+    private _videos: OldVideo[];
+    private _videosShuffled: OldVideo[];
     private _currentIndex: number;
-    private _currentVideo: Video | undefined;
+    private _currentVideo: OldVideo | undefined;
     private _nextIndex: number;
     private _lengthUnplayed: number;
     private _lengthPlayed: number;
@@ -90,7 +90,7 @@ export class NewQueue {
         else return this._videos;
     }
 
-    addVideo(video: Video) {
+    private addVideo(video: OldVideo) {
         // Add the video to the array and update the length
         this._videos.push(video);
         this._lengthUnplayed += 1;
@@ -105,7 +105,7 @@ export class NewQueue {
 
     addVideoFromID(id: string) {
         // Generate a new video object and call addVideo
-        const newVideo = new Video(id);
+        const newVideo = new OldVideo(id);
         this.addVideo(newVideo);
     }
 
@@ -141,7 +141,7 @@ export class NewQueue {
             // If we've got a playlist JSON on our hands
             const playlistJSON = JSON.parse(inputData.substring(8));
             for (const [url, details] of Object.entries(playlistJSON)) {
-                const newVideo = new Video((details as any).id, (details as any).title, (details as any).channel);
+                const newVideo = new OldVideo((details as any).id, (details as any).title, (details as any).channel);
                 newVideo.setIDFromURL(url);
                 this.addVideo(newVideo);
             }
@@ -152,7 +152,7 @@ export class NewQueue {
             // If there's only one URL, add that
             // otherwise, pass the CSV to the handling function
             if (urlArray.length == 1) {
-                const newVideo = new Video("oof");
+                const newVideo = new OldVideo("oof");
                 newVideo.setIDFromURL(urlArray[0]);
                 this.addVideo(newVideo);
             } else if (urlArray.length >= 1) {
@@ -176,7 +176,7 @@ export class NewQueue {
         }
         if (this._shuffle == false) {
             // If we're not shuffling
-            this._currentVideo = new Video(
+            this._currentVideo = new OldVideo(
                 this._videos[this._nextIndex].id,
                 this._videos[this._nextIndex].title,
                 this._videos[this._nextIndex].channel
@@ -184,7 +184,7 @@ export class NewQueue {
             // this._currentVideo = JSON.parse(JSON.stringify(this._videos[this._nextIndex]));  // Current video is the next video
         } else if (this._shuffle == true) {
             // If we're shuffling
-            this._currentVideo = new Video(
+            this._currentVideo = new OldVideo(
                 this._videosShuffled[this._nextIndex].id,
                 this._videosShuffled[this._nextIndex].title,
                 this._videosShuffled[this._nextIndex].channel
@@ -201,13 +201,13 @@ export class NewQueue {
 
     peekPreviousVideo() {
         if (this._shuffle)
-            return new Video(
+            return new OldVideo(
                 this._videosShuffled[this._currentIndex - 1].id,
                 this._videosShuffled[this._currentIndex - 1].title,
                 this._videosShuffled[this._currentIndex - 1].channel
             );
         else
-            return new Video(
+            return new OldVideo(
                 this._videos[this._currentIndex - 1].id,
                 this._videos[this._currentIndex - 1].title,
                 this._videos[this._currentIndex - 1].channel
@@ -223,7 +223,7 @@ export class NewQueue {
         }
         if (this._shuffle == false) {
             // If we're not shuffling
-            this._currentVideo = new Video(
+            this._currentVideo = new OldVideo(
                 this._videos[this._currentIndex - 1].id,
                 this._videos[this._currentIndex - 1].title,
                 this._videos[this._currentIndex - 1].channel
@@ -231,7 +231,7 @@ export class NewQueue {
             // this._currentVideo = JSON.parse(JSON.stringify(this._videos[this._nextIndex]));  // Current video is the next video
         } else if (this._shuffle == true) {
             // If we're shuffling
-            this._currentVideo = new Video(
+            this._currentVideo = new OldVideo(
                 this._videosShuffled[this._currentIndex - 1].id,
                 this._videosShuffled[this._currentIndex - 1].title,
                 this._videosShuffled[this._currentIndex - 1].channel

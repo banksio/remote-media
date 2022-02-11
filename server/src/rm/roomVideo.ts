@@ -1,7 +1,7 @@
-import { Video } from "./video";
+import { OldVideo } from "./video";
 
-export class RoomVideo extends Video {
-    constructor(video: Video) {
+export class RoomVideo extends OldVideo {
+    constructor(video: OldVideo) {
         super(video.id, video.title, video.channel, video.duration);
     }
 }
