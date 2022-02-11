@@ -2,7 +2,7 @@ type eventDict = {
     [key: string]: any;
 };
 
-export interface eventConstruct {
+export interface EventConstruct {
     event: string;
     data: any;
 }
@@ -47,15 +47,15 @@ export class event {
         this.sendEvents[event] = data;
     }
 
-    addEventFromConstruct(construct: eventConstruct) {
+    addEventFromConstruct(construct: EventConstruct) {
         this.addEvent(construct.event, construct.data);
     }
 
-    addBroadcastEventFromConstruct(construct: eventConstruct) {
+    addBroadcastEventFromConstruct(construct: EventConstruct) {
         this.addBroadcastEvent(construct.event, construct.data);
     }
 
-    addSendEventFromConstruct(construct: eventConstruct) {
+    addSendEventFromConstruct(construct: EventConstruct) {
         this.addSendEvent(construct.event, construct.data);
     }
 }

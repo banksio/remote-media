@@ -1,7 +1,7 @@
-import { eventConstruct } from "./event";
+import { EventConstruct } from "./event";
 
 export const playVideoEvent = () => {
-    const data: eventConstruct = {
+    const data: EventConstruct = {
         event: "serverPlayerControl",
         data: "play",
     };

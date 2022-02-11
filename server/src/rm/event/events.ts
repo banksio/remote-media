@@ -1,21 +1,17 @@
 import { getRoom } from "../roomManager";
-import { Video } from "../video";
-import { eventConstruct } from "./event";
+import { EventConstruct } from "./event";
 
 export const roomClients = (roomName: string) => {
     const room = getRoom(roomName);
 
-    const data: eventConstruct = {
+    const data: EventConstruct = {
         event: "serverClients",
         data: room.clients.getAll(),
     };
     return data;
 };
 
-export const preloadVideo = (video: Video) => {
-    const newID = { value: video.id };
-
-    const data: eventConstruct = {
+    const data: EventConstruct = {
         event: "serverNewVideo",
         data: newID,
     };

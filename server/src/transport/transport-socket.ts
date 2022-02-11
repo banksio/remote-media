@@ -2,7 +2,7 @@ import chalk from "chalk";
 import { Server, Socket } from "socket.io";
 import { clientConnect, clientDisconnect } from "../rm/handlers";
 import { debug } from "../rm/logging";
-import { event, eventConstruct } from "../rm/event/event";
+import { event, EventConstruct } from "../rm/event/event";
 import { transport } from "./transport";
 
 export class socketioTransport extends transport {
@@ -51,7 +51,7 @@ export class socketioTransport extends transport {
         this.broadcastEvent(eventObj);
     }
 
-    async sendClientEventWithCallback(clientID: string, event: eventConstruct): Promise<any> {
+    async sendClientEventWithCallback(clientID: string, event: EventConstruct): Promise<any> {
         return new Promise<any>((resolve, reject) => {
             const socket = this.getSocketByClientID(clientID);
 
