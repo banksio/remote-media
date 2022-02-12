@@ -34,6 +34,14 @@ export class VideoOrchestrator {
         const transportNewVideo = preloadVideo(videoID);
         newPreload.addBroadcastEventFromConstruct(transportNewVideo);
 
+        // Send to all admin panels
+        for (const clientID of Object.keys(this._room.clients.getAdmins())) {
+            const eventToSend = new event();
+            eventToSend.addSendEventFromConstruct(transportNewVideo);
+            transport.sendClientEvent(clientID, eventToSend);
+        }
+
+        // Send to all recievers
         const promises = [];
         for (const clientID of Object.keys(this._room.clients.getRecievers())) {
             const clientPreloaded = transport.sendClientEventWithCallback(clientID, transportNewVideo).then(videoDetails => {
