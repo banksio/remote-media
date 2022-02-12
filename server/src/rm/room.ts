@@ -83,6 +83,10 @@ export class ClientArray {
         return Object.fromEntries(Object.entries(this.clients).filter(([_, value]) => value.type === ClientType.Receiver));
     }
 
+    getAdmins(): { [clientID: string]: Client } {
+        return Object.fromEntries(Object.entries(this.clients).filter(([_, value]) => value.type === ClientType.Admin));
+    }
+
     setClientNickname(clientID: string, nickname: string) {
         // Stops injection by replacing '<' & '>' with html code
         const newNickname = nickname.replace(/</g, "&lt;").replace(/>/g, "&gt;");

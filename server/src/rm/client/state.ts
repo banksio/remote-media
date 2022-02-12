@@ -1,3 +1,12 @@
+export enum PlayerState {
+    Stopped,
+    Playing,
+    Paused,
+    Buffering,
+    Unknown,
+    Cued
+}
+
 export class State {
     state: number;
     previousState: number;
