@@ -85,7 +85,7 @@ player.onNewStatus((status: number, preloading: boolean) => {
         switch (status) {
             case 1: // And the video is now playing
                 // Update the tab title with the current Video ID
-                document.title = player.getCurrentVideoData().title + " - Remote Media";
+                document.title = player.getVideoDetails().title + " - Remote Media";
                 break;
             default:
                 break;
