@@ -327,22 +327,22 @@ export function getCurrentVideoID() {
     return vid;
 }
 
-export function getCurrentVideoData() {
+// ! Deprecated, use getVideoDetails() instead
+function getCurrentVideoData() {
     return player.getVideoData();
 }
 
-// main.js
-function eventVideoDetails() {
-    // TODO: Evaluate and re-add
-    // const videoDetails = player.getVideoData();
-    // const videoDuration = player.getDuration();
-    // consoleLogWithTime(videoDetails);
-    // callbacks.event("receiverVideoDetails", {
-    //     id: videoDetails.video_id,
-    //     title: videoDetails.title,
-    //     channel: videoDetails.author,
-    //     duration: videoDuration * 1000,
-    // });
+
+export function getVideoDetails() {
+    const videoDetails = player.getVideoData();
+    const videoDuration = player.getDuration();
+
+    return {
+        id: videoDetails.video_id,
+        title: videoDetails.title,
+        channel: videoDetails.author,
+        duration: videoDuration * 1000,
+    };
 }
 
 export function onEvent(callback: (event: string, data?: any) => void) {

@@ -12,6 +12,7 @@ const connectionStatusSpinner = document.getElementById("spinnerConnection");
 const mainSpinner = document.getElementById("statusSpinner");
 const mainSpinnerText = document.getElementById("statusLoading");
 const thumbnailSpinner = document.querySelector("div.nowPlayingContainer > div");
+const thumbnailLoadingText = document.getElementById("nowPlayingContainerLoadingText");
 
 const upNextTitle = document.getElementById("videoTitleNext");
 const upNextImage = document.getElementById("videoThumbnailNext");
@@ -38,6 +39,10 @@ const stateIcons = [
     "Unknown",
     '<i class="fas fa-check"></i>',
 ];
+
+nowplayingThumbnail.addEventListener("load", () => {
+    changeThumbnailSpinner(false);
+});
 
 export function changeSkipButtons(previous, next) {
     if (previous) {
@@ -92,9 +97,18 @@ export function changeMainSpinner(state, message = "Loading data...") {
 
 export function changeThumbnailSpinner(visible) {
     if (visible) {
+        changeThumbnailLoadingText(true);
         thumbnailSpinner.classList.remove("fadeOutDiv");
     } else {
         thumbnailSpinner.classList.add("fadeOutDiv");
+    }
+}
+
+export function changeThumbnailLoadingText(waitingForServer) {
+    if (waitingForServer) {
+        thumbnailLoadingText.innerText = "Preloading new video..."
+    } else {
+        thumbnailLoadingText.innerText = "Loading thumbnail..."
     }
 }
 

@@ -10,6 +10,13 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "@fortawesome/fontawesome-free/css/all.css";
 import "../../stylesheets/adminStyles.css";
 
+export interface VideoDetails {
+    id: string;
+    title: string;
+    channel: string;
+    duration: number;
+}
+
 const tableWorker = new TableWorker();
 const queue = {
     index: 0,
@@ -38,11 +45,10 @@ transmit.onServerNewVideo(() => {
     frontendUI.changeThumbnailSpinner(true); // Show loading of thumbnail
 });
 
-transmit.onServerCurrentVideo((video: any) => {
-    video = JSON.parse(video);
+transmit.onServerCurrentVideo((video: VideoDetails) => {
     console.log("Recieved video details from server");
     frontendUI.changeMainThumbnail(video);
-    frontendUI.changeThumbnailSpinner(false);
+    frontendUI.changeThumbnailLoadingText(false);
 });
 
 transmit.onServerClients((clients: any) => frontendUI.updateClientsTable(clients));
@@ -134,7 +140,10 @@ clickHandlers.onEmptyPlaylistClick(() => transmit.sendEvent("adminQueueControl",
 clickHandlers.onPlaylistShuffle((shuffled: boolean) => toggleShuffle(shuffled));
 
 // Push and Append video buttons
-clickHandlers.onPushVideoClick((videoID: string) => pushNewVideo(videoID));
+clickHandlers.onPushVideoClick((videoID: string) => {
+    pushNewVideo(videoID);
+    frontendUI.changeThumbnailSpinner(true);
+});
 clickHandlers.onAppendVideoClick((videoID: string) => appendNewVideo(videoID));
 
 // Client management buttons

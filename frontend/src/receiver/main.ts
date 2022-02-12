@@ -99,7 +99,7 @@ player.onNewStatus((status: number, preloading: boolean) => {
                 break;
             case 1:
                 // Update the tab title with the current Video ID
-                document.title = player.getCurrentVideoData().title + " - Remote Media";
+                document.title = player.getVideoDetails().title + " - Remote Media";
                 screensaver.stop();
             // break; // Fall through to next case
             case 2:
@@ -116,8 +116,13 @@ player.loadYouTubeIframeAPI();
 
 transmit.onServerPlayerControl((data: string) => player.serverPlayerControl(data));
 transmit.onServerNewVideo((data: any, callback: any) => {
-    player.preloadVideo(data.value).then(videoID => callback(videoID));
+    player.preloadVideo(data).then(videoID => {
+        const videoDetails = player.getVideoDetails();
+        if (videoDetails.id !== videoID) return alert("Wrong video ID.");
+        callback(videoDetails);
+    });
 });
+
 transmit.onServerVideoTimestamp((ts: number) => player.seekToTimestamp(ts, false));
 
 clickHandlers.onResyncClick(() => {
